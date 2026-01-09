@@ -1,7 +1,16 @@
+```ascii
+___________                         .__   
+\_   _____/__________  _____ _____  |  |   
+ |    __)/  _ \_  __ \/     \\__  \ |  |   
+ |     \(  <_> )  | \/  Y Y  \/ __ \|  |__ 
+ \___  / \____/|__|  |__|_|  (____  /____/
+     \/                    \/     \/          
+```
+
 Formal: Fortran mimetic abstraction language
 ============================================
 
-Towards a formally verifiable, tensor calculus langauge embedded in Fortran 2028.
+_Towards a formally verifiable, tensor-calculus langauge embedded in Fortran 2028._
 
 ## Examples
 See this repository's [example](./example) subdirectory for demonstrations of how
@@ -47,4 +56,4 @@ graphically when viewed in a web browser.
 
 [`fpm`]: https://github.com/fortran-lang/fpm
 [fpm-0.12.0.F90]: https://github.com/fortran-lang/fpm/releases/download/v0.12.0/fpm-0.12.0.F90
-[`doc/class-diagram.md`]: ./doc/uml/class-diagram.md
+[`doc/uml/class-diagram.md`]: ./doc/uml/class-diagram.md
