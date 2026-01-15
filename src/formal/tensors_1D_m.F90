@@ -116,7 +116,7 @@ module tensors_1D_m
     generic :: weights => gradient_1D_weights
 #endif
     procedure, non_overridable :: dA
-    procedure, non_overridable, pass(vector_1D) :: weighted_premultiply
+    procedure, non_overridable, private, pass(vector_1D) :: weighted_premultiply
     procedure, non_overridable, private :: div
     procedure, non_overridable, private :: dot_surface_normal
     procedure, non_overridable, private :: vector_1D_grid
