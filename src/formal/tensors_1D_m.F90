@@ -24,12 +24,26 @@ module tensors_1D_m
 
   abstract interface
 
+    ! PURPOSE: To provide values for initializing a scalar_1D_t object at the cell centers and boundaries
+    !          for use in the mimetic discretization scheme of Corbino-Castillo (2020)
+    ! KEYWORDS: mimetic discretization, scalar function, sampling,one-dimensional (1D)
+    ! CONTEXT: This abstract interface is used to declare a procedure pointer that can be associated with
+    !          a user-defined function.  The user's function can be invoked via this abstract interface
+    !          to sample the function at the appropriate grid locations.
+
     pure function scalar_1D_initializer_i(x) result(f)
       !! Sampling function for initializing a scalar_1D_t object
       implicit none
       double precision, intent(in) :: x(:)
       double precision, allocatable :: f(:)
     end function
+
+    ! PURPOSE: To provide values for initializing a vector_1D_t object at grid cell faces as defined in the
+    !          mimetic discretization scheme of Corbino-Castillo (2020).
+    ! KEYWORDS: mimetic discretization, vector function, sampling,  one-dimensional (1D)
+    ! CONTEXT: This abstract interface is used to declare a procedure pointer that can be associated with
+    !          a user-defined function.  The user's function can be invoked via this abstract interface
+    !          to sample the function at the appropriate grid locations.
 
     pure function vector_1D_initializer_i(x) result(v)
       !! Sampling function for initializing a vector_1D_t object
@@ -39,6 +53,11 @@ module tensors_1D_m
     end function
 
   end interface
+
+  ! PURPOSE: Encapsulate the data and operations that are common to most or all tensor_1D_t child types
+  ! KEYWORDS: mimetic discretization, grid values, grid functions, one-dimensional (1D)
+  ! CONTEXT: Child types extend this derived type to define specific types of tensors such as scalars,
+  !          vectors, gradients, and divergences.
 
   type tensor_1D_t
     !! Encapsulate the components that are common to all 1D tensors.
