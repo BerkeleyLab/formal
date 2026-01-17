@@ -1,3 +1,6 @@
+! Copyright (c) 2026, The Regents of the University of California
+! Terms of use are as specified in LICENSE.txt
+
 #include "julienne-assert-macros.h"
 
 submodule(tensors_1D_m) vector_dot_gradient_1D_s

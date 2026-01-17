@@ -1,3 +1,6 @@
+! Copyright (c) 2026, The Regents of the University of California
+! Terms of use are as specified in LICENSE.txt
+
 program test_suite_driver
   use julienne_m, only : test_fixture_t, test_harness_t
   use gradient_operator_1D_test_m, only : gradient_operator_1D_test_t

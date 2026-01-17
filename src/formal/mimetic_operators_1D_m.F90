@@ -1,3 +1,6 @@
+! Copyright (c) 2026, The Regents of the University of California
+! Terms of use are as specified in LICENSE.txt
+
 #include "formal-language-support.F90"
 
 module mimetic_operators_1D_m

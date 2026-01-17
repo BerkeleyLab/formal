@@ -1,8 +1,10 @@
+! Copyright (c) 2026, The Regents of the University of California
+! Terms of use are as specified in LICENSE.txt
 module formal_m 
   !! This module contains all public Formal entities. For descriptions of the
   !! public procedures bound to the derived types below, see the interface
   !! bodies in the corresponding module (e.g., tensors_1D_m).  Please see the
-  !! programs in this `example` subdirectory for demonstrations of how to use
+  !! programs in the `example` subdirectory for demonstrations of how to use
   !! the entities in this module.
 
   use tensors_1D_m, only : &

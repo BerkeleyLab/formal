@@ -1,3 +1,6 @@
+! Copyright (c) 2026, The Regents of the University of California
+! Terms of use are as specified in LICENSE.txt
+
 program print_assembled_1D_operators
   !! Print the full 2nd- and 4th-order mimetic gradient and divergence
   !! operator matrices as comma-separated rows for 1D grids with the

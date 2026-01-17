@@ -1,3 +1,6 @@
+! Copyright (c) 2026, The Regents of the University of California
+! Terms of use are as specified in LICENSE.txt
+
 module laplacian_operator_1D_test_m
   use julienne_m, only : &
      file_t &
