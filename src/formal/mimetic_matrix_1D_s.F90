@@ -1,3 +1,6 @@
+! Copyright (c) 2026, The Regents of the University of California
+! Terms of use are as specified in LICENSE.txt
+
 submodule(mimetic_operators_1D_m) mimetic_matrix_1D_s
   use julienne_m, only : string_t, operator(.csv.)
   implicit none

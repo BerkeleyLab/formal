@@ -1,3 +1,6 @@
+! Copyright (c) 2026, The Regents of the University of California
+! Terms of use are as specified in LICENSE.txt
+
 submodule(tensors_1D_m) tensor_1D_s
   implicit none
 contains
