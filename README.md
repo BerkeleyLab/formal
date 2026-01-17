@@ -14,7 +14,7 @@ _Towards a formally verifiable, tensor-calculus langauge embedded in Fortran 202
 
 ## Examples
 See this repository's [example](./example) subdirectory for demonstrations of how
-to use Formal.  For usage information for each example, execute something like
+to use Formal.  For usage information for each example, execute something like:
 ```bash
 fpm run --example <base-name> -- --help
 ```
@@ -24,10 +24,10 @@ directory as your present working directory before issuing the above `fpm run`
 command.  Then use tab completion to enter enter the base name and delete the
 file extension before pressing `return`.
 
-## Prereqisite
+## Prerequisites
 
 Building and testing Formal requires the Fortran Package Manager  ([`fpm`]),
-which can be obtained via package manager (e.g., `brew install fpm` on macOS)
+which can be obtained via a package manager (e.g., `brew install fpm` on macOS)
 or by compiling the single-file concatenation of the `fpm` source that is
 included among the release assets.  For the `fpm` 0.12.0 release, for example,
 compiling [fpm-0.12.0.F90] and placing the resulting executable file in your
@@ -46,7 +46,7 @@ compiling [fpm-0.12.0.F90] and placing the resulting executable file in your
 
 **Known Issues**
 1. With `fpm` versions _after_ 0.12.0, `flang-new` can be shortened to `flang`.
-2. With NAG 7.2, Build 7235 or later is recommmend, but earlier builds might work.
+2. With NAG 7.2, Build 7235 or later is recommended, but earlier builds might work.
 
 ## Documentation
 The [`doc/uml/class-diagram.md`] file contains a Mermaid script that generates a

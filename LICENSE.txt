@@ -1,3 +1,11 @@
+***********************************
+*** Formal Terms and Conditions ***
+***********************************
+
+All files in this directory and all sub-directories (except where otherwise
+noted) are subject to the following copyright and licensing terms:
+
+
 ****************************
 
 *** Copyright Notice ***
