@@ -27,7 +27,7 @@ For example, given scalar and vector fields $f$ and $\vec{v}$ defined over a uni
 by a surface area $A$, the program [`example/extended-gauss-divergence.F90`] demonstrates satisfaction of the
 extended Gauss divergence theorem: 
 
-$$ \iiint_V \vec{u} \cdot \nabla f dV + \iiint_V f \nabla \cdot \vec{v} dV = \iint_A f \vec{v} \cdot d\vec{A} $$
+$$ \iiint_V (\vec{v} \cdot \nabla f) dV + \iiint_V (f \nabla \cdot \vec{v}) dV = \iint_A f \vec{v} \cdot d\vec{A} $$
 
 Running the program as follows
 ```fortran
