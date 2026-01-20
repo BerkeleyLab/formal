@@ -15,12 +15,12 @@ _Towards an embedded domain-specific language (DSL) for tensor calculus and form
 Introduction
 ------------
 Formal supports research in software abstractions for tensor calculus by providing
-- Derived types that mimic the tensor fields.
+- Derived types that mimic the tensor fields and
 - Differential and integral operators for writing tensor calculus expressions.
 Formal's types and operators implement the discrete calculus of [Castillo & Corbino (2020)]: mimetic discretizations satisfying discrete versions of tensor calculus theorems.
 
-Like the underlying numerical methods, Formal's software abstractiosn mimic their tensor calculus counterparts.
-For example, given scalar and vector fields $f$ and $\vec{v}$ defined over a volume $V = [0,1]^3$ bounded by a surface area $A$, the [`extended-gauss-divergence`] example program demonstrates satisfaction of the extended Gauss divergence theorem: 
+Like the underlying numerical methods, Formal's software abstractios mimic their tensor calculus counterparts.
+For example, given scalar and vector fields $f$ and $\vec{v}$ defined over a unit volume $V = [0,1]^3$ bounded by a surface area $A$, the program [`example/extended-gauss-divergence.F90`] demonstrates satisfaction of the extended Gauss divergence theorem: 
 
 $$ \iiint_V \vec{u} \cdot \nabla f dV + \iiint_V f \nabla \cdot \vec{v} dV = \iint_A f \vec{v} \cdot d\vec{A} $$
 
@@ -40,7 +40,7 @@ produces output that includes actual program syntax:
 ```
 where the small residual of approximately $-.222 \times 10^{-15}$ evidences a highly accurate approximation.
 
-**Future work:** Formal lays a foundation for defining an DSL embedded in Fortran via template requirements, a feature of the forthcoming standard known informmally as Fortran 202Y.
+**Future work:** Formal lays a foundation for defining a DSL embedded in Fortran via template requirements, a feature of the forthcoming standard known informally as Fortran 202Y.
 
 Examples
 --------
@@ -55,8 +55,8 @@ directory as your present working directory before issuing the above `fpm run`
 command.  Then use tab completion to enter enter the base name and delete the
 file extension before pressing `return`.
 
-Prereqisite
------------
+Prerequisite
+------------
 Building and testing Formal requires the Fortran Package Manager  ([`fpm`]),
 which can be obtained via a package manager (e.g., `brew install fpm` on macOS)
 or by compiling the single-file concatenation of the `fpm` source that is
@@ -75,7 +75,7 @@ Building and testing
  LLVM   | `flang-new` | 19                | fpm test --compiler flang-new --flag "-O3 -mmlir -allow-assumed-rank"
  NAG    | `nagfor`    | 7.2 Build 7242    | fpm test --compiler nagfor --flag "-O3 -fpp"
 
-With `fpm` versions _after_ 0.12.0, `flang-new` can be shortened to `flang` in the aboe `fpm` commands.
+With `fpm` versions _after_ 0.12.0, `flang-new` can be shortened to `flang` in the above `fpm` commands.
 
 Documentation
 -------------
@@ -92,7 +92,7 @@ To contribute code, please submit a [pull request] from a fork of Formal.
 
 Funding Acknowledgment
 ----------------------
-Formal is a software artifact of research funded by the Competitive Portflios for Advanced Scientific Computing Research Program of the U.S. Department of Energy, Office of Science, Office of Advanced Scientific Computing Research under contract DE-AC02-05CH11231. 
+Formal is a software artifact of research funded by the Competitive Portfolios for Advanced Scientific Computing Research Program of the U.S. Department of Energy, Office of Science, Office of Advanced Scientific Computing Research under contract DE-AC02-05CH11231. 
 
 [`fpm`]: https://github.com/fortran-lang/fpm
 [fpm-0.12.0.F90]: https://github.com/fortran-lang/fpm/releases/download/v0.12.0/fpm-0.12.0.F90
