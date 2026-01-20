@@ -88,12 +88,12 @@ program extended_gauss_divergence
 
             if (flags%grad_ .or. all_terms) then
               SSS_v_dot_grad_f_dV = .SSS. (v .dot. .grad. f) * dV
-              print '(a,g0)', ".SSS. (v .dot. .grad. f) * dV = ", SSS_v_dot_grad_f_dV
+              print '(a,g0)', ".SSS. (v .dot. .grad. f) * dV =  ", SSS_v_dot_grad_f_dV
             end if
 
             if (flags%div_ .or. all_terms) then
               SSS_f_div_v_dV      = .SSS. (f * .div. v) * dV
-              print '(a,g0)', ".SSS. (     f * .div. v) * dV = ", SSS_f_div_v_dV
+              print '(a,g0)', ".SSS. (     f * .div. v) * dV =  ", SSS_f_div_v_dV
             end if
 
           end associate differential_volume
@@ -101,8 +101,8 @@ program extended_gauss_divergence
           differential_area: &
           associate(dA => v%dA())
             if (flags%vf_ .or. all_terms) then
-              SS_f_v_dot_dA       =  .SS. (f .x. (v .dot. dA))
-              print '(a,g0)', "     -.SS. (f .x. (v .dot. dA)) = ", -SS_f_v_dot_dA
+              SS_f_v_dot_dA     =  .SS. (f .x. (v .dot. dA))
+              print '(a,g0)', "   -.SS. (f .x. (v .dot. dA)) = ", -SS_f_v_dot_dA
             end if
 
             if (all_terms) then
