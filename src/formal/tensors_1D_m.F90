@@ -231,6 +231,11 @@ module tensors_1D_m
     procedure, non_overridable, private, pass(integrand) ::volume_integrate_vector_dot_grad_scalar_1D
   end type
 
+  ! PURPOSE: To define a tensor child type capturing the divergence of a vector function of one spatial dimension.
+  ! KEYWORDS: 1D, divergence
+  ! CONTEXT: Although a mathematical scalar, this type differs from scalar_1D_t in that the values are stored 
+  !          _only_ at cell centers, whereas a scalar_1D_t object additionally has values at domain boundaries.
+
   type, extends(tensor_1D_t) :: divergence_1D_t
     !! Encapsulate divergences at cell centers
   contains
@@ -244,6 +249,10 @@ module tensors_1D_m
     procedure, non_overridable, private :: divergence_1D_grid
   end type
 
+  ! PURPOSE: 
+  ! KEYWORDS: 
+  ! CONTEXT: 
+
   type, extends(tensor_1D_t) :: scalar_x_divergence_1D_t
     !! product of a 1D scalar field and a 1D divergence field
     private
@@ -252,6 +261,12 @@ module tensors_1D_m
     generic :: operator(.SSS.) => volume_integrate_scalar_x_divergence_1D
     procedure, non_overridable, private, pass(integrand) :: volume_integrate_scalar_x_divergence_1D
   end type
+
+  ! PURPOSE: To define a divergence child type capturing the result of applying a divergence operator to a gradient.
+  ! KEYWORDS: 1D, laplacian
+  ! CONTEXT: Although a mathematical a divergence, this type additionally provides a type-bound procedure that
+  !          returns the number of boundary-adjacent points at which the Laplacian aproximation's accuracy drops by
+  !          by one order relative to the parent divergence type.
 
   type, extends(divergence_1D_t) :: laplacian_1D_t
     private
