@@ -26,7 +26,7 @@ module tensors_1D_m
 
     ! PURPOSE: To provide values for initializing a scalar_1D_t object at the cell centers and boundaries
     !          for use in the mimetic discretization scheme of Corbino-Castillo (2020)
-    ! KEYWORDS: mimetic discretization, scalar function, sampling,one-dimensional (1D)
+    ! KEYWORDS: mimetic discretization, scalar function, sampling, one-dimensional (1D)
     ! CONTEXT: This abstract interface is used to declare a procedure pointer that can be associated with
     !          a user-defined function.  The user's function can be invoked via this abstract interface
     !          to sample the function at the appropriate grid locations.
@@ -38,9 +38,9 @@ module tensors_1D_m
       double precision, allocatable :: f(:)
     end function
 
-    ! PURPOSE: To provide values for initializing a vector_1D_t object at grid cell faces as defined in the
-    !          mimetic discretization scheme of Corbino-Castillo (2020).
-    ! KEYWORDS: mimetic discretization, vector function, sampling,  one-dimensional (1D)
+    ! PURPOSE: To provide values for initializing a vection function of one spatialdimension at cell faces
+    !          as defined in the mimetic discretization scheme of Corbino-Castillo (2020).
+    ! KEYWORDS: mimetic discretization, vector function, sampling,  1D
     ! CONTEXT: This abstract interface is used to declare a procedure pointer that can be associated with
     !          a user-defined function.  The user's function can be invoked via this abstract interface
     !          to sample the function at the appropriate grid locations.
@@ -55,7 +55,7 @@ module tensors_1D_m
   end interface
 
   ! PURPOSE: Encapsulate the data and operations that are common to most or all tensor_1D_t child types
-  ! KEYWORDS: mimetic discretization, grid values, grid functions, one-dimensional (1D)
+  ! KEYWORDS: mimetic discretization, grid values, grid functions, 1D
   ! CONTEXT: Child types extend this derived type to define specific types of tensors such as scalars,
   !          vectors, gradients, and divergences.
 
@@ -78,6 +78,11 @@ module tensors_1D_m
 
   interface tensor_1D_t
 
+    ! PURPOSE: To construct a new tensor_1D_t object by assigning each argument to a corresponding
+    !          corresponding component of the new object.
+    ! KEYWORDS: 1D tensor constructor 
+    ! CONTEXT: Constructors for child types assign this function's result to to the child object's parent component.
+
     pure module function construct_1D_tensor_from_components(values, x_min, x_max, cells, order) result(tensor_1D)
       !! User-defined constructor: result is a 1D tensor defined by assigning the dummy arguments to corresponding components
       implicit none
@@ -90,6 +95,10 @@ module tensors_1D_m
     end function
 
   end interface
+
+  ! PURPOSE: Encapsulatae a scalar function of one spatial dimension as a tensor with a gradient operator.
+  ! KEYWORDS: 1D scalar field abstraction
+  ! CONTEXT: Combine with other tensors via expressions that may include differential operators 
 
   type, extends(tensor_1D_t) :: scalar_1D_t
     !! Encapsulate scalar values at cell centers and boundaries
@@ -108,6 +117,12 @@ module tensors_1D_m
 
   interface scalar_1D_t
 
+    ! PURPOSE: To construct a new scalar_1D_t object by assigning each argument to a corresponding
+    !          corresponding component of the new object.
+    ! KEYWORDS: 1D scalar field constructor
+    ! CONTEXT: Invoke this constructor with a pointer associated with a function to be sampled at a set
+    !          of uniformly-spaced cell centers along one spatial dimension bounded by x_min and x_max.
+
     pure module function construct_1D_scalar_from_function(initializer, order, cells, x_min, x_max) result(scalar_1D)
       !! Result is a collection of cell-centered-extended values with a corresponding mimetic gradient operator
       implicit none
@@ -120,6 +135,10 @@ module tensors_1D_m
     end function
 
   end interface
+
+  ! PURPOSE: Encapsulatae a vector function of one spatial dimension as a tensor with a divergence operator.
+  ! KEYWORDS: 1D vector field abstraction
+  ! CONTEXT: Combine with other tensors via expressions that may include differential operators 
 
   type, extends(tensor_1D_t) :: vector_1D_t
     !! Encapsulate 1D vector values at cell faces (of unit area for 1D) and corresponding operators
@@ -142,6 +161,10 @@ module tensors_1D_m
     procedure, non_overridable, private :: vector_1D_values
   end type
 
+  ! PURPOSE: Encapsulatae a scalar/vector product weighted for integration on a surface
+  ! KEYWORDS: 1D product abstraction
+  ! CONTEXT: Combine with other tensors via expressions that may include the double integrals
+
   type, extends(tensor_1D_t) :: weighted_product_1D_t
   contains
     generic :: operator(.SS.) => surface_integrate_vector_x_scalar_1D
@@ -149,6 +172,11 @@ module tensors_1D_m
   end type
 
   interface vector_1D_t
+
+    ! PURPOSE: To construct a new vector_1D_t object by sampling a function of one spatial dimension.
+    ! KEYWORDS: 1D vector field constructor
+    ! CONTEXT: Invoke this constructor with a pointer associated with a function to be sampled at a set
+    !          of uniformly-spaced cell faces along one spatial dimension bounded by x_min and x_max.
 
     pure module function construct_1D_vector_from_function(initializer, order, cells, x_min, x_max) result(vector_1D)
       !! Result is a 1D vector with values initialized by the provided procedure pointer sampled on the specified
@@ -161,6 +189,11 @@ module tensors_1D_m
       double precision, intent(in) :: x_max !! grid location maximum
       type(vector_1D_t) vector_1D
     end function
+
+    ! PURPOSE: To construct a new vector_1D_t object from a parent tensor and a divergence operator object.
+    ! KEYWORDS: 1D vector field constructor
+    ! CONTEXT: Invoke this constructor with a an object to be used to define the constructed parent component
+    !          divergence-operator matrix component.
 
     pure module function construct_from_components(tensor_1D, divergence_operator_1D) result(vector_1D)
       !! Result is a 1D vector with the provided parent component tensor_1D and the provided divergence operatror
