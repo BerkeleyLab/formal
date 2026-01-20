@@ -15,11 +15,10 @@ _Towards an embedded domain-specific language (DSL) for tensor calculus and form
 Introduction
 ------------
 Formal supports research in software abstractions for tensor calculus by providing
-
 - Derived types that mimic the tensor fields.
 - Differential and integral operators for writing tensor calculus expressions.
-
 Formal's types and operators implement the discrete calculus of [Castillo & Corbino (2020)]: mimetic discretizations satisfying discrete versions of tensor calculus theorems.
+
 Like the underlying numerical methods, Formal's software abstractiosn mimic their tensor calculus counterparts.
 For example, given scalar and vector fields $f$ and $\vec{v}$ defined over a volume $V = [0,1]^3$ bounded by a surface area $A$, the [`extended-gauss-divergence`] example program demonstrates satisfaction of the extended Gauss divergence theorem: 
 
@@ -29,7 +28,7 @@ Running the program as follows
 ```fortran
 fpm run --example extended-gauss-divergence --compiler flang-new --flag -O3
 ```
-should produce output that includes actual program syntax:
+produces output that includes actual program syntax:
 ```fortran
     f = (x**2)/2 ! <-- scalar function
     v = x        ! <-- vector function
@@ -67,7 +66,6 @@ compiling [fpm-0.12.0.F90] and placing the resulting executable file in your
 
 Building and testing
 --------------------
-
  Vendor | Compiler    | Version(s) Tested | Build/Test Command
 --------|-------------|-------------------|-------------------
  GCC    | `gfortran`  | 14-15             | fpm test --compiler gfortran --profile release
@@ -80,11 +78,17 @@ Building and testing
 **Known Issues**
 1. With `fpm` versions _after_ 0.12.0, `flang-new` can be shortened to `flang`.
 
-## Documentation
+Documentation
+-------------
 The [`doc/uml/class-diagram.md`] file contains a Mermaid script that generates a
 Unified Modeling Language (UML) class diagram depicting many Formal derived
 types and their interrelationships.  GitHub's web servers render the diagram
 graphically when viewed in a web browser.
+
+Funding Acknowledgment
+----------------------
+Formal is a software artifact of research funded by the Competitive Portflios for Advanced Scientific Computing Research Program of the U.S. Department of Energy, Office of Science, Office of Advanced Scientific Computing Research under contract DE-AC02-05CH11231. 
+
 
 [`fpm`]: https://github.com/fortran-lang/fpm
 [fpm-0.12.0.F90]: https://github.com/fortran-lang/fpm/releases/download/v0.12.0/fpm-0.12.0.F90
