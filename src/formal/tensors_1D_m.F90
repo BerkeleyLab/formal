@@ -54,7 +54,7 @@ module tensors_1D_m
 
   end interface
 
-  ! PURPOSE: Encapsulate the data and operations that are common to most or all tensor_1D_t child types
+  ! PURPOSE: To encapsulate the data and operations that are common to most or all tensor_1D_t child types
   ! KEYWORDS: mimetic discretization, grid values, grid functions, 1D
   ! CONTEXT: Child types extend this derived type to define specific types of tensors such as scalars,
   !          vectors, gradients, and divergences.
@@ -96,7 +96,7 @@ module tensors_1D_m
 
   end interface
 
-  ! PURPOSE: Encapsulatae a scalar function of one spatial dimension as a tensor with a gradient operator.
+  ! PURPOSE: To encapsulatae a scalar function of one spatial dimension as a tensor with a gradient operator.
   ! KEYWORDS: 1D scalar field abstraction
   ! CONTEXT: Combine with other tensors via expressions that may include differential operators 
 
@@ -136,7 +136,7 @@ module tensors_1D_m
 
   end interface
 
-  ! PURPOSE: Encapsulatae a vector function of one spatial dimension as a tensor with a divergence operator.
+  ! PURPOSE: To encapsulate a vector function of one spatial dimension as a tensor with a divergence operator.
   ! KEYWORDS: 1D vector field abstraction
   ! CONTEXT: Combine with other tensors via expressions that may include differential operators 
 
@@ -161,7 +161,7 @@ module tensors_1D_m
     procedure, non_overridable, private :: vector_1D_values
   end type
 
-  ! PURPOSE: Encapsulatae a scalar/vector product weighted for integration on a surface
+  ! PURPOSE: To encapsulate a scalar/vector product weighted for integration on a surface
   ! KEYWORDS: 1D product abstraction
   ! CONTEXT: Combine with other tensors via expressions that may include the double integrals
 
@@ -204,6 +204,10 @@ module tensors_1D_m
 
   end interface
 
+  ! PURPOSE: To define a vector child type for capturing gradient data and a scalar (dot) product operator.
+  ! KEYWORDS: 1D gradient vector field abstraction
+  ! CONTEXT: The scalar_1D_t .grad. operator produces this type as a result.
+
   type, extends(vector_1D_t) :: gradient_1D_t
     !! A 1D mimetic gradient vector field abstraction with a public method that produces corresponding numerical quadrature weights
   contains
@@ -213,6 +217,10 @@ module tensors_1D_m
 #endif
     procedure, non_overridable, private, pass(gradient_1D) :: dot
   end type
+
+  ! PURPOSE: To define a tensor child for capturing the scalar (dot) product of a vector and a gradient vector data
+  ! KEYWORDS: 1D vector/gradient scalar product
+  ! CONTEXT: An instance of this type can serve as an integrand in a .SSS. triple-integral operator.
 
   type, extends(tensor_1D_t) :: vector_dot_gradient_1D_t
     !! Result is the dot product of a 1D vector field and a 1D gradient field
