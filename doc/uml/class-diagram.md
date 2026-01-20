@@ -21,6 +21,9 @@ tensor_1D_t <|-- scalar_1D_t : is a
 tensor_1D_t <|-- vector_1D_t : is a
 tensor_1D_t <|-- divergence_1D_t : is a
 
+scalar_1D_t *-- gradient_operator_1D_t
+vector_1D_t *-- divergence_operator_1D_t
+
 tensor_1D_t <|-- weighted_product_1D_t
 tensor_1D_t <|-- vector_dot_gradient_1D_t
 tensor_1D_t <|-- scalar_x_divergence_1D_t

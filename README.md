@@ -45,7 +45,7 @@ where the small residual of approximately $-.222 \times 10^{-15}$ evidences a hi
 Examples
 --------
 See this repository's [example](./example) subdirectory for demonstrations of how
-to use Formal.  For usage information for each example, execute something like
+to use Formal.  For usage information for each example, execute something like:
 ```bash
 fpm run --example <base-name> -- --help
 ```
@@ -58,7 +58,7 @@ file extension before pressing `return`.
 Prereqisite
 -----------
 Building and testing Formal requires the Fortran Package Manager  ([`fpm`]),
-which can be obtained via package manager (e.g., `brew install fpm` on macOS)
+which can be obtained via a package manager (e.g., `brew install fpm` on macOS)
 or by compiling the single-file concatenation of the `fpm` source that is
 included among the release assets.  For the `fpm` 0.12.0 release, for example,
 compiling [fpm-0.12.0.F90] and placing the resulting executable file in your
@@ -75,8 +75,7 @@ Building and testing
  LLVM   | `flang-new` | 19                | fpm test --compiler flang-new --flag "-O3 -mmlir -allow-assumed-rank"
  NAG    | `nagfor`    | 7.2 Build 7242    | fpm test --compiler nagfor --flag "-O3 -fpp"
 
-**Known Issues**
-1. With `fpm` versions _after_ 0.12.0, `flang-new` can be shortened to `flang`.
+With `fpm` versions _after_ 0.12.0, `flang-new` can be shortened to `flang` in the aboe `fpm` commands.
 
 Documentation
 -------------
