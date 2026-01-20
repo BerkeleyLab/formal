@@ -14,13 +14,18 @@ _Towards an embedded domain-specific language (DSL) for tensor calculus and form
 
 Introduction
 ------------
-Formal supports research in software abstractions for tensor calculus by providing
-- Derived types that mimic the tensor fields and
-- Differential and integral operators for writing tensor calculus expressions.
-Formal's types and operators implement the discrete calculus of [Castillo & Corbino (2020)]: mimetic discretizations satisfying discrete versions of tensor calculus theorems.
+Formal supports research on mimetic software abstractions for tensor calculus by providing
+
+- Derived types that mimic tensor fields and
+- Differential and integral operators for writing tensor expressions.
+
+Formal's types and operators implement the discrete calculus of [Castillo & Corbino (2020)]:
+mimetic discretizations satisfying discrete versions of tensor calculus theorems.
 
 Like the underlying numerical methods, Formal's software abstractios mimic their tensor calculus counterparts.
-For example, given scalar and vector fields $f$ and $\vec{v}$ defined over a unit volume $V = [0,1]^3$ bounded by a surface area $A$, the program [`example/extended-gauss-divergence.F90`] demonstrates satisfaction of the extended Gauss divergence theorem: 
+For example, given scalar and vector fields $f$ and $\vec{v}$ defined over a unit volume $V = [0,1]^3$ bounded
+by a surface area $A$, the program [`example/extended-gauss-divergence.F90`] demonstrates satisfaction of the
+extended Gauss divergence theorem: 
 
 $$ \iiint_V \vec{u} \cdot \nabla f dV + \iiint_V f \nabla \cdot \vec{v} dV = \iint_A f \vec{v} \cdot d\vec{A} $$
 
@@ -40,20 +45,20 @@ produces output that includes actual program syntax:
 ```
 where the small residual of approximately $-.222 \times 10^{-15}$ evidences a highly accurate approximation.
 
-**Future work:** Formal lays a foundation for defining a DSL embedded in Fortran via template requirements, a feature of the forthcoming standard known informally as Fortran 202Y.
+**Future work:** Formal lays a foundation for defining a DSL embedded in Fortran via template requirements,
+a feature of the forthcoming standard known informally as Fortran 202Y.
 
 Examples
 --------
 See this repository's [example](./example) subdirectory for demonstrations of how
-to use Formal.  For usage information for each example, execute something like:
+to use Formal.  For usage information for each example, execute something like
 ```bash
 fpm run --example <base-name> -- --help
 ```
-where `base-name` is the portion of an example file name preceding the `.F90` or
-`.f90` extension.  To save typing in a terminal window, set the `example`
-directory as your present working directory before issuing the above `fpm run`
-command.  Then use tab completion to enter enter the base name and delete the
-file extension before pressing `return`.
+replacing `<base-name>` with the portion of an example file name preceding the `.F90` or
+`.f90` extension.  To save typing in a terminal window, set the `example` directory as
+your present working directory before typing `fpm run` above.  Then use tab completion to
+enter a file name and delete the file extension before pressing `return` or `enter`.
 
 Prerequisite
 ------------
@@ -86,13 +91,15 @@ graphically when viewed in a web browser.
 
 Support and Licensing
 ---------------------
-Please see [LICENSE.txt] for the copyright and license under which Formal is distributed. 
+Please see [LICENSE.txt] for the copyright and license under which Formal is distributed.
 To report any difficulty with building, testing, or using Formal, please submit an [issue].
 To contribute code, please submit a [pull request] from a fork of Formal.
 
 Funding Acknowledgment
 ----------------------
-Formal is a software artifact of research funded by the Competitive Portfolios for Advanced Scientific Computing Research Program of the U.S. Department of Energy, Office of Science, Office of Advanced Scientific Computing Research under contract DE-AC02-05CH11231. 
+Formal is a software artifact of research funded by the Competitive Portfolios for Advanced
+Scientific Computing Research Program of the U.S. Department of Energy, Office of Science,
+Office of Advanced Scientific Computing Research under contract DE-AC02-05CH11231.
 
 [`fpm`]: https://github.com/fortran-lang/fpm
 [fpm-0.12.0.F90]: https://github.com/fortran-lang/fpm/releases/download/v0.12.0/fpm-0.12.0.F90
