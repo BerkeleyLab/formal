@@ -85,13 +85,21 @@ Unified Modeling Language (UML) class diagram depicting many Formal derived
 types and their interrelationships.  GitHub's web servers render the diagram
 graphically when viewed in a web browser.
 
+Support and Licensing
+---------------------
+Please see [LICENSE.txt] for the copyright and license under which Formal is distributed. 
+To report any difficulty with building, testing, or using Formal, please submit an [issue].
+To contribute code, please submit a [pull request] from a fork of Formal.
+
 Funding Acknowledgment
 ----------------------
 Formal is a software artifact of research funded by the Competitive Portflios for Advanced Scientific Computing Research Program of the U.S. Department of Energy, Office of Science, Office of Advanced Scientific Computing Research under contract DE-AC02-05CH11231. 
-
 
 [`fpm`]: https://github.com/fortran-lang/fpm
 [fpm-0.12.0.F90]: https://github.com/fortran-lang/fpm/releases/download/v0.12.0/fpm-0.12.0.F90
 [`doc/uml/class-diagram.md`]: ./doc/uml/class-diagram.md
 [Castillo & Corbino (2020)]: https://doi.org/10.1016/j.cam.2019.06.042 
 [`example/extended-gauss-divergence.F90`]: ./example/extended-gauss-divergence.F90
+[issue]: https://github.com/berkeleylab/formal/issues
+[pull request]: https://github.com/berkeleylab/formal/pulls
+[LICENSE.txt]: ./LICENSE.txt
