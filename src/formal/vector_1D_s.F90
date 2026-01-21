@@ -22,12 +22,22 @@ submodule(tensors_1D_m) vector_1D_s
 
 contains
 
+  ! PURPOSE: To compute the scalar (not) product of a vector and a differential area.
+  ! KEYWORDS: dot product, flux, surface-normal
+  ! CONTEXT: Inovke this function via the .dot. binary infix operator in expressions of the form
+  !          .SS. (f .x. (v .dot. dA)) with a saclar_1D_t f, a vector_1D_t v, and a differential area A.
+
   module procedure dot_surface_normal
      v_dot_dS%tensor_1D_t = tensor_1D_t(vector_1D%values_*dS, vector_1D%x_min_, vector_1D%x_max_, vector_1D%cells_, vector_1D%order_)
      v_dot_dS%divergence_operator_1D_ = vector_1D%divergence_operator_1D_
   end procedure
 
 #ifndef __GFORTRAN__
+
+  ! PURPOSE: To construct a new vector_1D_t object by sampling a function of one spatial dimension.
+  ! KEYWORDS: 1D vector field constructor
+  ! CONTEXT: Invoke this constructor with a pointer associated with a function to be sampled at a set
+  !          of uniformly-spaced cell faces along one spatial dimension bounded by x_min and x_max.
 
   module procedure construct_1D_vector_from_function
     call_julienne_assert(x_max .greaterThan. x_min)
@@ -40,6 +50,11 @@ contains
   end procedure
 
 #else
+
+  ! PURPOSE: To construct a new vector_1D_t object by sampling a function of one spatial dimension.
+  ! KEYWORDS: 1D vector field constructor
+  ! CONTEXT: Invoke this constructor with a pointer associated with a function to be sampled at a set
+  !          of uniformly-spaced cell faces along one spatial dimension bounded by x_min and x_max.
 
   pure module function construct_1D_vector_from_function(initializer, order, cells, x_min, x_max) result(vector_1D)
     procedure(vector_1D_initializer_i), pointer :: initializer
@@ -60,10 +75,19 @@ contains
 
 #endif
 
+  ! PURPOSE: To construct a new vector_1D_t object from a parent tensor and a divergence operator object.
+  ! KEYWORDS: 1D vector field constructor
+  ! CONTEXT: Invoke this constructor with a an object to be used to define the constructed parent component
+  !          divergence-operator matrix component.
+
   module procedure construct_from_components
     vector_1D%tensor_1D_t = tensor_1D
     vector_1D%divergence_operator_1D_ = divergence_operator_1D
   end procedure
+
+  ! PURPOSE: To compute mimetic approximations to the divergence of a vector field.
+  ! KEYWORDS: divergence, vector field
+  ! CONTEXT: Invoke this function via the unary .div. operator with a right-hand-side vector-field operand.
 
   module procedure div
 
@@ -90,6 +114,10 @@ contains
 
   end procedure
 
+  ! PURPOSE: To provide the cell face-centered values of vector quantities.
+  ! KEYWORDS: staggered grid, vector field
+  ! CONTEXT: Invoke this function via the "values" generic binding to produce discrete vector values.
+
   module procedure vector_1D_values
     face_centered_values = self%values_
   end procedure
@@ -105,9 +133,19 @@ contains
     end associate
   end function
 
+  ! PURPOSE: To provide staggered-grid locations at which vector values are stored: cell faces.
+  ! KEYWORDS: abcissa, cell faces 
+  ! CONTEXT: Invoke this function via the "grid" generic binding to produce discrete vector locations for
+  !          initialization-function sampling, printing, or plotting.
+
   module procedure vector_1D_grid
     cell_faces  = faces(self%x_min_, self%x_max_, self%cells_)
   end procedure
+
+  ! PURPOSE: To compute a scalar/vector product weighted for subsequent surface integration.
+  ! KEYWORDS: integrand, surface integral, double integral
+  ! CONTEXT: Inovke this function .x. binary infix operator in expressions of the form
+  !          .SS. (f .x. (v .dot. dA)) with a saclar_1D_t f, a vector_1D_t v, and a differential area A.
 
   module procedure weighted_premultiply
 
@@ -190,6 +228,9 @@ contains
 
   end procedure
 
+  ! PURPOSE: To provide the differential area for use in surface integrals.
+  ! KEYWORDS: surface integral, area integral, double integral, numerical quadrature, mimetic discretization
+  ! CONTEXT: Use this in expressions of the form .SS. (f .x. (v .dot. dA)) with a scalar_1D_t f and vector_1D_t v
   module procedure dA
     dA = 1D0
   end procedure

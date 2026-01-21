@@ -9,6 +9,11 @@ submodule(tensors_1D_m) scalar_x_divergence_1D_s
 
 contains
 
+  ! PURPOSE: To perform mimetic volume integration of a scalar/divergence dot product.
+  ! KEYWORDS: triple integral, volume integral
+  ! CONTEXT: Invoke this function in expressions of the form  .SSS. (f * .div. v) * dV
+  !          with a vector_1D_t v, a scalar f, and a differential volume dV.
+
   module procedure volume_integrate_scalar_x_divergence_1D
     call_julienne_assert(size(integrand%weights_ ) .equalsExpected. size(integrand%values_)+2)
     integral  = sum(integrand%weights_ * [0D0, integrand%values_, 0D0])

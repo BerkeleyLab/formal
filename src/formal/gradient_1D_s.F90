@@ -16,6 +16,12 @@ submodule(tensors_1D_m) gradient_1D_s
 
 contains
 
+  ! PURPOSE: To compute the quadrature weights for use in the mimetic inner products of a vector
+  !          and the gradient of a scalar.
+  ! KEYWORDS: quadrature, numerical integration, coefficients, weights
+  ! CONTEXT: Inovke this function via the "weights" generic binding to produce the quadrature weights
+  !          associated with mimetic approximations to gradients.
+
   module procedure gradient_1D_weights
 
     integer face
@@ -38,6 +44,11 @@ contains
     call_julienne_assert(size(weights) .equalsExpected. self%cells_ + 1)
 
   end procedure
+
+  ! PURPOSE: To compute the scalar (dot) product of a vector and the gradient of a scalar.
+  ! KEYWORDS: scalar product, dot product, inner product
+  ! CONTEXT: Inovke this function via the .dot. binary infix operator in expressions of the form
+  !          g .dot. b with a gradient_1D_t g and a vector_1D_t b.
 
   module procedure dot
     call_julienne_assert(size(gradient_1D%values_) .equalsExpected. size(vector_1D%values_))
