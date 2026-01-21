@@ -2,7 +2,9 @@
 ! Terms of use are as specified in LICENSE.txt
 
 #include "formal-language-support.F90"
+#ifndef FORD
 #include "julienne-assert-macros.h"
+#endif
 
 submodule(mimetic_operators_1D_m) divergence_operator_1D_s
   use julienne_m, only : call_julienne_assert_, string_t

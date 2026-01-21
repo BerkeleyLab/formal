@@ -2,6 +2,7 @@ project: Formal
 summary: An embedded domain-specific langauge (DSL) for tensor calculus
 src_dir: src
 src_dir: example
+include: include
 exclude_dir: doc
 output_dir: doc/html
 preprocess: true

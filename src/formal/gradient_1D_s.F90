@@ -1,7 +1,8 @@
 ! Copyright (c) 2026, The Regents of the University of California
 ! Terms of use are as specified in LICENSE.txt
-
+#ifndef FORD
 #include "julienne-assert-macros.h"
+#endif
 
 submodule(tensors_1D_m) gradient_1D_s
   use julienne_m, only : &
