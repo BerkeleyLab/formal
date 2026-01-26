@@ -249,9 +249,9 @@ module tensors_1D_m
     procedure, non_overridable, private :: divergence_1D_grid
   end type
 
-  ! PURPOSE:
-  ! KEYWORDS:
-  ! CONTEXT:
+  ! PURPOSE: To define a tensor child for capturing the product of a scalar and divergence
+  ! KEYWORDS: 1D scalar/divergence product
+  ! CONTEXT: An instance of this type can serve as an integrand in a .SSS. triple-integral operator.
 
   type, extends(tensor_1D_t) :: scalar_x_divergence_1D_t
     !! product of a 1D scalar field and a 1D divergence field
