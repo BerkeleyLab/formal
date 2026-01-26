@@ -134,7 +134,7 @@ contains
   end function
 
   ! PURPOSE: To provide staggered-grid locations at which vector values are stored: cell faces.
-  ! KEYWORDS: abcissa, cell faces 
+  ! KEYWORDS: abcissa, cell faces
   ! CONTEXT: Invoke this function via the "grid" generic binding to produce discrete vector locations for
   !          initialization-function sampling, printing, or plotting.
 

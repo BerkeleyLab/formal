@@ -27,7 +27,7 @@ contains
 
 #endif
 
-  ! PURPOSE: To compute the product of a scalar and a divergence 
+  ! PURPOSE: To compute the product of a scalar and a divergence
   ! KEYWORDS: scalar multiplication
   ! CONTEXT: Invoke this function via the binary infix operator "*" with scalar and divergence left- and
   !          right-hand operands, respectively
@@ -44,7 +44,7 @@ contains
     call_julienne_assert(size(scalar_x_divergence_1D%weights_) .equalsExpected. size(divergence_1D%values_)+2)
   end procedure
 
-  ! PURPOSE: To compute the product of a divergence and a scalar 
+  ! PURPOSE: To compute the product of a divergence and a scalar
   ! KEYWORDS: scalar multiplication
   ! CONTEXT: Invoke this function via the binary infix operator "*" with divergence and scalar left- and
   !          right-hand operands, respectively
@@ -63,7 +63,7 @@ contains
 
   ! PURPOSE: To provide staggered-grid locations at which divergence values are stored: cell centers.
   ! KEYWORDS: cell centers, staggered grid, divergence
-  ! CONTEXT: Invoke this function via the "grid" generic binding to produce discrete gradient-vector locations for 
+  ! CONTEXT: Invoke this function via the "grid" generic binding to produce discrete gradient-vector locations for
   !          initialization-function sampling, printing, or plotting.
 
   module procedure divergence_1D_grid

@@ -56,7 +56,7 @@ module mimetic_operators_1D_m
   interface gradient_operator_1D_t
 
     ! PURPOSE: To construct a new mimetic gradient-operator matrix representation of kth order for 1D cells of width dx.
-    ! KEYWORDS: 1D, gradient-operator constructor, sparse matrix 
+    ! KEYWORDS: 1D, gradient-operator constructor, sparse matrix
     ! CONTEXT: Use this function to construct a sparse-matrix represntation of a mimetic gradient operator.
 
     pure module function construct_1D_gradient_operator(k, dx, cells) result(gradient_operator_1D)

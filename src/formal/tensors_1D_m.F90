@@ -80,7 +80,7 @@ module tensors_1D_m
 
     ! PURPOSE: To construct a new tensor_1D_t object by assigning each argument to a corresponding
     !          corresponding component of the new object.
-    ! KEYWORDS: 1D tensor constructor 
+    ! KEYWORDS: 1D tensor constructor
     ! CONTEXT: Constructors for child types assign this function's result to to the child object's parent component.
 
     pure module function construct_1D_tensor_from_components(values, x_min, x_max, cells, order) result(tensor_1D)
@@ -98,7 +98,7 @@ module tensors_1D_m
 
   ! PURPOSE: To encapsulate a scalar function of one spatial dimension as a tensor with a gradient operator.
   ! KEYWORDS: 1D scalar field abstraction
-  ! CONTEXT: Combine with other tensors via expressions that may include differential operators 
+  ! CONTEXT: Combine with other tensors via expressions that may include differential operators
 
   type, extends(tensor_1D_t) :: scalar_1D_t
     !! Encapsulate scalar values at cell centers and boundaries
@@ -138,7 +138,7 @@ module tensors_1D_m
 
   ! PURPOSE: To encapsulate a vector function of one spatial dimension as a tensor with a divergence operator.
   ! KEYWORDS: 1D vector field abstraction
-  ! CONTEXT: Combine with other tensors via expressions that may include differential operators 
+  ! CONTEXT: Combine with other tensors via expressions that may include differential operators
 
   type, extends(tensor_1D_t) :: vector_1D_t
     !! Encapsulate 1D vector values at cell faces (of unit area for 1D) and corresponding operators
@@ -233,7 +233,7 @@ module tensors_1D_m
 
   ! PURPOSE: To define a tensor child type capturing the divergence of a vector function of one spatial dimension.
   ! KEYWORDS: 1D, divergence
-  ! CONTEXT: Although a mathematical scalar, this type differs from scalar_1D_t in that the values are stored 
+  ! CONTEXT: Although a mathematical scalar, this type differs from scalar_1D_t in that the values are stored
   !          _only_ at cell centers, whereas a scalar_1D_t object additionally has values at domain boundaries.
 
   type, extends(tensor_1D_t) :: divergence_1D_t
@@ -249,9 +249,9 @@ module tensors_1D_m
     procedure, non_overridable, private :: divergence_1D_grid
   end type
 
-  ! PURPOSE: 
-  ! KEYWORDS: 
-  ! CONTEXT: 
+  ! PURPOSE:
+  ! KEYWORDS:
+  ! CONTEXT:
 
   type, extends(tensor_1D_t) :: scalar_x_divergence_1D_t
     !! product of a 1D scalar field and a 1D divergence field
@@ -313,7 +313,7 @@ module tensors_1D_m
     end function
 
     ! PURPOSE: To provide staggered-grid locations at which vector values are stored: cell faces.
-    ! KEYWORDS: abcissa, cell faces 
+    ! KEYWORDS: abcissa, cell faces
     ! CONTEXT: Invoke this function via the "grid" generic binding to produce discrete vector locations for
     !          initialization-function sampling, printing, or plotting.
 
@@ -326,7 +326,7 @@ module tensors_1D_m
 
     ! PURPOSE: To provide staggered-grid locations at which divergence values are stored: cell centers.
     ! KEYWORDS: cell centers, staggered grid, divergence
-    ! CONTEXT: Invoke this function via the "grid" generic binding to produce discrete gradient-vector locations for 
+    ! CONTEXT: Invoke this function via the "grid" generic binding to produce discrete gradient-vector locations for
     !          initialization-function sampling, printing, or plotting.
 
     pure module function divergence_1D_grid(self) result(cell_centers)
@@ -418,7 +418,6 @@ module tensors_1D_m
     ! CONTEXT: Invoke this function in expressions of the form .SSS. (v .dot. .grad. f) * dV
     !          with a vector_1D_t v, a scalar f, and a differential volume dV.
 
-
     pure module function volume_integrate_vector_dot_grad_scalar_1D(integrand) result(integral)
       !! Result is the mimetic quadrature corresponding to a volume integral of a vector-gradient dot product
       implicit none
@@ -440,9 +439,9 @@ module tensors_1D_m
 
     ! PURPOSE: To perform mimetic surface integration of a scalar/vector product.
     ! KEYWORDS: double integral, surface integral, flux
-    ! CONTEXT: Invoke this function in expressions of the form -.SS. (f .x. (v .dot. dA)) 
+    ! CONTEXT: Invoke this function in expressions of the form -.SS. (f .x. (v .dot. dA))
     !          with a vector_1D_t v, a scalar_1D_t f, and a differential area dA.
-   
+
     pure module function surface_integrate_vector_x_scalar_1D(integrand) result(integral)
       !! Result is the mimetic quadrature corresponding to a surface integral of a scalar-vector product
       implicit none
@@ -519,7 +518,7 @@ module tensors_1D_m
       double precision, allocatable :: weights(:)
     end function
 
-    ! PURPOSE: To compute the product of a scalar and a divergence 
+    ! PURPOSE: To compute the product of a scalar and a divergence
     ! KEYWORDS: scalar multiplication
     ! CONTEXT: Invoke this function via the binary infix operator "*" with scalar and divergence left- and
     !          right-hand operands, respectively
@@ -532,7 +531,7 @@ module tensors_1D_m
       type(scalar_x_divergence_1D_t) scalar_x_divergence_1D
     end function
 
-    ! PURPOSE: To compute the product of a divergence and a scalar 
+    ! PURPOSE: To compute the product of a divergence and a scalar
     ! KEYWORDS: scalar multiplication
     ! CONTEXT: Invoke this function via the binary infix operator "*" with divergence and scalar left- and
     !          right-hand operands, respectively

@@ -7,7 +7,7 @@ contains
 
   ! PURPOSE: To construct a new tensor_1D_t object by assigning each argument to a corresponding
   !          corresponding component of the new object.
-  ! KEYWORDS: 1D tensor constructor 
+  ! KEYWORDS: 1D tensor constructor
   ! CONTEXT: Constructors for child types assign this function's result to to the child object's parent component.
 
   module procedure construct_1D_tensor_from_components
