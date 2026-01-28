@@ -10,19 +10,19 @@ ___________                         .__
 Formal: Fortran mimetic abstraction language
 ============================================
 
-_Towards an embedded domain-specific language (DSL) for tensor calculus and formal verification._
+_Towards an embedded domain-specific language (DSL) for the formal verification of vector-calculus computations._
 
 Introduction
 ------------
-Formal supports research on mimetic software abstractions for tensor calculus by providing
+Formal supports research on mimetic software abstractions for vector calculus by providing
 
-- Derived types that mimic tensor fields and
-- Differential and integral operators for writing tensor expressions.
+- Derived types that mimic vector and tensor fields and
+- Differential and integral operators for writing vector and tensor expressions.
 
 Formal's types and operators implement the discrete calculus of [Castillo & Corbino (2020)]:
-mimetic discretizations satisfying discrete versions of tensor calculus theorems.
+mimetic discretizations satisfying discrete versions of vector calculus theorems.
 
-Like the underlying numerical methods, Formal's software abstractios mimic their tensor calculus counterparts.
+Like the underlying numerical methods, Formal's software abstractios mimic their vector calculus counterparts.
 For example, given scalar and vector fields $f$ and $\vec{v}$ defined over a unit volume $V = [0,1]^3$ bounded
 by a surface area $A$, the program [`example/extended-gauss-divergence.F90`] demonstrates satisfaction of the
 extended Gauss divergence theorem: 
