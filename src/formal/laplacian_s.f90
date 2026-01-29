@@ -5,7 +5,7 @@ submodule(tensors_1D_m) laplacian_s
   implicit none
 contains
  
-  ! PURPOSE: To report the number of boundary-adjacent locations at which the Laplacian has reduced-order accuracy.
+  ! PURPOSE: Definition of procedure to report the number of boundary-adjacent locations at which the Laplacian has reduced-order accuracy.
   ! KEYWORDS: Laplacian, boundary, order of accuracy
   ! CONTEXT: Use this function to determine the region of slightly slower convergence for mimetic Laplacian approximations.
 

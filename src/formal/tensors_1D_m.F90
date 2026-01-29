@@ -24,7 +24,7 @@ module tensors_1D_m
 
   abstract interface
 
-    ! PURPOSE: To provide values for initializing a scalar_1D_t object at the cell centers and boundaries
+    ! PURPOSE: Interface for procedure to provide values for initializing a scalar_1D_t object at the cell centers and boundaries
     !          for use in the mimetic discretization scheme of Corbino-Castillo (2020)
     ! KEYWORDS: mimetic discretization, scalar function, sampling, one-dimensional (1D)
     ! CONTEXT: This abstract interface is used to declare a procedure pointer that can be associated with
@@ -38,7 +38,7 @@ module tensors_1D_m
       double precision, allocatable :: f(:)
     end function
 
-    ! PURPOSE: To provide values for initializing a vector function of one spatial dimension at cell faces
+    ! PURPOSE: Interface for procedure to provide values for initializing a vector function of one spatial dimension at cell faces
     !          as defined in the mimetic discretization scheme of Corbino-Castillo (2020).
     ! KEYWORDS: mimetic discretization, vector function, sampling,  1D
     ! CONTEXT: This abstract interface is used to declare a procedure pointer that can be associated with
@@ -54,8 +54,8 @@ module tensors_1D_m
 
   end interface
 
-  ! PURPOSE: To encapsulate the data and operations that are common to most or all tensor_1D_t child types
-  ! KEYWORDS: mimetic discretization, grid values, grid functions, 1D
+  ! PURPOSE: Definition for type to encapsulate the data and operations that are common to most or all tensor_1D_t child types
+  ! KEYWORDS: type definition, mimetic discretization, grid values, grid functions, 1D
   ! CONTEXT: Child types extend this derived type to define specific types of tensors such as scalars,
   !          vectors, gradients, and divergences.
 
@@ -78,7 +78,7 @@ module tensors_1D_m
 
   interface tensor_1D_t
 
-    ! PURPOSE: To construct a new tensor_1D_t object by assigning each argument to a corresponding
+    ! PURPOSE: Interface for procedure to construct a new tensor_1D_t object by assigning each argument to a corresponding
     !          corresponding component of the new object.
     ! KEYWORDS: 1D tensor constructor
     ! CONTEXT: Constructors for child types assign this function's result to to the child object's parent component.
@@ -96,8 +96,8 @@ module tensors_1D_m
 
   end interface
 
-  ! PURPOSE: To encapsulate a scalar function of one spatial dimension as a tensor with a gradient operator.
-  ! KEYWORDS: 1D scalar field abstraction
+  ! PURPOSE: Definition for type to encapsulate a scalar function of one spatial dimension as a tensor with a gradient operator.
+  ! KEYWORDS: type definition, 1D scalar field abstraction
   ! CONTEXT: Combine with other tensors via expressions that may include differential operators
 
   type, extends(tensor_1D_t) :: scalar_1D_t
@@ -117,7 +117,7 @@ module tensors_1D_m
 
   interface scalar_1D_t
 
-    ! PURPOSE: To construct a new scalar_1D_t object by assigning each argument to a corresponding
+    ! PURPOSE: Interface for procedure to construct a new scalar_1D_t object by assigning each argument to a corresponding
     !          corresponding component of the new object.
     ! KEYWORDS: 1D scalar field constructor
     ! CONTEXT: Invoke this constructor with a pointer associated with a function to be sampled at a set
@@ -136,8 +136,8 @@ module tensors_1D_m
 
   end interface
 
-  ! PURPOSE: To encapsulate a vector function of one spatial dimension as a tensor with a divergence operator.
-  ! KEYWORDS: 1D vector field abstraction
+  ! PURPOSE: Definition for type to encapsulate a vector function of one spatial dimension as a tensor with a divergence operator.
+  ! KEYWORDS: type definition, 1D vector field abstraction
   ! CONTEXT: Combine with other tensors via expressions that may include differential operators
 
   type, extends(tensor_1D_t) :: vector_1D_t
@@ -161,8 +161,8 @@ module tensors_1D_m
     procedure, non_overridable, private :: vector_1D_values
   end type
 
-  ! PURPOSE: To encapsulate a scalar/vector product weighted for integration on a surface
-  ! KEYWORDS: 1D product abstraction
+  ! PURPOSE: Definition of type to encapsulate a scalar/vector product weighted for integration on a surface
+  ! KEYWORDS: type definition, 1D product abstraction
   ! CONTEXT: Combine with other tensors via expressions that may include the double integrals
 
   type, extends(tensor_1D_t) :: weighted_product_1D_t
@@ -173,7 +173,7 @@ module tensors_1D_m
 
   interface vector_1D_t
 
-    ! PURPOSE: To construct a new vector_1D_t object by sampling a function of one spatial dimension.
+    ! PURPOSE: Interface for procedure to construct a new vector_1D_t object by sampling a function of one spatial dimension.
     ! KEYWORDS: 1D vector field constructor
     ! CONTEXT: Invoke this constructor with a pointer associated with a function to be sampled at a set
     !          of uniformly-spaced cell faces along one spatial dimension bounded by x_min and x_max.
@@ -190,7 +190,7 @@ module tensors_1D_m
       type(vector_1D_t) vector_1D
     end function
 
-    ! PURPOSE: To construct a new vector_1D_t object from a parent tensor and a divergence operator object.
+    ! PURPOSE: Interface for procedure to construct a new vector_1D_t object from a parent tensor and a divergence operator object.
     ! KEYWORDS: 1D vector field constructor
     ! CONTEXT: Invoke this constructor with a an object to be used to define the constructed parent component
     !          divergence-operator matrix component.
@@ -204,8 +204,8 @@ module tensors_1D_m
 
   end interface
 
-  ! PURPOSE: To define a vector child type for capturing gradient data and a scalar (dot) product operator.
-  ! KEYWORDS: 1D gradient vector field abstraction
+  ! PURPOSE: Definition of type for a vector child type for capturing gradient data and a scalar (dot) product operator.
+  ! KEYWORDS: type definition, 1D gradient vector field abstraction
   ! CONTEXT: The scalar_1D_t .grad. operator produces this type as a result.
 
   type, extends(vector_1D_t) :: gradient_1D_t
@@ -218,8 +218,8 @@ module tensors_1D_m
     procedure, non_overridable, private, pass(gradient_1D) :: dot
   end type
 
-  ! PURPOSE: To define a tensor child for capturing the scalar (dot) product of a vector and a gradient vector data
-  ! KEYWORDS: 1D vector/gradient scalar product
+  ! PURPOSE: Definition of type for a tensor child type for capturing the scalar (dot) product of a vector and a gradient vector data
+  ! KEYWORDS: type definition, 1D vector/gradient scalar product
   ! CONTEXT: An instance of this type can serve as an integrand in a .SSS. triple-integral operator.
 
   type, extends(tensor_1D_t) :: vector_dot_gradient_1D_t
@@ -231,8 +231,8 @@ module tensors_1D_m
     procedure, non_overridable, private, pass(integrand) ::volume_integrate_vector_dot_grad_scalar_1D
   end type
 
-  ! PURPOSE: To define a tensor child type capturing the divergence of a vector function of one spatial dimension.
-  ! KEYWORDS: 1D, divergence
+  ! PURPOSE: Definition of type for a tensor child type capturing the divergence of a vector function of one spatial dimension.
+  ! KEYWORDS: type definition, 1D, divergence
   ! CONTEXT: Although a mathematical scalar, this type differs from scalar_1D_t in that the values are stored
   !          _only_ at cell centers, whereas a scalar_1D_t object additionally has values at domain boundaries.
 
@@ -249,8 +249,8 @@ module tensors_1D_m
     procedure, non_overridable, private :: divergence_1D_grid
   end type
 
-  ! PURPOSE: To define a tensor child for capturing the product of a scalar and divergence
-  ! KEYWORDS: 1D scalar/divergence product
+  ! PURPOSE: Definition of type for a tensor child type for capturing the product of a scalar and divergence
+  ! KEYWORDS: type definition, 1D scalar/divergence product
   ! CONTEXT: An instance of this type can serve as an integrand in a .SSS. triple-integral operator.
 
   type, extends(tensor_1D_t) :: scalar_x_divergence_1D_t
@@ -262,8 +262,8 @@ module tensors_1D_m
     procedure, non_overridable, private, pass(integrand) :: volume_integrate_scalar_x_divergence_1D
   end type
 
-  ! PURPOSE: To define a divergence child type capturing the result of applying a divergence operator to a gradient.
-  ! KEYWORDS: 1D, laplacian
+  ! PURPOSE: Definition of type for a divergence child type capturing the result of applying a divergence operator to a gradient.
+  ! KEYWORDS: type definition, 1D, laplacian
   ! CONTEXT: Although a mathematical a divergence, this type additionally provides a type-bound procedure that
   !          returns the number of boundary-adjacent points at which the Laplacian approximation's accuracy drops by
   !          by one order relative to the parent divergence type.
@@ -277,7 +277,7 @@ module tensors_1D_m
 
   interface
 
-    ! PURPOSE: To provide the differential area for use in surface integrals.
+    ! PURPOSE: Interface for procedure to provide the differential area for use in surface integrals.
     ! KEYWORDS: surface integral, area integral, double integral, numerical quadrature, mimetic discretization
     ! CONTEXT: Use this in expressions of the form .SS. (f .x. (v .dot. dA)) with a scalar_1D_t f and vector_1D_t v
 
@@ -289,7 +289,7 @@ module tensors_1D_m
       double precision dA
     end function
 
-    ! PURPOSE: To provide a uniform cell width along the x-coordinate spatial direction.
+    ! PURPOSE: Interface for procedure to provide a uniform cell width along the x-coordinate spatial direction.
     ! KEYWORDS: abcissa, mesh spacing
     ! CONTEXT: Use this function to produce cell widths for uniform 1D meshes.
 
@@ -300,7 +300,7 @@ module tensors_1D_m
       double precision dx
     end function
 
-    ! PURPOSE: To provide the staggered-grid locations at which scalar values are stored: cell centers plus domain boundaries.
+    ! PURPOSE: Interface for procedure to provide the staggered-grid locations at which scalar values are stored: cell centers plus domain boundaries.
     ! KEYWORDS: staggered grid, scalar field, cell centers
     ! CONTEXT: Invoke this function via the "grid" generic binding to produce discrete scalar locations for
     !          initialization-function sampling, printing, or plotting.
@@ -312,7 +312,7 @@ module tensors_1D_m
       double precision, allocatable :: cell_centers_extended(:)
     end function
 
-    ! PURPOSE: To provide staggered-grid locations at which vector values are stored: cell faces.
+    ! PURPOSE: Interface for procedure to provide staggered-grid locations at which vector values are stored: cell faces.
     ! KEYWORDS: abcissa, cell faces
     ! CONTEXT: Invoke this function via the "grid" generic binding to produce discrete vector locations for
     !          initialization-function sampling, printing, or plotting.
@@ -324,7 +324,7 @@ module tensors_1D_m
       double precision, allocatable :: cell_faces(:)
     end function
 
-    ! PURPOSE: To provide staggered-grid locations at which divergence values are stored: cell centers.
+    ! PURPOSE: Interface for procedure to provide staggered-grid locations at which divergence values are stored: cell centers.
     ! KEYWORDS: cell centers, staggered grid, divergence
     ! CONTEXT: Invoke this function via the "grid" generic binding to produce discrete gradient-vector locations for
     !          initialization-function sampling, printing, or plotting.
@@ -336,7 +336,7 @@ module tensors_1D_m
       double precision, allocatable :: cell_centers(:)
     end function
 
-    ! PURPOSE: To provide the cell-centered values of scalar quantities.
+    ! PURPOSE: Interface for procedure to provide the cell-centered values of scalar quantities.
     ! KEYWORDS: cell centers, staggered grid, scalar field
     ! CONTEXT: Invoke this function via the "values" generic binding to produce discrete scalar values.
 
@@ -347,7 +347,7 @@ module tensors_1D_m
       double precision, allocatable :: cell_centers_extended_values(:)
     end function
 
-    ! PURPOSE: To provide the cell face-centered values of vector quantities.
+    ! PURPOSE: Interface for procedure to provide the cell face-centered values of vector quantities.
     ! KEYWORDS: staggered grid, vector field
     ! CONTEXT: Invoke this function via the "values" generic binding to produce discrete vector values.
 
@@ -358,7 +358,7 @@ module tensors_1D_m
       double precision, allocatable :: face_centered_values(:)
     end function
 
-    ! PURPOSE: To provide the cell-centered values of divergences.
+    ! PURPOSE: Interface for procedure to provide the cell-centered values of divergences.
     ! KEYWORDS: staggered grid, divergence
     ! CONTEXT: Invoke this function via the "values" generic binding to produce discrete divergence values.
 
@@ -369,7 +369,7 @@ module tensors_1D_m
       double precision, allocatable :: cell_centered_values(:)
     end function
 
-    ! PURPOSE: To compute mimetic approximations to the gradient of scalar fields.
+    ! PURPOSE: Interface for procedure to compute mimetic approximations to the gradient of scalar fields.
     ! KEYWORDS: gradient, differential operator
     ! CONTEXT: Invoke this function via the unary .grad. operator with a right-hand-side, scalar-field operand.
 
@@ -380,7 +380,7 @@ module tensors_1D_m
       type(gradient_1D_t) gradient_1D
     end function
 
-    ! PURPOSE: To compute mimetic approximations to the Laplacian of a scalar field.
+    ! PURPOSE: Interface for procedure to compute mimetic approximations to the Laplacian of a scalar field.
     ! KEYWORDS: Laplacian, differential operator
     ! CONTEXT: Invoke this function via the unary .laplacian. operator with a right-hand-side, scalar-field operand.
 
@@ -391,7 +391,7 @@ module tensors_1D_m
       type(laplacian_1D_t) laplacian_1D
     end function
 
-    ! PURPOSE: To report the number of boundary-adjacent locations at which the Laplacian has reduced-order accuracy.
+    ! PURPOSE: Interface for procedure to report the number of boundary-adjacent locations at which the Laplacian has reduced-order accuracy.
     ! KEYWORDS: Laplacian, boundary, order of accuracy
     ! CONTEXT: Use this function to determine the region of slightly slower convergence for mimetic Laplacian approximations.
 
@@ -402,7 +402,7 @@ module tensors_1D_m
       integer num_nodes
     end function
 
-    ! PURPOSE: To compute mimetic approximations to the divergence of a vector field.
+    ! PURPOSE: Interface for procedure to compute mimetic approximations to the divergence of a vector field.
     ! KEYWORDS: divergence, vector field
     ! CONTEXT: Invoke this function via the unary .div. operator with a right-hand-side vector-field operand.
 
@@ -413,7 +413,7 @@ module tensors_1D_m
       type(divergence_1D_t) divergence_1D !! discrete divergence
     end function
 
-    ! PURPOSE: To perform mimetic volume integration of a vector/scalar-gradient dot product.
+    ! PURPOSE: Interface for procedure to perform mimetic volume integration of a vector/scalar-gradient dot product.
     ! KEYWORDS: triple integral, volume integral
     ! CONTEXT: Invoke this function in expressions of the form .SSS. (v .dot. .grad. f) * dV
     !          with a vector_1D_t v, a scalar f, and a differential volume dV.
@@ -425,7 +425,7 @@ module tensors_1D_m
       double precision integral
     end function
 
-    ! PURPOSE: To perform mimetic volume integration of a scalar/divergence dot product.
+    ! PURPOSE: Interface for procedure to perform mimetic volume integration of a scalar/divergence dot product.
     ! KEYWORDS: triple integral, volume integral
     ! CONTEXT: Invoke this function in expressions of the form  .SSS. (f * .div. v) * dV
     !          with a vector_1D_t v, a scalar f, and a differential volume dV.
@@ -437,7 +437,7 @@ module tensors_1D_m
       double precision integral
     end function
 
-    ! PURPOSE: To perform mimetic surface integration of a scalar/vector product.
+    ! PURPOSE: Interface for procedure to perform mimetic surface integration of a scalar/vector product.
     ! KEYWORDS: double integral, surface integral, flux
     ! CONTEXT: Invoke this function in expressions of the form -.SS. (f .x. (v .dot. dA))
     !          with a vector_1D_t v, a scalar_1D_t f, and a differential area dA.
@@ -449,7 +449,7 @@ module tensors_1D_m
       double precision integral
     end function
 
-    ! PURPOSE: To compute the scalar (dot) product of a vector and the gradient of a scalar.
+    ! PURPOSE: Interface for procedure to compute the scalar (dot) product of a vector and the gradient of a scalar.
     ! KEYWORDS: scalar product, dot product, inner product
     ! CONTEXT: Inovke this function via the .dot. binary infix operator in expressions of the form
     !          g .dot. b with a gradient_1D_t g and a vector_1D_t b.
@@ -462,7 +462,7 @@ module tensors_1D_m
       type(vector_dot_gradient_1D_t) vector_dot_gradient_1D
     end function
 
-    ! PURPOSE: To compute the scalar (not) product of a vector and a differential area.
+    ! PURPOSE: Interface for procedure to compute the scalar (not) product of a vector and a differential area.
     ! KEYWORDS: dot product, flux, surface-normal
     ! CONTEXT: Inovke this function via the .dot. binary infix operator in expressions of the form
     !          .SS. (f .x. (v .dot. dA)) with a saclar_1D_t f, a vector_1D_t v, and a differential area A.
@@ -477,7 +477,7 @@ module tensors_1D_m
       type(vector_1D_t) v_dot_dS
     end function
 
-    ! PURPOSE: To compute a scalar/vector product weighted for subsequent surface integration.
+    ! PURPOSE: Interface for procedure to compute a scalar/vector product weighted for subsequent surface integration.
     ! KEYWORDS: integrand, surface integral, double integral
     ! CONTEXT: Inovke this function .x. binary infix operator in expressions of the form
     !          .SS. (f .x. (v .dot. dA)) with a saclar_1D_t f, a vector_1D_t v, and a differential area A.
@@ -490,7 +490,7 @@ module tensors_1D_m
       type(weighted_product_1D_t) weighted_product_1D
     end function
 
-    ! PURPOSE: To compute the quadrature weights for use in the mimetic inner products of a vector
+    ! PURPOSE: Interface for procedure to compute the quadrature weights for use in the mimetic inner products of a vector
     !          and the gradient of a scalar.
     ! KEYWORDS: quadrature, numerical integration, coefficients, weights
     ! CONTEXT: Inovke this function via the "weights" generic binding to produce the quadrature weights
@@ -504,7 +504,7 @@ module tensors_1D_m
       double precision, allocatable :: weights(:)
     end function
 
-    ! PURPOSE: To compute the quadrature weights for use in the mimetic inner products of a scalar
+    ! PURPOSE: Interface for procedure to compute the quadrature weights for use in the mimetic inner products of a scalar
     !          and the divergence of a vector.
     ! KEYWORDS: quadrature, numerical integration, coefficients, weights
     ! CONTEXT: Invoke this function via the "weights" generic binding to produce the quadrature weights
@@ -518,7 +518,7 @@ module tensors_1D_m
       double precision, allocatable :: weights(:)
     end function
 
-    ! PURPOSE: To compute the product of a scalar and a divergence
+    ! PURPOSE: Interface for procedure to compute the product of a scalar and a divergence
     ! KEYWORDS: scalar multiplication
     ! CONTEXT: Invoke this function via the binary infix operator "*" with scalar and divergence left- and
     !          right-hand operands, respectively
@@ -531,7 +531,7 @@ module tensors_1D_m
       type(scalar_x_divergence_1D_t) scalar_x_divergence_1D
     end function
 
-    ! PURPOSE: To compute the product of a divergence and a scalar
+    ! PURPOSE: Interface for procedure to compute the product of a divergence and a scalar
     ! KEYWORDS: scalar multiplication
     ! CONTEXT: Invoke this function via the binary infix operator "*" with divergence and scalar left- and
     !          right-hand operands, respectively

@@ -5,7 +5,7 @@ submodule(tensors_1D_m) tensor_1D_s
   implicit none
 contains
 
-  ! PURPOSE: To construct a new tensor_1D_t object by assigning each argument to a corresponding
+  ! PURPOSE: Definition of procedure to construct a new tensor_1D_t object by assigning each argument to a corresponding
   !          corresponding component of the new object.
   ! KEYWORDS: 1D tensor constructor
   ! CONTEXT: Constructors for child types assign this function's result to to the child object's parent component.
@@ -18,7 +18,7 @@ contains
     tensor_1D%order_  = order
   end procedure
 
-  ! PURPOSE: To provide a uniform cell width along the x-coordinate spatial direction.
+  ! PURPOSE: Definition of procedure to provide a uniform cell width along the x-coordinate spatial direction.
   ! KEYWORDS: abcissa, mesh spacing
   ! CONTEXT: Use this function to produce cell widths for uniform 1D meshes.
 

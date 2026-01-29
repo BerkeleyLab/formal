@@ -23,7 +23,7 @@ contains
 
 #ifndef __GFORTRAN__
 
-  ! PURPOSE: To construct a new scalar_1D_t object by assigning each argument to a corresponding
+  ! PURPOSE: Definition of procedure to construct a new scalar_1D_t object by assigning each argument to a corresponding
   !          corresponding component of the new object.
   ! KEYWORDS: 1D scalar field constructor
   ! CONTEXT: Invoke this constructor with a pointer associated with a function to be sampled at a set
@@ -41,7 +41,7 @@ contains
 
 #else
 
-  ! PURPOSE: To construct a new scalar_1D_t object by assigning each argument to a corresponding
+  ! PURPOSE: Definition of procedure to construct a new scalar_1D_t object by assigning each argument to a corresponding
   !          corresponding component of the new object.
   ! KEYWORDS: 1D scalar field constructor
   ! CONTEXT: Invoke this constructor with a pointer associated with a function to be sampled at a set
@@ -77,7 +77,7 @@ contains
 
 #endif
 
-  ! PURPOSE: To compute mimetic approximations to the gradient of scalar fields.
+  ! PURPOSE: Definition of procedure to compute mimetic approximations to the gradient of scalar fields.
   ! KEYWORDS: gradient, differential operator
   ! CONTEXT: Invoke this function via the unary .grad. operator with a right-hand-side, scalar-field operand.
 
@@ -98,7 +98,7 @@ contains
 
   end procedure
 
-  ! PURPOSE: To compute mimetic approximations to the Laplacian of a scalar field.
+  ! PURPOSE: Definition of procedure to compute mimetic approximations to the Laplacian of a scalar field.
   ! KEYWORDS: Laplacian, differential operator
   ! CONTEXT: Invoke this function via the unary .laplacian. operator with a right-hand-side, scalar-field operand.
 
@@ -117,7 +117,7 @@ contains
   end procedure
 
 
-  ! PURPOSE: To provide the cell-centered values of scalar quantities.
+  ! PURPOSE: Definition of procedure to provide the cell-centered values of scalar quantities.
   ! KEYWORDS: cell centers, staggered grid, scalar field
   ! CONTEXT: Invoke this function via the "values" generic binding to produce discrete scalar values.
 
@@ -136,7 +136,7 @@ contains
     end associate
   end function
 
-  ! PURPOSE: To provide the staggered-grid locations at which scalar values are stored: cell centers plus domain boundaries.
+  ! PURPOSE: Definition of procedure to provide the staggered-grid locations at which scalar values are stored: cell centers plus domain boundaries.
   ! KEYWORDS: staggered grid, scalar field, cell centers
   ! CONTEXT: Invoke this function via the "grid" generic binding to produce discrete scalar locations for
   !          initialization-function sampling, printing, or plotting.

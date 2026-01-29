@@ -22,7 +22,7 @@ submodule(tensors_1D_m) vector_1D_s
 
 contains
 
-  ! PURPOSE: To compute the scalar (not) product of a vector and a differential area.
+  ! PURPOSE: Definition of procedure to compute the scalar (not) product of a vector and a differential area.
   ! KEYWORDS: dot product, flux, surface-normal
   ! CONTEXT: Inovke this function via the .dot. binary infix operator in expressions of the form
   !          .SS. (f .x. (v .dot. dA)) with a saclar_1D_t f, a vector_1D_t v, and a differential area A.
@@ -34,7 +34,7 @@ contains
 
 #ifndef __GFORTRAN__
 
-  ! PURPOSE: To construct a new vector_1D_t object by sampling a function of one spatial dimension.
+  ! PURPOSE: Definition of procedure to construct a new vector_1D_t object by sampling a function of one spatial dimension.
   ! KEYWORDS: 1D vector field constructor
   ! CONTEXT: Invoke this constructor with a pointer associated with a function to be sampled at a set
   !          of uniformly-spaced cell faces along one spatial dimension bounded by x_min and x_max.
@@ -51,7 +51,7 @@ contains
 
 #else
 
-  ! PURPOSE: To construct a new vector_1D_t object by sampling a function of one spatial dimension.
+  ! PURPOSE: Definition of procedure to construct a new vector_1D_t object by sampling a function of one spatial dimension.
   ! KEYWORDS: 1D vector field constructor
   ! CONTEXT: Invoke this constructor with a pointer associated with a function to be sampled at a set
   !          of uniformly-spaced cell faces along one spatial dimension bounded by x_min and x_max.
@@ -75,7 +75,7 @@ contains
 
 #endif
 
-  ! PURPOSE: To construct a new vector_1D_t object from a parent tensor and a divergence operator object.
+  ! PURPOSE: Definition of procedure to construct a new vector_1D_t object from a parent tensor and a divergence operator object.
   ! KEYWORDS: 1D vector field constructor
   ! CONTEXT: Invoke this constructor with a an object to be used to define the constructed parent component
   !          divergence-operator matrix component.
@@ -85,7 +85,7 @@ contains
     vector_1D%divergence_operator_1D_ = divergence_operator_1D
   end procedure
 
-  ! PURPOSE: To compute mimetic approximations to the divergence of a vector field.
+  ! PURPOSE: Definition of procedure to compute mimetic approximations to the divergence of a vector field.
   ! KEYWORDS: divergence, vector field
   ! CONTEXT: Invoke this function via the unary .div. operator with a right-hand-side vector-field operand.
 
@@ -114,7 +114,7 @@ contains
 
   end procedure
 
-  ! PURPOSE: To provide the cell face-centered values of vector quantities.
+  ! PURPOSE: Definition of procedure to provide the cell face-centered values of vector quantities.
   ! KEYWORDS: staggered grid, vector field
   ! CONTEXT: Invoke this function via the "values" generic binding to produce discrete vector values.
 
@@ -133,7 +133,7 @@ contains
     end associate
   end function
 
-  ! PURPOSE: To provide staggered-grid locations at which vector values are stored: cell faces.
+  ! PURPOSE: Definition of procedure to provide staggered-grid locations at which vector values are stored: cell faces.
   ! KEYWORDS: abcissa, cell faces
   ! CONTEXT: Invoke this function via the "grid" generic binding to produce discrete vector locations for
   !          initialization-function sampling, printing, or plotting.
@@ -142,7 +142,7 @@ contains
     cell_faces  = faces(self%x_min_, self%x_max_, self%cells_)
   end procedure
 
-  ! PURPOSE: To compute a scalar/vector product weighted for subsequent surface integration.
+  ! PURPOSE: Definition of procedure to compute a scalar/vector product weighted for subsequent surface integration.
   ! KEYWORDS: integrand, surface integral, double integral
   ! CONTEXT: Inovke this function .x. binary infix operator in expressions of the form
   !          .SS. (f .x. (v .dot. dA)) with a saclar_1D_t f, a vector_1D_t v, and a differential area A.
@@ -228,7 +228,7 @@ contains
 
   end procedure
 
-  ! PURPOSE: To provide the differential area for use in surface integrals.
+  ! PURPOSE: Definition of procedure to provide the differential area for use in surface integrals.
   ! KEYWORDS: surface integral, area integral, double integral, numerical quadrature, mimetic discretization
   ! CONTEXT: Use this in expressions of the form .SS. (f .x. (v .dot. dA)) with a scalar_1D_t f and vector_1D_t v
   module procedure dA

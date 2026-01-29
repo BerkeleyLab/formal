@@ -9,7 +9,7 @@ submodule(tensors_1D_m) scalar_x_divergence_1D_s
 
 contains
 
-  ! PURPOSE: To perform mimetic volume integration of a scalar/divergence dot product.
+  ! PURPOSE: Definition of procedure to perform mimetic volume integration of a scalar/divergence dot product.
   ! KEYWORDS: triple integral, volume integral
   ! CONTEXT: Invoke this function in expressions of the form  .SSS. (f * .div. v) * dV
   !          with a vector_1D_t v, a scalar f, and a differential volume dV.

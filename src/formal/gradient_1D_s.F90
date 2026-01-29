@@ -16,7 +16,7 @@ submodule(tensors_1D_m) gradient_1D_s
 
 contains
 
-  ! PURPOSE: To compute the quadrature weights for use in the mimetic inner products of a vector
+  ! PURPOSE: Definition of procedure to compute the quadrature weights for use in the mimetic inner products of a vector
   !          and the gradient of a scalar.
   ! KEYWORDS: quadrature, numerical integration, coefficients, weights
   ! CONTEXT: Inovke this function via the "weights" generic binding to produce the quadrature weights
@@ -45,7 +45,7 @@ contains
 
   end procedure
 
-  ! PURPOSE: To compute the scalar (dot) product of a vector and the gradient of a scalar.
+  ! PURPOSE: Definition of procedure to compute the scalar (dot) product of a vector and the gradient of a scalar.
   ! KEYWORDS: scalar product, dot product, inner product
   ! CONTEXT: Inovke this function via the .dot. binary infix operator in expressions of the form
   !          g .dot. b with a gradient_1D_t g and a vector_1D_t b.

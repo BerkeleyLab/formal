@@ -9,7 +9,7 @@ submodule(tensors_1D_m) vector_dot_gradient_1D_s
 
 contains
 
-  ! PURPOSE: To perform mimetic volume integration of a vector/scalar-gradient dot product.
+  ! PURPOSE: Definition of procedure to perform mimetic volume integration of a vector/scalar-gradient dot product.
   ! KEYWORDS: triple integral, volume integral
   ! CONTEXT: Invoke this function in expressions of the form .SSS. (v .dot. .grad. f) * dV
   !          with a vector_1D_t v, a scalar f, and a differential volume dV.

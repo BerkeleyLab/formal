@@ -6,7 +6,7 @@ submodule(tensors_1D_m) weighted_product_s
 
 contains
 
-  ! PURPOSE: To perform mimetic surface integration of a scalar/vector product.
+  ! PURPOSE: Definition of procedure to perform mimetic surface integration of a scalar/vector product.
   ! KEYWORDS: double integral, surface integral, flux
   ! CONTEXT: Invoke this function in expressions of the form -.SS. (f .x. (v .dot. dA))
   !          with a vector_1D_t v, a scalar_1D_t f, and a differential area dA.

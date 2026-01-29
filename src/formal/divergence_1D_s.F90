@@ -27,7 +27,7 @@ contains
 
 #endif
 
-  ! PURPOSE: To compute the product of a scalar and a divergence
+  ! PURPOSE: Definition of procedure to compute the product of a scalar and a divergence
   ! KEYWORDS: scalar multiplication
   ! CONTEXT: Invoke this function via the binary infix operator "*" with scalar and divergence left- and
   !          right-hand operands, respectively
@@ -44,7 +44,7 @@ contains
     call_julienne_assert(size(scalar_x_divergence_1D%weights_) .equalsExpected. size(divergence_1D%values_)+2)
   end procedure
 
-  ! PURPOSE: To compute the product of a divergence and a scalar
+  ! PURPOSE: Definition of procedure to compute the product of a divergence and a scalar
   ! KEYWORDS: scalar multiplication
   ! CONTEXT: Invoke this function via the binary infix operator "*" with divergence and scalar left- and
   !          right-hand operands, respectively
@@ -53,7 +53,7 @@ contains
     scalar_x_divergence_1D = premultiply_scalar_1D(scalar_1D, divergence_1D) 
   end procedure
 
-  ! PURPOSE: To provide the cell-centered values of divergences.
+  ! PURPOSE: Definition of procedure to provide the cell-centered values of divergences.
   ! KEYWORDS: staggered grid, divergence
   ! CONTEXT: Invoke this function via the "values" generic binding to produce discrete divergence values.
 
@@ -61,7 +61,7 @@ contains
     cell_centered_values = self%values_
   end procedure
 
-  ! PURPOSE: To provide staggered-grid locations at which divergence values are stored: cell centers.
+  ! PURPOSE: Definition of procedure to provide staggered-grid locations at which divergence values are stored: cell centers.
   ! KEYWORDS: cell centers, staggered grid, divergence
   ! CONTEXT: Invoke this function via the "grid" generic binding to produce discrete gradient-vector locations for
   !          initialization-function sampling, printing, or plotting.
@@ -70,7 +70,7 @@ contains
     cell_centers = cell_center_locations(self%x_min_, self%x_max_, self%cells_)
   end procedure
 
-  ! PURPOSE: To compute the quadrature weights for use in the mimetic inner products of a scalar
+  ! PURPOSE: Definition of procedure to compute the quadrature weights for use in the mimetic inner products of a scalar
   !          and the divergence of a vector.
   ! KEYWORDS: quadrature, numerical integration, coefficients, weights
   ! CONTEXT: Invoke this function via the "weights" generic binding to produce the quadrature weights
