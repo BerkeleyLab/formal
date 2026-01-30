@@ -42,12 +42,14 @@ program burgers_1D
       // 'where square brackets indicate optional arguments and angular brackets indicate user input values.' // new_line('')
   end if
 
-  order_string = command_line%flag_value("--order")
 
-  print *,new_line('')
+  print *, new_line('')
   print *,"   Initial condition"
   print *,"   ================="
+
   call execute_command_line("grep 'initial_condition =' example/burgers-1D.F90 | grep -v execute_command", wait=.true.)
+
+  order_string = command_line%flag_value("--order")
 
   if (len(order_string)==0) then 
     order = 4 
@@ -55,7 +57,11 @@ program burgers_1D
     read(order_string,"(i)") order 
   end if
 
-  print  *,"order = ",order
+  print *, "order = ", order
+
+  u = vector_1D_t(vector_1D_initializer, order, x_min=0D0, x_max=1D0, cells=50)
+  associate(uu_2 => u*u/2)
+  end associate
 
 #ifdef __GFORTRAN__
     stop
