@@ -60,7 +60,7 @@ program burgers_1D
   print *, "order = ", order
 
   u = vector_1D_t(vector_1D_initializer, order, x_min=0D0, x_max=1D0, cells=50)
-  associate(uu_2 => u*u/2)
+  associate(div_uu_2 => .div. (u*u/2)) ! result is at cell centers; To Do: interpolate to cell faces
   end associate
 
 #ifdef __GFORTRAN__
