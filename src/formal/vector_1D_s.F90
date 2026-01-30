@@ -24,10 +24,12 @@ contains
 
   module procedure outer_product
 
-     call_julienne_assert(.all. ([lhs%x_min_, lhs%x_max_] .approximates.   [rhs%x_min_, rhs%x_max_] .within. 0D0))
-     call_julienne_assert(.all. ([lhs%cells_, lhs%order_] .equalsExpected. [rhs%cells_, rhs%order_]))
+    call_julienne_assert(.all. ([lhs%x_min_, lhs%x_max_] .approximates.   [rhs%x_min_, rhs%x_max_] .within. 0D0))
+    call_julienne_assert(.all. ([lhs%cells_, lhs%order_] .equalsExpected. [rhs%cells_, rhs%order_]))
 
-     dyad_1D%tensor_1D_t = tensor_1D_t(lhs%values_ * rhs%values_, lhs%x_min_, lhs%x_max_, lhs%cells_, lhs%order_ ) 
+    dyad_1D%tensor_1D_t = tensor_1D_t(lhs%values_ * rhs%values_, lhs%x_min_, lhs%x_max_, lhs%cells_, lhs%order_ ) 
+    dyad_1D%divergence_operator_1D_ = divergence_operator_1D_t(k=lhs%order_, dx=(lhs%x_max_ - lhs%x_min_)/lhs%cells_, cells=lhs%cells_)
+
   end procedure
 
   module procedure dot_surface_normal
@@ -84,6 +86,7 @@ contains
 #endif
       associate(Dv => D .x. self%values_)
         divergence_1D%tensor_1D_t = tensor_1D_t(Dv(2:size(Dv)-1), self%x_min_, self%x_max_, self%cells_, self%order_)
+#if ASSERTIONS
         associate( &
            q  => divergence_1D%weights() &
           ,dx => (self%x_max_ - self%x_min_)/self%cells_ &
@@ -93,6 +96,7 @@ contains
           call_julienne_assert((.all. (matmul(transpose(D%assemble()), q) .approximates. b/dx .within. double_equivalence)))
             ! Check D^T * a = b_{m+1},  Eq. (19), Corbino & Castillo (2020)
         end associate
+#endif
       end associate
     end associate
 

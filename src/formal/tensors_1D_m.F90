@@ -127,10 +127,24 @@ module tensors_1D_m
   end type
 
   type, extends(tensor_1D_t) :: dyad_1D_t 
+    type(divergence_operator_1D_t) divergence_operator_1D_
   contains
-    generic :: operator(/) =>  dyad_over_integer
+    generic :: operator(.div.) =>  div_dyad
+    generic :: operator(/)     =>  dyad_over_integer
     procedure, non_overridable, private :: dyad_over_integer
+    procedure, non_overridable, private :: div_dyad
   end type
+
+  interface dyad_1D_t
+
+    pure module function construct_1D_dyad_from_components(tensor_1D, divergence_operator_1D) result(dyad_1D)
+      !! Result is a 1D dyadic tensor with the provided parent component tensor_1D and the provided divergence operatror
+      type(tensor_1D_t), intent(in) :: tensor_1D
+      type(divergence_operator_1D_t), intent(in) :: divergence_operator_1D
+      type(dyad_1D_t) dyad_1D
+    end function
+
+  end interface
 
   type, extends(tensor_1D_t) :: weighted_product_1D_t
   contains
@@ -295,6 +309,13 @@ module tensors_1D_m
       implicit none
       class(laplacian_1D_t), intent(in) :: self
       integer num_nodes
+    end function
+
+    pure module function div_dyad(self) result(divergence_1D)
+      !! Result is mimetic divergence of the dyad_1D_t "self"
+      implicit none
+      class(dyad_1D_t), intent(in) :: self
+      type(divergence_1D_t) divergence_1D !! discrete divergence
     end function
 
     pure module function div(self) result(divergence_1D)
