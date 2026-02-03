@@ -19,7 +19,7 @@ Formal supports research on mimetic software abstractions for vector calculus by
 - Derived types that mimic vector and tensor fields and
 - Differential and integral operators for writing vector and tensor expressions.
 
-Formal's types and operators implement the discrete calculus of [Castillo & Corbino (2020)]:
+Formal's types and operators implement the discrete calculus of [Corbino & Castillo (2020)]:
 mimetic discretizations satisfying discrete versions of vector calculus theorems.
 
 Like the underlying numerical methods, Formal's software abstractios mimic their vector calculus counterparts.
@@ -104,7 +104,7 @@ Office of Advanced Scientific Computing Research under contract DE-AC02-05CH1123
 [`fpm`]: https://github.com/fortran-lang/fpm
 [fpm-0.12.0.F90]: https://github.com/fortran-lang/fpm/releases/download/v0.12.0/fpm-0.12.0.F90
 [`doc/uml/class-diagram.md`]: ./doc/uml/class-diagram.md
-[Castillo & Corbino (2020)]: https://doi.org/10.1016/j.cam.2019.06.042 
+[Corbino & Castillo (2020)]: https://doi.org/10.1016/j.cam.2019.06.042 
 [`example/extended-gauss-divergence.F90`]: ./example/extended-gauss-divergence.F90
 [issue]: https://github.com/berkeleylab/formal/issues
 [pull request]: https://github.com/berkeleylab/formal/pulls
