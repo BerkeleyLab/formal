@@ -96,6 +96,7 @@ contains
     end function
 
   end procedure construct_1D_gradient_operator
+  ! END CODE CHUNK
 
   module procedure gradient_matrix_multiply
 

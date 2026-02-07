@@ -18,5 +18,6 @@ contains
     call_julienne_assert(size(integrand%weights_ ) .equalsExpected. size(integrand%values_)+2)
     integral  = sum(integrand%weights_ * [0D0, integrand%values_, 0D0])
   end procedure
+  ! END CODE CHUNK
 
 end submodule scalar_x_divergence_1D_s

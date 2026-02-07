@@ -17,6 +17,7 @@ contains
     tensor_1D%cells_  = cells 
     tensor_1D%order_  = order
   end procedure
+  ! END CODE CHUNK
 
   ! PURPOSE: Definition of procedure to provide a uniform cell width along the x-coordinate spatial direction.
   ! KEYWORDS: abcissa, mesh spacing
@@ -25,6 +26,6 @@ contains
   module procedure dx
     dx = (self%x_max_ - self%x_min_)/self%cells_
   end procedure
-
+  ! END CODE CHUNK
 
 end submodule tensor_1D_s

@@ -37,6 +37,7 @@ module tensors_1D_m
       double precision, intent(in) :: x(:)
       double precision, allocatable :: f(:)
     end function
+    ! END CODE CHUNK
 
     ! PURPOSE: Interface for procedure to provide values for initializing a vector function of one spatial dimension at cell faces
     !          as defined in the mimetic discretization scheme of Corbino-Castillo (2020).
@@ -51,6 +52,7 @@ module tensors_1D_m
       double precision, intent(in) :: x(:)
       double precision, allocatable :: v(:)
     end function
+    ! END CODE CHUNK
 
   end interface
 
@@ -75,6 +77,7 @@ module tensors_1D_m
     generic :: dV => dx
     procedure, non_overridable :: dx
   end type
+  ! END CODE CHUNK
 
   interface tensor_1D_t
 
@@ -93,6 +96,7 @@ module tensors_1D_m
       integer,          intent(in) :: order     !! order of accuracy
       type(tensor_1D_t) tensor_1D
     end function
+    ! END CODE CHUNK
 
   end interface
 
@@ -114,6 +118,7 @@ module tensors_1D_m
     procedure, non_overridable, private :: scalar_1D_values
     procedure, non_overridable, private :: scalar_1D_grid
   end type
+  ! END CODE CHUNK
 
   interface scalar_1D_t
 
@@ -133,6 +138,7 @@ module tensors_1D_m
       double precision, intent(in) :: x_max !! grid location maximum
       type(scalar_1D_t) scalar_1D
     end function
+    ! END CODE CHUNK
 
   end interface
 
@@ -160,6 +166,7 @@ module tensors_1D_m
     procedure, non_overridable, private :: vector_1D_grid
     procedure, non_overridable, private :: vector_1D_values
   end type
+  ! END CODE CHUNK
 
   ! PURPOSE: Definition of type to encapsulate a scalar/vector product weighted for integration on a surface
   ! KEYWORDS: type definition, 1D product abstraction
@@ -170,6 +177,7 @@ module tensors_1D_m
     generic :: operator(.SS.) => surface_integrate_vector_x_scalar_1D
     procedure, non_overridable, private :: surface_integrate_vector_x_scalar_1D
   end type
+  ! END CODE CHUNK
 
   interface vector_1D_t
 
@@ -189,6 +197,7 @@ module tensors_1D_m
       double precision, intent(in) :: x_max !! grid location maximum
       type(vector_1D_t) vector_1D
     end function
+    ! END CODE CHUNK
 
     ! PURPOSE: Interface for procedure to construct a new vector_1D_t object from a parent tensor and a divergence operator object.
     ! KEYWORDS: 1D vector field constructor
@@ -201,6 +210,7 @@ module tensors_1D_m
       type(divergence_operator_1D_t), intent(in) :: divergence_operator_1D
       type(vector_1D_t) vector_1D
     end function
+    ! END CODE CHUNK
 
   end interface
 
@@ -217,6 +227,7 @@ module tensors_1D_m
 #endif
     procedure, non_overridable, private, pass(gradient_1D) :: dot
   end type
+  ! END CODE CHUNK
 
   ! PURPOSE: Definition of type for a tensor child type for capturing the scalar (dot) product of a vector and a gradient vector data
   ! KEYWORDS: type definition, 1D vector/gradient scalar product
@@ -230,6 +241,7 @@ module tensors_1D_m
     generic :: operator(.SSS.) => volume_integrate_vector_dot_grad_scalar_1D
     procedure, non_overridable, private, pass(integrand) ::volume_integrate_vector_dot_grad_scalar_1D
   end type
+  ! END CODE CHUNK
 
   ! PURPOSE: Definition of type for a tensor child type capturing the divergence of a vector function of one spatial dimension.
   ! KEYWORDS: type definition, 1D, divergence
@@ -248,6 +260,7 @@ module tensors_1D_m
     procedure, non_overridable, private :: divergence_1D_values
     procedure, non_overridable, private :: divergence_1D_grid
   end type
+  ! END CODE CHUNK
 
   ! PURPOSE: Definition of type for a tensor child type for capturing the product of a scalar and divergence
   ! KEYWORDS: type definition, 1D scalar/divergence product
@@ -261,6 +274,7 @@ module tensors_1D_m
     generic :: operator(.SSS.) => volume_integrate_scalar_x_divergence_1D
     procedure, non_overridable, private, pass(integrand) :: volume_integrate_scalar_x_divergence_1D
   end type
+  ! END CODE CHUNK
 
   ! PURPOSE: Definition of type for a divergence child type capturing the result of applying a divergence operator to a gradient.
   ! KEYWORDS: type definition, 1D, laplacian
@@ -274,6 +288,7 @@ module tensors_1D_m
   contains
     procedure reduced_order_boundary_depth
   end type
+  ! END CODE CHUNK
 
   interface
 
@@ -288,6 +303,7 @@ module tensors_1D_m
       class(vector_1D_t), intent(in) :: self
       double precision dA
     end function
+    ! END CODE CHUNK
 
     ! PURPOSE: Interface for procedure to provide a uniform cell width along the x-coordinate spatial direction.
     ! KEYWORDS: abcissa, mesh spacing
@@ -299,6 +315,7 @@ module tensors_1D_m
       class(tensor_1D_t), intent(in) :: self
       double precision dx
     end function
+    ! END CODE CHUNK
 
     ! PURPOSE: Interface for procedure to provide the staggered-grid locations at which scalar values are stored: cell centers plus domain boundaries.
     ! KEYWORDS: staggered grid, scalar field, cell centers
@@ -311,6 +328,7 @@ module tensors_1D_m
       class(scalar_1D_t), intent(in) :: self
       double precision, allocatable :: cell_centers_extended(:)
     end function
+    ! END CODE CHUNK
 
     ! PURPOSE: Interface for procedure to provide staggered-grid locations at which vector values are stored: cell faces.
     ! KEYWORDS: abcissa, cell faces
@@ -323,6 +341,7 @@ module tensors_1D_m
       class(vector_1D_t), intent(in) :: self
       double precision, allocatable :: cell_faces(:)
     end function
+    ! END CODE CHUNK
 
     ! PURPOSE: Interface for procedure to provide staggered-grid locations at which divergence values are stored: cell centers.
     ! KEYWORDS: cell centers, staggered grid, divergence
@@ -335,6 +354,7 @@ module tensors_1D_m
       class(divergence_1D_t), intent(in) :: self
       double precision, allocatable :: cell_centers(:)
     end function
+    ! END CODE CHUNK
 
     ! PURPOSE: Interface for procedure to provide the cell-centered values of scalar quantities.
     ! KEYWORDS: cell centers, staggered grid, scalar field
@@ -346,6 +366,7 @@ module tensors_1D_m
       class(scalar_1D_t), intent(in) :: self
       double precision, allocatable :: cell_centers_extended_values(:)
     end function
+    ! END CODE CHUNK
 
     ! PURPOSE: Interface for procedure to provide the cell face-centered values of vector quantities.
     ! KEYWORDS: staggered grid, vector field
@@ -357,6 +378,7 @@ module tensors_1D_m
       class(vector_1D_t), intent(in) :: self
       double precision, allocatable :: face_centered_values(:)
     end function
+    ! END CODE CHUNK
 
     ! PURPOSE: Interface for procedure to provide the cell-centered values of divergences.
     ! KEYWORDS: staggered grid, divergence
@@ -368,6 +390,7 @@ module tensors_1D_m
       class(divergence_1D_t), intent(in) :: self
       double precision, allocatable :: cell_centered_values(:)
     end function
+    ! END CODE CHUNK
 
     ! PURPOSE: Interface for procedure to compute mimetic approximations to the gradient of scalar fields.
     ! KEYWORDS: gradient, differential operator
@@ -379,6 +402,7 @@ module tensors_1D_m
       class(scalar_1D_t), intent(in) :: self
       type(gradient_1D_t) gradient_1D
     end function
+    ! END CODE CHUNK
 
     ! PURPOSE: Interface for procedure to compute mimetic approximations to the Laplacian of a scalar field.
     ! KEYWORDS: Laplacian, differential operator
@@ -390,6 +414,7 @@ module tensors_1D_m
       class(scalar_1D_t), intent(in) :: self
       type(laplacian_1D_t) laplacian_1D
     end function
+    ! END CODE CHUNK
 
     ! PURPOSE: Interface for procedure to report the number of boundary-adjacent locations at which the Laplacian has reduced-order accuracy.
     ! KEYWORDS: Laplacian, boundary, order of accuracy
@@ -401,6 +426,7 @@ module tensors_1D_m
       class(laplacian_1D_t), intent(in) :: self
       integer num_nodes
     end function
+    ! END CODE CHUNK
 
     ! PURPOSE: Interface for procedure to compute mimetic approximations to the divergence of a vector field.
     ! KEYWORDS: divergence, vector field
@@ -412,6 +438,7 @@ module tensors_1D_m
       class(vector_1D_t), intent(in) :: self
       type(divergence_1D_t) divergence_1D !! discrete divergence
     end function
+    ! END CODE CHUNK
 
     ! PURPOSE: Interface for procedure to perform mimetic volume integration of a vector/scalar-gradient dot product.
     ! KEYWORDS: triple integral, volume integral
@@ -424,6 +451,7 @@ module tensors_1D_m
       class(vector_dot_gradient_1D_t), intent(in) :: integrand
       double precision integral
     end function
+    ! END CODE CHUNK
 
     ! PURPOSE: Interface for procedure to perform mimetic volume integration of a scalar/divergence dot product.
     ! KEYWORDS: triple integral, volume integral
@@ -436,6 +464,7 @@ module tensors_1D_m
       class(scalar_x_divergence_1D_t), intent(in) :: integrand
       double precision integral
     end function
+    ! END CODE CHUNK
 
     ! PURPOSE: Interface for procedure to perform mimetic surface integration of a scalar/vector product.
     ! KEYWORDS: double integral, surface integral, flux
@@ -448,6 +477,7 @@ module tensors_1D_m
       class(weighted_product_1D_t), intent(in) :: integrand
       double precision integral
     end function
+    ! END CODE CHUNK
 
     ! PURPOSE: Interface for procedure to compute the scalar (dot) product of a vector and the gradient of a scalar.
     ! KEYWORDS: scalar product, dot product, inner product
@@ -461,6 +491,7 @@ module tensors_1D_m
       type(vector_1D_t), intent(in) :: vector_1D
       type(vector_dot_gradient_1D_t) vector_dot_gradient_1D
     end function
+    ! END CODE CHUNK
 
     ! PURPOSE: Interface for procedure to compute the scalar (not) product of a vector and a differential area.
     ! KEYWORDS: dot product, flux, surface-normal
@@ -476,6 +507,7 @@ module tensors_1D_m
       double precision, intent(in) :: dS
       type(vector_1D_t) v_dot_dS
     end function
+    ! END CODE CHUNK
 
     ! PURPOSE: Interface for procedure to compute a scalar/vector product weighted for subsequent surface integration.
     ! KEYWORDS: integrand, surface integral, double integral
@@ -489,6 +521,7 @@ module tensors_1D_m
       class(vector_1D_t), intent(in) :: vector_1D
       type(weighted_product_1D_t) weighted_product_1D
     end function
+    ! END CODE CHUNK
 
     ! PURPOSE: Interface for procedure to compute the quadrature weights for use in the mimetic inner products of a vector
     !          and the gradient of a scalar.
@@ -503,6 +536,7 @@ module tensors_1D_m
       class(tensor_1D_t), intent(in) :: self
       double precision, allocatable :: weights(:)
     end function
+    ! END CODE CHUNK
 
     ! PURPOSE: Interface for procedure to compute the quadrature weights for use in the mimetic inner products of a scalar
     !          and the divergence of a vector.
@@ -517,6 +551,7 @@ module tensors_1D_m
       class(tensor_1D_t), intent(in) :: self
       double precision, allocatable :: weights(:)
     end function
+    ! END CODE CHUNK
 
     ! PURPOSE: Interface for procedure to compute the product of a scalar and a divergence
     ! KEYWORDS: scalar multiplication
@@ -530,6 +565,7 @@ module tensors_1D_m
       class(divergence_1D_t), intent(in) :: divergence_1D
       type(scalar_x_divergence_1D_t) scalar_x_divergence_1D
     end function
+    ! END CODE CHUNK
 
     ! PURPOSE: Interface for procedure to compute the product of a divergence and a scalar
     ! KEYWORDS: scalar multiplication
@@ -543,6 +579,7 @@ module tensors_1D_m
       type(scalar_1D_t), intent(in) :: scalar_1D
       type(scalar_x_divergence_1D_t) scalar_x_divergence_1D
     end function
+    ! END CODE CHUNK
 
   end interface
 

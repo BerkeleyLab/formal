@@ -18,5 +18,6 @@ contains
     call_julienne_assert(size(integrand%weights_ ) .equalsExpected. size(integrand%values_))
     integral  = sum(integrand%weights_ * integrand%values_)
   end procedure
+  ! END CODE CHUNK
 
 end submodule vector_dot_gradient_1D_s

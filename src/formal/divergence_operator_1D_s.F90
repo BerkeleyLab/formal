@@ -104,6 +104,7 @@ contains
     end function
 
   end procedure construct_1D_divergence_operator
+  ! END CODE CHUNK
 
   module procedure submatrix_A_rows
     call_julienne_assert(allocated(self%upper_))

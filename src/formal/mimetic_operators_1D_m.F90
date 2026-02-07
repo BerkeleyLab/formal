@@ -52,6 +52,7 @@ module mimetic_operators_1D_m
     generic :: assemble => assemble_gradient
     procedure, non_overridable, private :: assemble_gradient
   end type
+  ! END CODE CHUNK
 
   interface gradient_operator_1D_t
 
@@ -67,6 +68,7 @@ module mimetic_operators_1D_m
       integer, intent(in) :: cells !! number of grid cells
       type(gradient_operator_1D_t) gradient_operator_1D
     end function
+    ! END CODE CHUNK
 
   end interface
 
@@ -86,6 +88,7 @@ module mimetic_operators_1D_m
     procedure, non_overridable, private :: assemble_divergence
     procedure, non_overridable :: submatrix_A_rows
   end type
+  ! END CODE CHUNK
 
   interface divergence_operator_1D_t
 
@@ -101,6 +104,7 @@ module mimetic_operators_1D_m
       integer, intent(in) :: cells !! number of grid cells
       type(divergence_operator_1D_t) divergence_operator_1D
     end function
+    ! END CODE CHUNK
 
   end interface
 

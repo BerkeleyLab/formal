@@ -38,7 +38,7 @@ contains
     end associate
     scalar_1D%gradient_operator_1D_ = gradient_operator_1D_t(k=order, dx=(x_max - x_min)/cells, cells=cells)
   end procedure
-
+  ! END CODE CHUNK
 #else
 
   ! PURPOSE: Definition of procedure to construct a new scalar_1D_t object by assigning each argument to a corresponding
@@ -63,6 +63,7 @@ contains
     end associate
     scalar_1D%gradient_operator_1D_ = gradient_operator_1D_t(k=order, dx=(x_max - x_min)/cells, cells=cells)
   end function
+  ! END CODE CHUNK
 
   pure function cell_center_locations(x_min, x_max, cells) result(x)
     double precision, intent(in) :: x_min, x_max
@@ -97,6 +98,7 @@ contains
     end associate
 
   end procedure
+  ! END CODE CHUNK
 
   ! PURPOSE: Definition of procedure to compute mimetic approximations to the Laplacian of a scalar field.
   ! KEYWORDS: Laplacian, differential operator
@@ -115,7 +117,7 @@ contains
     end associate
 
   end procedure
-
+  ! END CODE CHUNK
 
   ! PURPOSE: Definition of procedure to provide the cell-centered values of scalar quantities.
   ! KEYWORDS: cell centers, staggered grid, scalar field
@@ -124,6 +126,7 @@ contains
   module procedure scalar_1D_values
     cell_centers_extended_values = self%values_
   end procedure
+  ! END CODE CHUNK
 
   pure function scalar_1D_grid_locations(x_min, x_max, cells) result(x)
     double precision, intent(in) :: x_min, x_max
@@ -144,5 +147,6 @@ contains
   module procedure scalar_1D_grid
     cell_centers_extended  = scalar_1D_grid_locations(self%x_min_, self%x_max_, self%cells_)
   end procedure
+  ! END CODE CHUNK
 
 end submodule scalar_1D_s

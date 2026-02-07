@@ -31,6 +31,7 @@ contains
      v_dot_dS%tensor_1D_t = tensor_1D_t(vector_1D%values_*dS, vector_1D%x_min_, vector_1D%x_max_, vector_1D%cells_, vector_1D%order_)
      v_dot_dS%divergence_operator_1D_ = vector_1D%divergence_operator_1D_
   end procedure
+  ! END CODE CHUNK
 
 #ifndef __GFORTRAN__
 
@@ -48,6 +49,7 @@ contains
     end associate
     vector_1D%divergence_operator_1D_ = divergence_operator_1D_t(k=order, dx=(x_max - x_min)/cells, cells=cells)
   end procedure
+  ! END CODE CHUNK
 
 #else
 
@@ -72,6 +74,7 @@ contains
     end associate
     vector_1D%divergence_operator_1D_ = divergence_operator_1D_t(k=order, dx=(x_max - x_min)/cells, cells=cells)
   end function
+  ! END CODE CHUNK
 
 #endif
 
@@ -84,6 +87,7 @@ contains
     vector_1D%tensor_1D_t = tensor_1D
     vector_1D%divergence_operator_1D_ = divergence_operator_1D
   end procedure
+  ! END CODE CHUNK
 
   ! PURPOSE: Definition of procedure to compute mimetic approximations to the divergence of a vector field.
   ! KEYWORDS: divergence, vector field
@@ -113,6 +117,7 @@ contains
     end associate
 
   end procedure
+  ! END CODE CHUNK
 
   ! PURPOSE: Definition of procedure to provide the cell face-centered values of vector quantities.
   ! KEYWORDS: staggered grid, vector field
@@ -121,6 +126,7 @@ contains
   module procedure vector_1D_values
     face_centered_values = self%values_
   end procedure
+  ! END CODE CHUNK
 
   pure function faces(x_min, x_max, cells) result(x)
     double precision, intent(in) :: x_min, x_max
@@ -141,6 +147,7 @@ contains
   module procedure vector_1D_grid
     cell_faces  = faces(self%x_min_, self%x_max_, self%cells_)
   end procedure
+  ! END CODE CHUNK
 
   ! PURPOSE: Definition of procedure to compute a scalar/vector product weighted for subsequent surface integration.
   ! KEYWORDS: integrand, surface integral, double integral
@@ -234,5 +241,6 @@ contains
   module procedure dA
     dA = 1D0
   end procedure
+  ! END CODE CHUNK
 
 end submodule vector_1D_s

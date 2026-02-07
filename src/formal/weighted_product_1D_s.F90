@@ -14,5 +14,6 @@ contains
   module procedure surface_integrate_vector_x_scalar_1D
    integral = sum(integrand%values_)    
   end procedure
+  ! END CODE CHUNK
 
 end submodule weighted_product_s

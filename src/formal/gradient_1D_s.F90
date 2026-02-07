@@ -44,6 +44,7 @@ contains
     call_julienne_assert(size(weights) .equalsExpected. self%cells_ + 1)
 
   end procedure
+  ! END CODE CHUNK
 
   ! PURPOSE: Definition of procedure to compute the scalar (dot) product of a vector and the gradient of a scalar.
   ! KEYWORDS: scalar product, dot product, inner product
@@ -70,5 +71,5 @@ contains
     vector_dot_gradient_1D%weights_ = gradient_1D%gradient_1D_weights()
 #endif
   end procedure
-
+  ! END CODE CHUNK
 end submodule gradient_1D_s

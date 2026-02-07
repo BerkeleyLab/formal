@@ -12,5 +12,6 @@ contains
   module procedure reduced_order_boundary_depth
     num_nodes = self%boundary_depth_
   end procedure
+  ! END CODE CHUNK
 
 end submodule laplacian_s
