@@ -1,9 +1,31 @@
 ! Copyright (c) 2026, The Regents of the University of California
 ! Terms of use are as specified in LICENSE.txt
 
+! PROMPT:
+!
+! Write a module named rag_integrand_operands_m containing one function named "scalar"
+! and one function named "vector".  Both functions should have the "pure" attribute and
+! should have one double precision, one-dimensional (1D) assumed-shape dummy array argument
+! named "x" and a deferred-shape array result.  Name the "scalar" function result "f".
+! Name the "vector" function result "v".
+
+! Write a main program named "rag_target" that uses the "rag_integrand_operands_m" module
+! and the "formal_m" module. Declare a procedure pointer "scalar_1D_initializer" associated
+! with the "scalar" function and conforming to the "scalar_1D_initializer_i" abstract interface.
+! Declare a procedure pointer named "vector_1D_initializer" associated with the the "vector"
+! function and conforming to the  "vector_1D_initializer_i" abstract interface.
+!
+! END PROMPT
+
+! Print each term in the following residual formed from the extended Gauss-divergence
+! theorem using one-dimensional (1D) 4th- (default) and 2nd-order mimetic discretizations:
+! `residual = .SSS. (v .dot. .grad. f) * dV +.SSS. (f * .div. v) * dV - .SS. (f .x. (v .dot. dA))`
+! where `.SSS.` and `.SS.` are the 1D equivalents of a volume integral over the whole
+! domain and a surface integral over a domain boundary of unit area, respectively.
+
 ! This file is derived from extended-gauss-divergence.F90 by stripping out all details
 ! that need not be in the code that we desire for the retreival augmented generation (RAG)
-! process to generate.
+! process to generate. 
 
 ! PURPOSE: User-defined module functions for use in initializing scalar and vector fields on
 !          a one-dimensional (1D) staggered grid. Scalar functions will be sampled at cell
@@ -30,12 +52,7 @@ contains
 end module
 ! END CODE CHUNK
 
-program extended_gauss_divergence
-  !! Print each term in the following residual formed from the extended Gauss-divergence
-  !! theorem using one-dimensional (1D) 4th- (default) and 2nd-order mimetic discretizations:
-  !! `residual = .SSS. (v .dot. .grad. f) * dV +.SSS. (f * .div. v) * dV - .SS. (f .x. (v .dot. dA))`
-  !! where `.SSS.` and `.SS.` are the 1D equivalents of a volume integral over the whole
-  !! domain and a surface integral over a domain boundary of unit area, respectively.
+program rag_target
 
   ! PURPOSE: Import derived types (*_t) and abstract interfaces (*_i) from modules (*_m) that
   !          export the public entities provided by the Formal mimetic abstraction library and
