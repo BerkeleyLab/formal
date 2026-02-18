@@ -2,7 +2,8 @@
 ! Terms of use are as specified in LICENSE.txt
 
 ! PROMPT:
-! You are a member of the committee that drafted the Fortran 2018 standard. 
+! You are a member of the committee that drafted the Fortran 2018 standard and you are
+! familiar with vector calculus.
 !
 ! Write a module named rag_integrand_operands_m containing one function named "scalar" 
 ! and one function named "vector".  Both functions should have the "pure" attribute and
@@ -22,6 +23,31 @@
 !      and conforming to the "scalar_1D_initializer_i" abstract interface.  
 !    - one named "vector_1D_initializer" associated with the the "vector" function
 !      and conforming to the "vector_1D_initializer_i" abstract interface.
+!
+! Use associate statements when defining named entities that will not change after definition.
+! Define "f" as an invocation of the user-defined structure constructor scalar_1D_t with the
+! actual arguments 
+!   - scalar_1D_initializer
+!   - order = 4
+!   - cells = 200
+!   - x_min = 0D0
+!   - x_max = 1D0
+! Define "v" as an invocation of the user-defined structure constructor vector_1D_t with the
+! actual arguments 
+!   - vector_1D_initializer
+!   - order = 4
+!   - cells = 200
+!   - x_min = 0D0
+!   - x_max = 1D0
+!
+! Define the differential volume "dV" by invoking the dV type-bound procedure on f.
+! Define the differential area "dA" by invoking the dA type-bound procedure on v.
+!
+! Define one term in the extended Gauss divergence theorem as a volume integral
+! in which the integrand is formed by the dot product of v with the gradient of f.
+! Use the defined operation .SSS. to compute the volume integral.  Use the defined
+! operations .dot. and .grad. and to compute the dot product and the gradient, 
+! respectively.
 !
 ! END PROMPT
 
