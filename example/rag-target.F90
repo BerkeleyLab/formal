@@ -2,18 +2,26 @@
 ! Terms of use are as specified in LICENSE.txt
 
 ! PROMPT:
+! You are a member of the committee that drafted the Fortran 2018 standard. 
 !
-! Write a module named rag_integrand_operands_m containing one function named "scalar"
+! Write a module named rag_integrand_operands_m containing one function named "scalar" 
 ! and one function named "vector".  Both functions should have the "pure" attribute and
 ! should have one double precision, one-dimensional (1D) assumed-shape dummy array argument
-! named "x" and a deferred-shape array result.  Name the "scalar" function result "f".
-! Name the "vector" function result "v".
+! named "x" and a deferred-shape array result.  Name the "scalar" function result "f" and
+! define the result to be (x**2)/2 in an array statement.  Name the "vector" function result "v"
+! and define the result to be x in an array statement.
 
-! Write a main program named "rag_target" that uses the "rag_integrand_operands_m" module
-! and the "formal_m" module. Declare a procedure pointer "scalar_1D_initializer" associated
-! with the "scalar" function and conforming to the "scalar_1D_initializer_i" abstract interface.
-! Declare a procedure pointer named "vector_1D_initializer" associated with the the "vector"
-! function and conforming to the  "vector_1D_initializer_i" abstract interface.
+! Write a main program named "rag_target" that uses the only following entities from the
+! "formal_m" module:
+!   - the scalar_1D_t and and vector_1D_t types,
+!   - the scalar_1D_initializer_i and vector_1D_initializer_i abstract intefaces,
+! and only the "scalar" and "vector" functions from the rag_integrand_operands_m module.
+!
+! Declare two procedure pointers: 
+!    - one named "scalar_1D_initializer" associated with the "scalar" function
+!      and conforming to the "scalar_1D_initializer_i" abstract interface.  
+!    - one named "vector_1D_initializer" associated with the the "vector" function
+!      and conforming to the "vector_1D_initializer_i" abstract interface.
 !
 ! END PROMPT
 
@@ -73,14 +81,7 @@ program rag_target
   procedure(vector_1D_initializer_i), pointer :: vector_1D_initializer => vector
   ! END CODE CHUNK
 
-  type numerical_arguments_t
-    integer :: cells_=200, order_=4
-    double precision :: x_min_=0D0, x_max_=1D0
-  end type
-
   double precision SSS_v_dot_grad_f_dV, SSS_f_div_v_dV, SS_f_v_dot_dA
-
-    type(numerical_arguments_t) args
 
         ! PURPOSE: Construct 1D scalar- and vector-field objects with a specified order of accuracy,
         !          number of grid cells, and domain boundaries
@@ -88,8 +89,8 @@ program rag_target
         ! CONTEXT: construct fields for use as operands in vector-calculus expressions
         integrand_factors: &
         associate( &
-           f => scalar_1D_t(scalar_1D_initializer, args%order_, args%cells_, args%x_min_, args%x_max_) &
-          ,v => vector_1D_t(vector_1D_initializer, args%order_, args%cells_, args%x_min_, args%x_max_) &
+           f => scalar_1D_t(scalar_1D_initializer, order=4, cells=200, x_min=0D0, x_max=1D0) &
+          ,v => vector_1D_t(vector_1D_initializer, order=4, cells=200, x_min=0D0, x_max=1D0) &
         )
         ! END CODE CHUNK
           differential_volume: &
