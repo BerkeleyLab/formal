@@ -11,7 +11,7 @@
 ! named "x" and a deferred-shape array result.  Name the "scalar" function result "f" and
 ! define the result to be (x**2)/2 in an array statement.  Name the "vector" function result "v"
 ! and define the result to be x in an array statement.
-
+!
 ! Write a main program named "rag_target" that uses the only following entities from the
 ! "formal_m" module:
 !   - the scalar_1D_t and and vector_1D_t types,
@@ -43,12 +43,23 @@
 ! Define the differential volume "dV" by invoking the dV type-bound procedure on f.
 ! Define the differential area "dA" by invoking the dA type-bound procedure on v.
 !
-! Define one term in the extended Gauss divergence theorem as a volume integral
-! in which the integrand is formed by the dot product of v with the gradient of f.
+! Define one term in the extended Gauss divergence theorem as a volume integral in
+! which the integrand is formed from by the dot product of v with the gradient of f.
 ! Use the defined operation .SSS. to compute the volume integral.  Use the defined
 ! operations .dot. and .grad. and to compute the dot product and the gradient, 
 ! respectively.
 !
+! Define a second term as a volume integral in which the integrand is formed from the
+! product of f with the divergence of v.  Use the defined operation .div. to compute
+! the divergence.
+!  
+! Define a third term as a integral in which the integrand is formed by a weighted
+! product of f with the dot product of v and dA.  Use the defined operation .x. for the
+! weighted product.
+
+! Compute and print a residual formed by summing the two volume integrals and subtracting
+! the area integral.
+
 ! END PROMPT
 
 ! Print each term in the following residual formed from the extended Gauss-divergence

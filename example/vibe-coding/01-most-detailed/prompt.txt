@@ -1,0 +1,59 @@
+Prompt
+======
+You are a member of the committee that drafted the Fortran 2018 standard and you are
+familiar with vector calculus.
+
+Write a module named claude_integrand_operands_m containing one function named "scalar" 
+and one function named "vector".  Both functions should have the "pure" attribute and
+should have one double precision, one-dimensional (1D) assumed-shape dummy array argument
+named "x" and a deferred-shape array result.  Name the "scalar" function result "f" and
+define the result to be (x**2)/2 in an array statement.  Name the "vector" function result "v"
+and define the result to be x in an array statement.
+
+Write a main program named "claude_code" that uses the only following entities from the
+"formal_m" module:
+  - the scalar_1D_t and and vector_1D_t types,
+  - the scalar_1D_initializer_i and vector_1D_initializer_i abstract intefaces,
+and only the "scalar" and "vector" functions from the claude_integrand_operands_m module.
+
+Declare two procedure pointers: 
+   - one named "scalar_1D_initializer" associated with the "scalar" function
+     and conforming to the "scalar_1D_initializer_i" abstract interface.  
+   - one named "vector_1D_initializer" associated with the the "vector" function
+     and conforming to the "vector_1D_initializer_i" abstract interface.
+
+Use associate statements when defining named entities that will not change after definition.
+Define "f" as an invocation of the user-defined structure constructor scalar_1D_t with the
+actual arguments 
+  - scalar_1D_initializer
+  - order = 4
+  - cells = 200
+  - x_min = 0D0
+  - x_max = 1D0
+Define "v" as an invocation of the user-defined structure constructor vector_1D_t with the
+actual arguments 
+  - vector_1D_initializer
+  - order = 4
+  - cells = 200
+  - x_min = 0D0
+  - x_max = 1D0
+
+Define the differential volume "dV" by invoking the dV type-bound procedure on f.
+Define the differential area "dA" by invoking the dA type-bound procedure on v.
+
+Define one term in the extended Gauss divergence theorem as a volume integral in
+which the integrand is formed from by the dot product of v with the gradient of f.
+Use the defined operation .SSS. to compute the volume integral.  Use the defined
+operations .dot. and .grad. and to compute the dot product and the gradient, 
+respectively.
+
+Define a second term as a volume integral in which the integrand is formed from the
+product of f with the divergence of v.  Use the defined operation .div. to compute
+the divergence.
+ 
+Define a third term as a integral in which the integrand is formed by a weighted
+product of f with the dot product of v and dA.  Use the defined operation .x. for the
+weighted product.  Use the defined operation .SS. to compute the surface integral.
+
+Compute and print a residual formed by summing the two volume integrals and subtracting
+the area integral.
