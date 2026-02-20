@@ -1,16 +1,16 @@
 ! Copyright (c) 2026, The Regents of the University of California
 ! Terms of use are as specified in LICENSE.txt
 
-submodule(mimetic_operators_1D_m) mimetic_matrix_1D_s
+submodule(differential_operators_1D_m) differential_operator_matrix_1D_s
   use julienne_m, only : string_t, operator(.csv.)
   implicit none
 
 contains
 
   module procedure construct_matrix_operator
-    mimetic_matrix_1D%upper_ = upper
-    mimetic_matrix_1D%inner_ = inner
-    mimetic_matrix_1D%lower_ = lower
+    differential_operator_matrix_1D%upper_ = upper
+    differential_operator_matrix_1D%inner_ = inner
+    differential_operator_matrix_1D%lower_ = lower
   end procedure
 
   module procedure to_file_t
@@ -33,4 +33,4 @@ contains
 
   end procedure
 
-end submodule mimetic_matrix_1D_s
+end submodule differential_operator_matrix_1D_s

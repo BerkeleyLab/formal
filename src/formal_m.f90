@@ -16,7 +16,7 @@ module formal_m
     ,scalar_1D_initializer_i  & ! scalar_1D_t initializer abstract interface
     ,vector_1D_initializer_i    ! vector_1D_t initializar abstract interface
 
-  use mimetic_operators_1D_m, only : &
+  use differential_operators_1D_m, only : &
      gradient_operator_1D_t & ! matrix operator defining a 1D mimetic gradient
     ,divergence_operator_1D_t ! matrix operator defining a 1D mimetic divergence
 
