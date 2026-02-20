@@ -8,7 +8,7 @@ module tensors_1D_m
   !! divergence, and Laplacian operators as detailed by Corbino & Castillo (2020)
   !! https://doi.org/10.1016/j.cam.2019.06.042.
   use julienne_m, only : file_t
-  use mimetic_operators_1D_m, only : divergence_operator_1D_t, gradient_operator_1D_t
+  use differential_operators_1D_m, only : divergence_operator_1D_t, gradient_operator_1D_t
     
   implicit none
 
