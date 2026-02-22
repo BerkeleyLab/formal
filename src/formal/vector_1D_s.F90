@@ -150,7 +150,7 @@ contains
 
       allocate(DA, mold=A)
 
-#ifdef HAVE_DO_CONCURRENT_TYPE_SPEC_SUPPORT && HAVE_LOCALITY_SPECIFIER_SUPPORT
+#if HAVE_DO_CONCURRENT_TYPE_SPEC_SUPPORT && HAVE_LOCALITY_SPECIFIER_SUPPORT
       do concurrent(integer :: row = 1 : size(A,1)) default(none) shared(d, A, DA)
         DA(row,:) = d(row) * A(row,:)
       end do
@@ -173,7 +173,7 @@ contains
 
       allocate(AD, mold=A)
 
-#ifdef HAVE_DO_CONCURRENT_TYPE_SPEC_SUPPORT && HAVE_LOCALITY_SPECIFIER_SUPPORT
+#if HAVE_DO_CONCURRENT_TYPE_SPEC_SUPPORT && HAVE_LOCALITY_SPECIFIER_SUPPORT
       do concurrent(integer :: column = 1 : size(A,2)) default(none) shared(d, A, AD)
         AD(:,column) = A(:,column) * d(column)
       end do
