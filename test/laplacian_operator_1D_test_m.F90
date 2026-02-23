@@ -64,6 +64,9 @@ contains
     y = (x**2)/2
   end function
 
+  ! PURPOSE: 
+  ! KEYWORDS: 
+  ! CONTEXT: 
   function check_2nd_order_laplacian_parabola() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => parabola
@@ -83,6 +86,7 @@ contains
     end associate
 #endif
   end function
+  ! END CODE CHUNK
 
   pure function quartic(x) result(y)
     double precision, intent(in) :: x(:)
@@ -90,6 +94,9 @@ contains
     y = (x**4)/12
   end function
 
+  ! PURPOSE: 
+  ! KEYWORDS: 
+  ! CONTEXT: 
   function check_4th_order_laplacian_of_quartic() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => quartic
@@ -111,6 +118,7 @@ contains
     end associate
 #endif
   end function
+  ! END CODE CHUNK
 
   pure function f(x)
     double precision, intent(in) :: x(:)
@@ -124,16 +132,27 @@ contains
     d2f_dx2 = -sin(x)
   end function
 
+  ! PURPOSE: 
+  ! KEYWORDS: 
+  ! CONTEXT: 
   function check_2nd_order_laplacian_convergence() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     test_diagnosis = check_laplacian_convergence(order_desired=2, coarse_cells=400, fine_cells=401)
   end function
+  ! END CODE CHUNK
 
+  ! PURPOSE: 
+  ! KEYWORDS: 
+  ! CONTEXT: 
   function check_4th_order_laplacian_convergence() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     test_diagnosis = check_laplacian_convergence(order_desired = 4, coarse_cells=150, fine_cells=151)
   end function
+  ! END CODE CHUNK
 
+  ! PURPOSE: 
+  ! KEYWORDS: 
+  ! CONTEXT: 
   function check_laplacian_convergence(order_desired, coarse_cells, fine_cells) result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => f
@@ -208,5 +227,6 @@ contains
     end associate
 #endif
   end function
+  ! END CODE CHUNK
 
 end module

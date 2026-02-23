@@ -65,6 +65,9 @@ contains
     y = (x**2)/2
   end function
 
+  ! PURPOSE: 
+  ! KEYWORDS: 
+  ! CONTEXT: 
   function check_2nd_order_div_grad_parabola() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => parabola
@@ -84,7 +87,11 @@ contains
     end associate
 #endif
   end function
+  ! END CODE CHUNK
 
+  ! PURPOSE: 
+  ! KEYWORDS: 
+  ! CONTEXT: 
   function check_4th_order_div_grad_parabola() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => parabola
@@ -104,6 +111,7 @@ contains
     end associate
 #endif
   end function
+  ! END CODE CHUNK
 
   pure function sinusoid(x) result(y)
     double precision, intent(in) :: x(:)
@@ -111,6 +119,9 @@ contains
     y = sin(x) + cos(x)
   end function
 
+  ! PURPOSE: 
+  ! KEYWORDS: 
+  ! CONTEXT: 
   function check_2nd_order_div_sinusoid_convergence() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     procedure(vector_1D_initializer_i), pointer :: vector_1D_initializer => sinusoid
@@ -155,7 +166,11 @@ contains
     end associate
 #endif
   end function
+  ! END CODE CHUNK
 
+  ! PURPOSE: 
+  ! KEYWORDS: 
+  ! CONTEXT: 
   function check_4th_order_div_sinusoid_convergence() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     procedure(vector_1D_initializer_i), pointer :: vector_1D_initializer => sinusoid
@@ -203,5 +218,6 @@ contains
     end associate
 #endif
   end function
+  ! END CODE CHUNK
 
 end module divergence_operator_1D_test_m

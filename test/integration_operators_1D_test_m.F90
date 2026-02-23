@@ -81,6 +81,9 @@ contains
     integral = (x**3)/6
   end function
 
+  ! PURPOSE: 
+  ! KEYWORDS: 
+  ! CONTEXT: 
   function check_volume_integral_of_v_dot_grad_f() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer
@@ -127,7 +130,11 @@ contains
     end do
 
   end function
+  ! END CODE CHUNK
 
+  ! PURPOSE: 
+  ! KEYWORDS: 
+  ! CONTEXT: 
   function check_volume_integral_of_f_div_v() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer
@@ -174,7 +181,11 @@ contains
     end do
 
   end function
+  ! END CODE CHUNK
 
+  ! PURPOSE: 
+  ! KEYWORDS: 
+  ! CONTEXT: 
   function check_surface_integral_of_vf() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer
@@ -226,6 +237,7 @@ contains
     end do
 
   end function
+  ! END CODE CHUNK
 
   pure function quartic(x) result(f)
     double precision, intent(in) :: x(:)
@@ -239,6 +251,9 @@ contains
     v = exp(x)
   end function
 
+  ! PURPOSE: 
+  ! KEYWORDS: 
+  ! CONTEXT: 
   function check_gauss_divergence_theorem() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer
@@ -270,5 +285,6 @@ contains
     end do
 
   end function
+  ! END CODE CHUNK
 
 end module integration_operators_1D_test_m
