@@ -315,7 +315,7 @@ module tensors_1D_m
       !! Result is mimetic divergence of the dyad_1D_t "self"
       implicit none
       class(dyad_1D_t), intent(in) :: self
-      type(divergence_1D_t) divergence_1D !! discrete divergence
+      type(vector_1D_t) vector_1D
     end function
 
     pure module function div(self) result(divergence_1D)
