@@ -81,9 +81,30 @@ contains
     integral = (x**3)/6
   end function
 
-  ! PURPOSE: 
-  ! KEYWORDS: 
-  ! CONTEXT: 
+  ! PURPOSE: Tests that the volume integral of v dot grad(f) converges at the expected rate and
+  !          produces sufficiently accurate results for both 2nd-order and 4th-order discretizations.
+  !          It computes the integral .SSS. (v .dot. .grad. f) * dV on two grids (500 and 501 cells)
+  !          for each order, compares the high-resolution result against a known analytical integral,
+  !          and verifies that the observed convergence rate matches the expected order of accuracy.
+  ! KEYWORDS: volume-integral, gradient, dot-product, finite-difference, convergence-rate,
+  !           operator-overloading, unit-test, scalar_1D, vector_1D, parabola, linear-function,
+  !           2nd-order, 4th-order, structured-grid, test-diagnosis, verification, grid-refinement,
+  !           order-of-accuracy, integral-operator
+  ! CONTEXT: This function is part of the operator test suite in the formal library, which provides
+  !          overloaded mathematical operators (.grad., .SSS., .dot., etc.) for structured-grid scalar
+  !          and vector fields. It exercises a compound expression combining the gradient operator,
+  !          vector dot product, volume element, and volume integration operator in a single test. The
+  !          scalar field f is initialized as a parabola and the vector field v as a linear function,
+  !          yielding an analytically known volume integral via the antiderivative SSS_v_dot_grad_f
+  !          evaluated at the domain boundaries [0, 1]. The test loops over 2nd-order and 4th-order
+  !          discretizations, using order-specific expected convergence rates and solution tolerances
+  !          stored in parameter arrays indexed by order. For each order, it constructs low-resolution
+  !          (500 cells) and high-resolution (501 cells) scalar and vector fields, computes the volume
+  !          integral on each, checks the high-resolution absolute error against a tight solution
+  !          tolerance, and verifies the convergence rate via log(lo_res/hi_res)/log(cells_/cells)
+  !          against the expected order within a percentage tolerance. The test result is accumulated
+  !          using the .also., .isAtMost., .approximates., and .withinPercentage. overloaded operators
+  !          and the passing_test()/test_diagnosis_t testing infrastructure.
   function check_volume_integral_of_v_dot_grad_f() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer
@@ -132,9 +153,35 @@ contains
   end function
   ! END CODE CHUNK
 
-  ! PURPOSE: 
-  ! KEYWORDS: 
-  ! CONTEXT: 
+  ! PURPOSE: Tests that the volume integral of f times div(v) converges at the expected rate and
+  !          produces sufficiently accurate results for both 2nd-order and 4th-order discretizations.
+  !          It computes the integral .SSS. (f * .div. v) * dV on two grids (500 and 501 cells) for
+  !          each order, compares the high-resolution result against a known analytical integral, and
+  !          verifies that the observed convergence rate matches the expected order of accuracy.
+  ! KEYWORDS: volume-integral, divergence, scalar-multiplication, finite-difference, convergence-rate,
+  !           operator-overloading, unit-test, scalar_1D, vector_1D, parabola, linear-function,
+  !           2nd-order, 4th-order, structured-grid, test-diagnosis, verification, grid-refinement,
+  !           order-of-accuracy, integral-operator
+  ! CONTEXT: This function is part of the operator test suite in the formal library, which provides
+  !          overloaded mathematical operators (.grad., .div., .SSS., etc.) for structured-grid scalar
+  !          and vector fields. It exercises a compound expression combining the divergence operator,
+  !          scalar-field multiplication, volume element, and volume integration operator in a single
+  !          test. The scalar field f is initialized as a parabola and the vector field v as a linear
+  !          function, yielding an analytically known volume integral via the antiderivative
+  !          SSS_f_div_v evaluated at the domain boundaries [0, 1]. This test complements the
+  !          check_volume_integral_of_v_dot_grad_f test, as f*div(v) and v dot grad(f) are related
+  !          through integration by parts. The test loops over 2nd-order and 4th-order
+  !          discretizations, using order-specific expected convergence rates and solution tolerances
+  !          stored in parameter arrays indexed by order. The 4th-order case uses a slightly larger
+  !          percentage tolerance (2%) compared to the v_dot_grad_f test (1%), reflecting differences
+  !          in how the divergence and gradient discretizations accumulate numerical error. For each
+  !          order, it constructs low-resolution (500 cells) and high-resolution (501 cells) scalar
+  !          and vector fields, computes the volume integral on each, checks the high-resolution
+  !          absolute error against a tight solution tolerance, and verifies the convergence rate via
+  !          log(lo_res/hi_res)/log(cells_/cells) against the expected order within a percentage
+  !          tolerance. The test result is accumulated using the .also., .isAtMost., .approximates.,
+  !          and .withinPercentage. overloaded operators and the passing_test()/test_diagnosis_t
+  !          testing infrastructure.
   function check_volume_integral_of_f_div_v() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer
@@ -183,9 +230,37 @@ contains
   end function
   ! END CODE CHUNK
 
-  ! PURPOSE: 
-  ! KEYWORDS: 
-  ! CONTEXT: 
+  ! PURPOSE: Tests that the surface integral of the product f times (v dot dA) converges at the
+  !          expected rate and produces sufficiently accurate results for both 2nd-order and 4th-order
+  !          discretizations. It computes the integral .SS. (f .x. (v .dot. dA)) on two grids for
+  !          each order, compares the high-resolution result against a known analytical surface
+  !          integral, and verifies that the observed convergence rate matches the expected order of
+  !          accuracy.
+  ! KEYWORDS: surface-integral, dot-product, scalar-multiplication, finite-difference, convergence-rate,
+  !           operator-overloading, unit-test, scalar_1D, vector_1D, parabola, linear-function,
+  !           2nd-order, 4th-order, structured-grid, test-diagnosis, verification, grid-refinement,
+  !           order-of-accuracy, integral-operator, surface-area-element
+  ! CONTEXT: This function is part of the operator test suite in the formal library, which provides
+  !          overloaded mathematical operators (.grad., .div., .SS., .dot., .x., etc.) for
+  !          structured-grid scalar and vector fields. It exercises a compound expression combining
+  !          scalar-vector multiplication, the vector dot product with the surface area element dA,
+  !          and the surface integration operator .SS. in a single test. The scalar field f is
+  !          initialized as a parabola and the vector field v as a linear function, yielding an
+  !          analytically known surface integral computed as parabola(x_max)*line(x_max) minus
+  !          parabola(x_min)*line(x_min) on the domain [0, 1]. This test complements the volume
+  !          integral tests by verifying surface flux computations, which are related through the
+  !          divergence theorem. The test includes compiler-specific conditional compilation: the
+  !          Intel compiler uses fewer cells (400/401 vs 500/501) and a looser percentage tolerance
+  !          for the 4th-order convergence rate (5% vs 4%), reflecting compiler-specific numerical
+  !          differences. The test loops over 2nd-order and 4th-order discretizations, using
+  !          order-specific expected convergence rates and solution tolerances stored in parameter
+  !          arrays indexed by order. For each order, it constructs low-resolution and high-resolution
+  !          scalar and vector fields, computes the surface integral on each, checks the
+  !          high-resolution absolute error against a tight solution tolerance, and verifies the
+  !          convergence rate via log(lo_res/hi_res)/log(cells_/cells) against the expected order
+  !          within a percentage tolerance. The test result is accumulated using the .also.,
+  !          .isAtMost., .approximates., and .withinPercentage. overloaded operators and the
+  !          passing_test()/test_diagnosis_t testing infrastructure.
   function check_surface_integral_of_vf() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer
@@ -251,9 +326,30 @@ contains
     v = exp(x)
   end function
 
-  ! PURPOSE: 
-  ! KEYWORDS: 
-  ! CONTEXT: 
+  ! PURPOSE: Tests that the extended Gauss divergence theorem holds discretely by verifying that the
+  !          residual of the identity .SSS. (v dot grad f) dV + .SSS. (f div v) dV - .SS. (f v dot dA)
+  !          is near zero for both 2nd-order and 4th-order discretizations on a 20-cell 1D domain.
+  ! KEYWORDS: gauss-divergence-theorem, volume-integral, surface-integral, gradient, divergence,
+  !           dot-product, finite-difference, operator-overloading, unit-test, scalar_1D, vector_1D,
+  !           quartic, exponential, 2nd-order, 4th-order, structured-grid, test-diagnosis,
+  !           verification, integral-identity, conservation
+  ! CONTEXT: This function is part of the operator test suite in the formal library, which provides
+  !          overloaded mathematical operators (.grad., .div., .SSS., .SS., .dot., .x., etc.) for
+  !          structured-grid scalar and vector fields. It serves as a capstone verification test that
+  !          ties together the volume integral of v dot grad(f), the volume integral of f times div(v),
+  !          and the surface integral of f times (v dot dA) through the extended Gauss divergence
+  !          theorem identity. Unlike the individual volume and surface integral convergence tests
+  !          that compare each integral against an analytical result, this test checks that the three
+  !          discrete integrals satisfy the theorem's algebraic relationship with a residual below
+  !          residual_tolerance, regardless of how closely each individual integral matches its
+  !          analytical value. The scalar field f is initialized as a quartic function and the vector
+  !          field v as an exponential function, providing a non-trivial test case where neither field
+  !          is within the polynomial exactness range of the stencils. A relatively coarse grid of 20
+  !          cells is used, emphasizing that the discrete identity should hold even on under-resolved
+  !          grids. The test loops over 2nd-order and 4th-order discretizations, computing the
+  !          residual for each and checking its absolute value against residual_tolerance. The test
+  !          result is accumulated using the .also. and .isAtMost. overloaded operators and the
+  !          passing_test()/test_diagnosis_t testing infrastructure.
   function check_gauss_divergence_theorem() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer
