@@ -24,27 +24,12 @@ module tensors_1D_m
 
   abstract interface
 
-    ! PURPOSE: Interface for procedure to provide values for initializing a scalar_1D_t object at the cell centers and boundaries
-    !          for use in the mimetic discretization scheme of Corbino-Castillo (2020)
-    ! KEYWORDS: mimetic discretization, scalar function, sampling, one-dimensional (1D)
-    ! CONTEXT: This abstract interface is used to declare a procedure pointer that can be associated with
-    !          a user-defined function.  The user's function can be invoked via this abstract interface
-    !          to sample the function at the appropriate grid locations.
-
     pure function scalar_1D_initializer_i(x) result(f)
       !! Sampling function for initializing a scalar_1D_t object
       implicit none
       double precision, intent(in) :: x(:)
       double precision, allocatable :: f(:)
     end function
-    ! END CODE CHUNK
-
-    ! PURPOSE: Interface for procedure to provide values for initializing a vector function of one spatial dimension at cell faces
-    !          as defined in the mimetic discretization scheme of Corbino-Castillo (2020).
-    ! KEYWORDS: mimetic discretization, vector function, sampling,  1D
-    ! CONTEXT: This abstract interface is used to declare a procedure pointer that can be associated with
-    !          a user-defined function.  The user's function can be invoked via this abstract interface
-    !          to sample the function at the appropriate grid locations.
 
     pure function vector_1D_initializer_i(x) result(v)
       !! Sampling function for initializing a vector_1D_t object
@@ -52,15 +37,23 @@ module tensors_1D_m
       double precision, intent(in) :: x(:)
       double precision, allocatable :: v(:)
     end function
-    ! END CODE CHUNK
 
   end interface
 
-  ! PURPOSE: Definition for type to encapsulate the data and operations that are common to most or all tensor_1D_t child types
-  ! KEYWORDS: type definition, mimetic discretization, grid values, grid functions, 1D
-  ! CONTEXT: Child types extend this derived type to define specific types of tensors such as scalars,
-  !          vectors, gradients, and divergences.
-
+  ! PURPOSE: Encapsulates the components common to all 1D tensor field types, including domain bounds,
+  !          cell count, order of accuracy, and the array of field values at spatial locations. Child
+  !          types define the differential operators supported by each specific tensor kind.
+  ! KEYWORDS: tensor_1D, base-type, structured-grid, staggered-grid, mimetic, field-values,
+  !           grid-metadata, domain-bounds, cell-count, order-of-accuracy
+  ! CONTEXT: This type is the common base for all 1D tensor field types in the formal library's
+  !          mimetic finite-difference framework, including scalar_1D_t, vector_1D_t, gradient_1D_t,
+  !          divergence_1D_t, vector_dot_gradient_1D_t, scalar_x_divergence_1D_t, weighted_product_1D_t,
+  !          and laplacian_1D_t. It stores the domain bounds x_min and x_max, the number of grid
+  !          cells, the order of accuracy of the mimetic discretization, and an allocatable array of
+  !          field values whose size and meaning depend on the child type (m+2 for cell-centered
+  !          extended scalars, m+1 for face-centered vectors, m for cell-centered divergences, etc.).
+  !          The type provides private procedures for computing gradient and divergence quadrature
+  !          weights and a public dV (aliased to dx) accessor for the differential volume element.
   type tensor_1D_t
     !! Encapsulate the components that are common to all 1D tensors.
     !! Child types define the operations supported by each child, including
@@ -81,11 +74,15 @@ module tensors_1D_m
 
   interface tensor_1D_t
 
-    ! PURPOSE: Interface for procedure to construct a new tensor_1D_t object by assigning each argument to a corresponding
-    !          corresponding component of the new object.
-    ! KEYWORDS: 1D tensor constructor
-    ! CONTEXT: Constructors for child types assign this function's result to to the child object's parent component.
-
+    ! PURPOSE: Constructs a tensor_1D_t object by assigning the provided field values, domain bounds,
+    !          cell count, and order of accuracy to the corresponding components.
+    ! KEYWORDS: tensor_1D, construction, initialization, field-values, grid-metadata, structured-grid,
+    !           staggered-grid
+    ! CONTEXT: This interface provides the user-defined constructor for the tensor_1D_t base type in
+    !          the formal library. All derived tensor types delegate to this constructor to initialize
+    !          their tensor_1D_t base component after computing field values from initializer functions
+    !          or operator applications. The implementation in tensor_1D_s performs direct assignment
+    !          of the dummy arguments to the corresponding private components.
     pure module function construct_1D_tensor_from_components(values, x_min, x_max, cells, order) result(tensor_1D)
       !! User-defined constructor: result is a 1D tensor defined by assigning the dummy arguments to corresponding components
       implicit none
@@ -100,10 +97,18 @@ module tensors_1D_m
 
   end interface
 
-  ! PURPOSE: Definition for type to encapsulate a scalar function of one spatial dimension as a tensor with a gradient operator.
-  ! KEYWORDS: type definition, 1D scalar field abstraction
-  ! CONTEXT: Combine with other tensors via expressions that may include differential operators
-
+  ! PURPOSE: Encapsulates a 1D scalar field defined at cell centers and domain boundaries (m+2
+  !          values), along with a pre-built gradient operator, and provides the .grad. and
+  !          .laplacian. differential operators.
+  ! KEYWORDS: scalar_1D, scalar-field, cell-centered, boundary-values, gradient-operator, laplacian,
+  !           mimetic, structured-grid, staggered-grid, operator-overloading
+  ! CONTEXT: This type extends tensor_1D_t in the formal library's mimetic finite-difference
+  !          framework to represent a scalar field on the extended cell-centered grid (m cell centers
+  !          plus 2 boundary values). It stores a gradient_operator_1D_t for efficient application of
+  !          the .grad. operator, which maps the m+2 scalar values to m+1 node-centered gradient
+  !          values. The .laplacian. operator composes .div. and .grad. to produce the discrete
+  !          Laplacian. The type also provides grid and values accessors for retrieving the extended
+  !          grid coordinates and field values respectively.
   type, extends(tensor_1D_t) :: scalar_1D_t
     !! Encapsulate scalar values at cell centers and boundaries
     private
@@ -122,12 +127,18 @@ module tensors_1D_m
 
   interface scalar_1D_t
 
-    ! PURPOSE: Interface for procedure to construct a new scalar_1D_t object by assigning each argument to a corresponding
-    !          corresponding component of the new object.
-    ! KEYWORDS: 1D scalar field constructor
-    ! CONTEXT: Invoke this constructor with a pointer associated with a function to be sampled at a set
-    !          of uniformly-spaced cell centers along one spatial dimension bounded by x_min and x_max.
-
+    ! PURPOSE: Constructs a scalar_1D_t object by evaluating a user-provided initializer function on
+    !          the extended grid and storing the resulting values along with a pre-built gradient
+    !          operator.
+    ! KEYWORDS: scalar_1D, construction, initializer, structured-grid, staggered-grid,
+    !           gradient-operator, mimetic, cell-centered, boundary-values
+    ! CONTEXT: This interface provides the constructor for scalar_1D_t in the formal library's
+    !          mimetic finite-difference framework. The implementation in scalar_1D_s evaluates the
+    !          initializer function pointer on the m+2 extended grid (boundary points plus cell
+    !          centers), stores the values as the tensor_1D_t base component, and pre-builds a
+    !          gradient_operator_1D_t for the specified order and grid spacing. Assertions verify
+    !          that x_max > x_min and that the cell count is at least 2*order. A gfortran-specific
+    !          variant with an explicit function signature is provided in the implementation.
     pure module function construct_1D_scalar_from_function(initializer, order, cells, x_min, x_max) result(scalar_1D)
       !! Result is a collection of cell-centered-extended values with a corresponding mimetic gradient operator
       implicit none
@@ -142,10 +153,22 @@ module tensors_1D_m
 
   end interface
 
-  ! PURPOSE: Definition for type to encapsulate a vector function of one spatial dimension as a tensor with a divergence operator.
-  ! KEYWORDS: type definition, 1D vector field abstraction
-  ! CONTEXT: Combine with other tensors via expressions that may include differential operators
-
+  ! PURPOSE: Encapsulates a 1D vector field defined at cell faces (m+1 values), along with a
+  !          pre-built divergence operator, and provides the .div., .dot., and .x. operators for
+  !          divergence, surface-normal dot product, and weighted scalar premultiplication
+  !          respectively.
+  ! KEYWORDS: vector_1D, vector-field, face-centered, divergence-operator, mimetic, structured-grid,
+  !           staggered-grid, operator-overloading, surface-normal, weighted-product
+  ! CONTEXT: This type extends tensor_1D_t in the formal library's mimetic finite-difference
+  !          framework to represent a vector field on the face-centered staggered-grid (m+1 face
+  !          locations including both domain boundaries). It stores a divergence_operator_1D_t for
+  !          efficient application of the .div. operator, which maps the m+1 face values to m+2
+  !          cell-centered values (with zero boundary rows). The .dot. operator computes the dot
+  !          product with a surface normal dS for boundary integrals, and the .x. operator computes
+  !          the weighted product with a scalar field using the Corbino & Castillo (2020) Eq. 7
+  !          boundary operator. The dA accessor returns the differential area element (unity in 1D).
+  !          A compiler-conditional block exposes the gradient_1D_weights procedure under the generic
+  !          name weights for the Intel compiler.
   type, extends(tensor_1D_t) :: vector_1D_t
     !! Encapsulate 1D vector values at cell faces (of unit area for 1D) and corresponding operators
     private
@@ -168,10 +191,17 @@ module tensors_1D_m
   end type
   ! END CODE CHUNK
 
-  ! PURPOSE: Definition of type to encapsulate a scalar/vector product weighted for integration on a surface
-  ! KEYWORDS: type definition, 1D product abstraction
-  ! CONTEXT: Combine with other tensors via expressions that may include the double integrals
-
+  ! PURPOSE: Encapsulates the result of the weighted product of a vector_1D field and a scalar_1D
+  !          field via the Corbino & Castillo (2020) Eq. 7 boundary operator, and provides the .SS.
+  !          surface integration operator.
+  ! KEYWORDS: weighted-product, boundary-operator, surface-integral, mimetic, Corbino-Castillo,
+  !           structured-grid, staggered-grid, operator-overloading
+  ! CONTEXT: This type extends tensor_1D_t in the formal library's mimetic finite-difference
+  !          framework to represent the result of the .x. weighted premultiplication of a vector_1D_t
+  !          with a scalar_1D_t. The stored values are the products dx * B * v * f, where B is the
+  !          Corbino & Castillo (2020) boundary operator from Eq. 7. The .SS. operator performs the
+  !          surface integral by summing the stored values, implementing the discrete surface
+  !          integral term in the extended Gauss divergence theorem.
   type, extends(tensor_1D_t) :: weighted_product_1D_t
   contains
     generic :: operator(.SS.) => surface_integrate_vector_x_scalar_1D
@@ -181,11 +211,18 @@ module tensors_1D_m
 
   interface vector_1D_t
 
-    ! PURPOSE: Interface for procedure to construct a new vector_1D_t object by sampling a function of one spatial dimension.
-    ! KEYWORDS: 1D vector field constructor
-    ! CONTEXT: Invoke this constructor with a pointer associated with a function to be sampled at a set
-    !          of uniformly-spaced cell faces along one spatial dimension bounded by x_min and x_max.
-
+    ! PURPOSE: Constructs a vector_1D_t object by evaluating a user-provided initializer function on
+    !          the face-centered grid and storing the resulting values along with a pre-built
+    !          divergence operator.
+    ! KEYWORDS: vector_1D, construction, initializer, structured-grid, staggered-grid,
+    !           divergence-operator, mimetic, face-centered
+    ! CONTEXT: This interface provides the constructor for vector_1D_t from an initializer function
+    !          in the formal library's mimetic finite-difference framework. The implementation in
+    !          vector_1D_s evaluates the initializer function pointer on the m+1 face-centered grid,
+    !          stores the values as the tensor_1D_t base component, and pre-builds a
+    !          divergence_operator_1D_t for the specified order and grid spacing. Assertions verify
+    !          that x_max > x_min and that the cell count is at least 2*order+1. A gfortran-specific
+    !          variant with an explicit function signature is provided in the implementation.
     pure module function construct_1D_vector_from_function(initializer, order, cells, x_min, x_max) result(vector_1D)
       !! Result is a 1D vector with values initialized by the provided procedure pointer sampled on the specified
       !! number of evenly spaced cells covering [x_min, x_max]
@@ -199,11 +236,15 @@ module tensors_1D_m
     end function
     ! END CODE CHUNK
 
-    ! PURPOSE: Interface for procedure to construct a new vector_1D_t object from a parent tensor and a divergence operator object.
-    ! KEYWORDS: 1D vector field constructor
-    ! CONTEXT: Invoke this constructor with a an object to be used to define the constructed parent component
-    !          divergence-operator matrix component.
-
+    ! PURPOSE: Constructs a vector_1D_t object from pre-existing tensor_1D_t and
+    !          divergence_operator_1D_t components, bypassing initializer function evaluation.
+    ! KEYWORDS: vector_1D, construction, component-assembly, tensor_1D, divergence-operator,
+    !           structured-grid, staggered-grid
+    ! CONTEXT: This interface provides an alternative constructor for vector_1D_t in the formal
+    !          library when the field values and divergence operator have already been computed
+    !          separately. The implementation in vector_1D_s directly assigns the provided components.
+    !          This is used internally when constructing vector fields from intermediate operator
+    !          results.
     pure module function construct_from_components(tensor_1D, divergence_operator_1D) result(vector_1D)
       !! Result is a 1D vector with the provided parent component tensor_1D and the provided divergence operator
       type(tensor_1D_t), intent(in) :: tensor_1D
@@ -214,10 +255,19 @@ module tensors_1D_m
 
   end interface
 
-  ! PURPOSE: Definition of type for a vector child type for capturing gradient data and a scalar (dot) product operator.
-  ! KEYWORDS: type definition, 1D gradient vector field abstraction
-  ! CONTEXT: The scalar_1D_t .grad. operator produces this type as a result.
-
+  ! PURPOSE: Encapsulates a 1D mimetic gradient vector field at node-centered locations (m+1 values),
+  !          extending vector_1D_t with a .dot. operator that computes the element-wise dot product
+  !          with another vector_1D field, and a weights accessor for the gradient quadrature weights.
+  ! KEYWORDS: gradient_1D, gradient-field, node-centered, mimetic, structured-grid, staggered-grid,
+  !           dot-product, quadrature-weights, operator-overloading
+  ! CONTEXT: This type extends vector_1D_t in the formal library's mimetic finite-difference
+  !          framework to represent the result of applying the .grad. operator to a scalar_1D_t
+  !          object. It inherits the divergence operator from vector_1D_t (enabling .div. (.grad. f)
+  !          for Laplacian computation) and adds a .dot. operator for computing v .dot. grad(f)
+  !          products that produce vector_dot_gradient_1D_t objects suitable for volume integration.
+  !          The weights accessor (generic name, with compiler-conditional bindings to
+  !          gradient_1D_weights) provides the mimetic quadrature weights for node-centered
+  !          integration.
   type, extends(vector_1D_t) :: gradient_1D_t
     !! A 1D mimetic gradient vector field abstraction with a public method that produces corresponding numerical quadrature weights
   contains
@@ -229,10 +279,18 @@ module tensors_1D_m
   end type
   ! END CODE CHUNK
 
-  ! PURPOSE: Definition of type for a tensor child type for capturing the scalar (dot) product of a vector and a gradient vector data
-  ! KEYWORDS: type definition, 1D vector/gradient scalar product
-  ! CONTEXT: An instance of this type can serve as an integrand in a .SSS. triple-integral operator.
-
+  ! PURPOSE: Encapsulates the element-wise dot product of a 1D vector field with a 1D gradient field,
+  !          carrying both the node-centered product values and the gradient quadrature weights, and
+  !          provides the .SSS. volume integration operator.
+  ! KEYWORDS: vector-dot-gradient, dot-product, volume-integral, quadrature-weights, mimetic,
+  !           structured-grid, staggered-grid, node-centered, operator-overloading
+  ! CONTEXT: This type extends tensor_1D_t in the formal library's mimetic finite-difference
+  !          framework to represent the result of the .dot. operator applied between a vector_1D_t
+  !          and a gradient_1D_t. It stores both the m+1 node-centered product values and the m+1
+  !          gradient quadrature weights needed for volume integration. The .SSS. operator computes
+  !          the discrete volume integral as a direct weighted sum of the product values, which
+  !          appears in compound expressions such as .SSS. (v .dot. .grad. f) * dV within the
+  !          extended Gauss divergence theorem test.
   type, extends(tensor_1D_t) :: vector_dot_gradient_1D_t
     !! Result is the dot product of a 1D vector field and a 1D gradient field
     private
@@ -243,11 +301,18 @@ module tensors_1D_m
   end type
   ! END CODE CHUNK
 
-  ! PURPOSE: Definition of type for a tensor child type capturing the divergence of a vector function of one spatial dimension.
-  ! KEYWORDS: type definition, 1D, divergence
-  ! CONTEXT: Although a mathematical scalar, this type differs from scalar_1D_t in that the values are stored
-  !          _only_ at cell centers, whereas a scalar_1D_t object additionally has values at domain boundaries.
-
+  ! PURPOSE: Encapsulates a 1D divergence field at cell centers (m values), providing grid and values
+  !          accessors, divergence quadrature weights, and multiplication operators for combining with
+  !          scalar fields.
+  ! KEYWORDS: divergence_1D, divergence-field, cell-centered, mimetic, structured-grid, staggered-grid,
+  !           quadrature-weights, scalar-multiplication, operator-overloading
+  ! CONTEXT: This type extends tensor_1D_t in the formal library's mimetic finite-difference
+  !          framework to represent the result of applying the .div. operator to a vector_1D_t
+  !          object. The m cell-centered divergence values (with boundary zeros stripped) are stored
+  !          in the inherited values_ array. The type provides grid and values accessors, a weights
+  !          accessor for the divergence quadrature weights, and overloaded * operators for
+  !          premultiplication and postmultiplication with scalar_1D_t fields, producing
+  !          scalar_x_divergence_1D_t objects suitable for volume integration.
   type, extends(tensor_1D_t) :: divergence_1D_t
     !! Encapsulate divergences at cell centers
   contains
@@ -262,10 +327,18 @@ module tensors_1D_m
   end type
   ! END CODE CHUNK
 
-  ! PURPOSE: Definition of type for a tensor child type for capturing the product of a scalar and divergence
-  ! KEYWORDS: type definition, 1D scalar/divergence product
-  ! CONTEXT: An instance of this type can serve as an integrand in a .SSS. triple-integral operator.
-
+  ! PURPOSE: Encapsulates the element-wise product of a 1D scalar field with a 1D divergence field,
+  !          carrying both the cell-centered product values and the divergence quadrature weights, and
+  !          provides the .SSS. volume integration operator.
+  ! KEYWORDS: scalar-divergence-product, volume-integral, quadrature-weights, mimetic, structured-grid,
+  !           staggered-grid, cell-centered, operator-overloading, boundary-padding
+  ! CONTEXT: This type extends tensor_1D_t in the formal library's mimetic finite-difference
+  !          framework to represent the result of the * operator applied between a scalar_1D_t and a
+  !          divergence_1D_t. It stores the m cell-centered product values and the m+2 divergence
+  !          quadrature weights. The .SSS. volume integration operator zero-pads the values at both
+  !          boundaries before computing the weighted sum, consistent with the zero boundary rows of
+  !          the divergence operator. This appears in compound expressions such as
+  !          .SSS. (f * .div. v) * dV within the extended Gauss divergence theorem test.
   type, extends(tensor_1D_t) :: scalar_x_divergence_1D_t
     !! product of a 1D scalar field and a 1D divergence field
     private
@@ -276,12 +349,19 @@ module tensors_1D_m
   end type
   ! END CODE CHUNK
 
-  ! PURPOSE: Definition of type for a divergence child type capturing the result of applying a divergence operator to a gradient.
-  ! KEYWORDS: type definition, 1D, laplacian
-  ! CONTEXT: Although a mathematical a divergence, this type additionally provides a type-bound procedure that
-  !          returns the number of boundary-adjacent points at which the Laplacian approximation's accuracy drops by
-  !          by one order relative to the parent divergence type.
-
+  ! PURPOSE: Encapsulates a 1D discrete Laplacian field computed as the composition of the divergence
+  !          and gradient operators, extending divergence_1D_t with a boundary depth indicating where
+  !          the Laplacian has reduced-order accuracy.
+  ! KEYWORDS: laplacian_1D, laplacian, div-grad, divergence, gradient, mimetic, structured-grid,
+  !           staggered-grid, boundary-depth, reduced-order, operator-composition
+  ! CONTEXT: This type extends divergence_1D_t in the formal library's mimetic finite-difference
+  !          framework to represent the result of applying the .laplacian. operator to a scalar_1D_t
+  !          object. The Laplacian is computed as .div. (.grad. f), inheriting all divergence_1D_t
+  !          functionality. The additional boundary_depth_ component records the number of cells from
+  !          each boundary where the Laplacian exhibits reduced-order accuracy due to the boundary
+  !          stencils, computed as the divergence operator's upper block row count plus one. The
+  !          reduced_order_boundary_depth accessor provides this information for convergence tests
+  !          that separately assess interior and boundary error behavior.
   type, extends(divergence_1D_t) :: laplacian_1D_t
     private
     integer boundary_depth_
@@ -292,10 +372,15 @@ module tensors_1D_m
 
   interface
 
-    ! PURPOSE: Interface for procedure to provide the differential area for use in surface integrals.
-    ! KEYWORDS: surface integral, area integral, double integral, numerical quadrature, mimetic discretization
-    ! CONTEXT: Use this in expressions of the form .SS. (f .x. (v .dot. dA)) with a scalar_1D_t f and vector_1D_t v
-
+    ! PURPOSE: Returns the differential area element dA for the 1D case, which is always 1.0 since
+    !          the cross-sectional area of a 1D domain is unity.
+    ! KEYWORDS: differential-area, surface-element, 1D, vector_1D, accessor, getter, boundary-integral
+    ! CONTEXT: This interface declares the accessor that returns the differential area element for a
+    !          vector_1D_t object in the formal library's mimetic finite-difference framework. In one
+    !          spatial dimension, the surface bounding each cell is a point with unit area, so dA is
+    !          trivially 1.0. This accessor exists to maintain a consistent interface with
+    !          higher-dimensional generalizations where dA would be a nontrivial geometric quantity.
+    !          It is used in surface integral expressions such as .SS. (f .x. (v .dot. dA)).
     pure module function dA(self)
       !! Result is the grid's discrete surface-area differential for use in surface integrals of the form
       !! .SS. (f .x. (v .dot. dA))
@@ -305,10 +390,15 @@ module tensors_1D_m
     end function
     ! END CODE CHUNK
 
-    ! PURPOSE: Interface for procedure to provide a uniform cell width along the x-coordinate spatial direction.
-    ! KEYWORDS: abcissa, mesh spacing
-    ! CONTEXT: Use this function to produce cell widths for uniform 1D meshes.
-
+    ! PURPOSE: Computes and returns the uniform cell width dx for the 1D grid by dividing the domain
+    !          length by the number of cells.
+    ! KEYWORDS: cell-width, grid-spacing, uniform-mesh, accessor, tensor_1D, structured-grid,
+    !           staggered-grid, differential-volume, getter
+    ! CONTEXT: This interface declares the accessor that returns the uniform cell width
+    !          dx = (x_max - x_min) / cells for a tensor_1D_t object in the formal library. The cell
+    !          width serves double duty as the differential volume element dV in 1D (exposed via the
+    !          generic binding dV => dx). It is used throughout the mimetic framework when
+    !          constructing operators, computing quadrature weights, and evaluating integrals.
     pure module function dx(self)
       !! Result is the uniform cell width
       implicit none
@@ -317,11 +407,15 @@ module tensors_1D_m
     end function
     ! END CODE CHUNK
 
-    ! PURPOSE: Interface for procedure to provide the staggered-grid locations at which scalar values are stored: cell centers plus domain boundaries.
-    ! KEYWORDS: staggered grid, scalar field, cell centers
-    ! CONTEXT: Invoke this function via the "grid" generic binding to produce discrete scalar locations for
-    !          initialization-function sampling, printing, or plotting.
-
+    ! PURPOSE: Returns the extended grid locations for a scalar_1D_t object, consisting of the two
+    !          domain boundary points bracketing the cell-center locations (m+2 values).
+    ! KEYWORDS: grid, cell-center, boundary-points, extended-grid, scalar_1D, accessor, getter,
+    !           structured-grid, staggered-grid
+    ! CONTEXT: This interface declares the grid accessor for scalar_1D_t in the formal library. The
+    !          implementation in scalar_1D_s delegates to the scalar_1D_grid_locations helper
+    !          function, returning an array of m+2 locations that includes x_min, the m cell-center
+    !          coordinates, and x_max. These coordinates correspond positionally to the m+2 extended
+    !          scalar field values.
     pure module function scalar_1D_grid(self) result(cell_centers_extended)
       !! Result is the array of locations at which 1D scalars are defined: cell centers augmented by spatial boundaries
       implicit none
@@ -330,11 +424,13 @@ module tensors_1D_m
     end function
     ! END CODE CHUNK
 
-    ! PURPOSE: Interface for procedure to provide staggered-grid locations at which vector values are stored: cell faces.
-    ! KEYWORDS: abcissa, cell faces
-    ! CONTEXT: Invoke this function via the "grid" generic binding to produce discrete vector locations for
-    !          initialization-function sampling, printing, or plotting.
-
+    ! PURPOSE: Returns the face-centered grid locations for a vector_1D_t object, consisting of m+1
+    !          face locations including both domain boundaries.
+    ! KEYWORDS: grid, face-centered, vector_1D, accessor, getter, structured-grid, staggered-grid
+    ! CONTEXT: This interface declares the grid accessor for vector_1D_t in the formal library. The
+    !          implementation in vector_1D_s delegates to the faces helper function, returning an
+    !          array of m+1 face locations from x_min to x_max. These coordinates correspond
+    !          positionally to the m+1 face-centered vector field values.
     pure module function vector_1D_grid(self) result(cell_faces)
       !! Result is the array of cell face locations (of unit area for 1D) at which 1D vectors are defined
       implicit none
@@ -343,11 +439,15 @@ module tensors_1D_m
     end function
     ! END CODE CHUNK
 
-    ! PURPOSE: Interface for procedure to provide staggered-grid locations at which divergence values are stored: cell centers.
-    ! KEYWORDS: cell centers, staggered grid, divergence
-    ! CONTEXT: Invoke this function via the "grid" generic binding to produce discrete gradient-vector locations for
-    !          initialization-function sampling, printing, or plotting.
-
+    ! PURPOSE: Returns the cell-center grid locations for a divergence_1D_t object, consisting of m
+    !          interior cell-center coordinates.
+    ! KEYWORDS: grid, cell-center, divergence_1D, accessor, getter, structured-grid, staggered-grid
+    ! CONTEXT: This interface declares the grid accessor for divergence_1D_t in the formal library.
+    !          The implementation in divergence_1D_s returns an array of m cell-center coordinates,
+    !          corresponding to the interior cells where the divergence field is defined. Unlike the
+    !          scalar_1D grid which includes boundary points, the divergence grid contains only
+    !          interior cell centers because the divergence operator produces zero boundary rows that
+    !          are stripped during construction.
     pure module function divergence_1D_grid(self) result(cell_centers)
       !! Result is the array of cell centers at which 1D divergences are defined
       implicit none
@@ -356,10 +456,13 @@ module tensors_1D_m
     end function
     ! END CODE CHUNK
 
-    ! PURPOSE: Interface for procedure to provide the cell-centered values of scalar quantities.
-    ! KEYWORDS: cell centers, staggered grid, scalar field
-    ! CONTEXT: Invoke this function via the "values" generic binding to produce discrete scalar values.
-
+    ! PURPOSE: Returns the extended cell-centered values stored in a scalar_1D_t object, including
+    !          both boundary values and interior cell-center values (m+2 values).
+    ! KEYWORDS: scalar_1D, accessor, cell-centered-values, extended-values, getter, boundary-values
+    ! CONTEXT: This interface declares the values accessor for scalar_1D_t in the formal library. The
+    !          implementation in scalar_1D_s returns the internally stored m+2 extended values
+    !          including the two domain boundary values at x_min and x_max plus the m interior
+    !          cell-center values.
     pure module function scalar_1D_values(self) result(cell_centers_extended_values)
       !! Result is an array of 1D scalar values at boundaries and cell centers
       implicit none
@@ -368,10 +471,11 @@ module tensors_1D_m
     end function
     ! END CODE CHUNK
 
-    ! PURPOSE: Interface for procedure to provide the cell face-centered values of vector quantities.
-    ! KEYWORDS: staggered grid, vector field
-    ! CONTEXT: Invoke this function via the "values" generic binding to produce discrete vector values.
-
+    ! PURPOSE: Returns the face-centered vector values stored in a vector_1D_t object (m+1 values).
+    ! KEYWORDS: vector_1D, accessor, face-centered-values, getter
+    ! CONTEXT: This interface declares the values accessor for vector_1D_t in the formal library. The
+    !          implementation in vector_1D_s returns the internally stored m+1 face-centered values
+    !          including both domain boundary faces and all interior cell faces.
     pure module function vector_1D_values(self) result(face_centered_values)
       !! Result is an array of the 1D vector values at cell faces (of unit area 1D)
       implicit none
@@ -380,10 +484,13 @@ module tensors_1D_m
     end function
     ! END CODE CHUNK
 
-    ! PURPOSE: Interface for procedure to provide the cell-centered values of divergences.
-    ! KEYWORDS: staggered grid, divergence
-    ! CONTEXT: Invoke this function via the "values" generic binding to produce discrete divergence values.
-
+    ! PURPOSE: Returns the cell-centered divergence values stored in a divergence_1D_t object (m
+    !          values).
+    ! KEYWORDS: divergence_1D, accessor, cell-centered-values, getter
+    ! CONTEXT: This interface declares the values accessor for divergence_1D_t in the formal library.
+    !          The implementation in divergence_1D_s returns the internally stored m cell-centered
+    !          divergence values, which are the interior entries of the divergence operator's output
+    !          with boundary zeros stripped.
     pure module function divergence_1D_values(self) result(cell_centered_values)
       !! Result is an array of 1D divergences at cell centers
       implicit none
@@ -392,10 +499,16 @@ module tensors_1D_m
     end function
     ! END CODE CHUNK
 
-    ! PURPOSE: Interface for procedure to compute mimetic approximations to the gradient of scalar fields.
-    ! KEYWORDS: gradient, differential operator
-    ! CONTEXT: Invoke this function via the unary .grad. operator with a right-hand-side, scalar-field operand.
-
+    ! PURPOSE: Computes the discrete gradient of the scalar_1D field by applying the mimetic gradient
+    !          operator, producing a gradient_1D_t object with node-centered gradient values and
+    !          verified quadrature weights satisfying the Corbino & Castillo (2020) Eq. 17 identity.
+    ! KEYWORDS: gradient, mimetic, operator-application, Corbino-Castillo, scalar_1D, gradient_1D,
+    !           divergence-operator, quadrature-weights, summation-by-parts, verification
+    ! CONTEXT: This interface declares the .grad. operator for scalar_1D_t in the formal library. The
+    !          implementation in scalar_1D_s constructs a gradient_operator_1D_t, applies it to the
+    !          scalar's m+2 extended values to produce m+1 node-centered gradient values, stores a
+    !          divergence_operator_1D_t in the result, and verifies the Corbino & Castillo (2020)
+    !          Eq. 17 summation-by-parts identity.
     pure module function grad(self) result(gradient_1D)
       !! Result is mimetic gradient of the scalar_1D_t "self"
       implicit none
@@ -404,10 +517,16 @@ module tensors_1D_m
     end function
     ! END CODE CHUNK
 
-    ! PURPOSE: Interface for procedure to compute mimetic approximations to the Laplacian of a scalar field.
-    ! KEYWORDS: Laplacian, differential operator
-    ! CONTEXT: Invoke this function via the unary .laplacian. operator with a right-hand-side, scalar-field operand.
-
+    ! PURPOSE: Computes the discrete Laplacian of the scalar_1D field by composing the divergence and
+    !          gradient operators, and determines the boundary depth where the Laplacian has
+    !          reduced-order accuracy.
+    ! KEYWORDS: laplacian, divergence, gradient, div-grad, mimetic, operator-composition, scalar_1D,
+    !           laplacian_1D, boundary-depth, reduced-order
+    ! CONTEXT: This interface declares the .laplacian. operator for scalar_1D_t in the formal library.
+    !          The implementation in scalar_1D_s computes the Laplacian as .div. (.grad. self) and
+    !          stores the boundary depth (divergence operator's upper block row count plus one) in
+    !          the resulting laplacian_1D_t for use in convergence tests that separately assess
+    !          interior and boundary error behavior.
     pure module function laplacian(self) result(laplacian_1D)
       !! Result is mimetic Laplacian of the scalar_1D_t "self"
       implicit none
@@ -416,10 +535,14 @@ module tensors_1D_m
     end function
     ! END CODE CHUNK
 
-    ! PURPOSE: Interface for procedure to report the number of boundary-adjacent locations at which the Laplacian has reduced-order accuracy.
-    ! KEYWORDS: Laplacian, boundary, order of accuracy
-    ! CONTEXT: Use this function to determine the region of slightly slower convergence for mimetic Laplacian approximations.
-
+    ! PURPOSE: Returns the number of nodes from the boundary at which the Laplacian exhibits
+    !          reduced-order convergence rate (one degree lower than the interior).
+    ! KEYWORDS: laplacian_1D, boundary-depth, reduced-order, convergence, accessor, getter
+    ! CONTEXT: This interface declares the accessor for the boundary depth of a laplacian_1D_t object
+    !          in the formal library. The boundary depth indicates how many cells from each boundary
+    !          the Laplacian has reduced-order accuracy due to the boundary stencils in the mimetic
+    !          gradient and divergence operators. Convergence tests use this value to partition the
+    !          domain into interior and boundary regions for separate error analysis.
     pure module function reduced_order_boundary_depth(self) result(num_nodes)
       !! Result is number of nodes away from the boundary for which convergence rate is one degree lower
       implicit none
@@ -428,10 +551,17 @@ module tensors_1D_m
     end function
     ! END CODE CHUNK
 
-    ! PURPOSE: Interface for procedure to compute mimetic approximations to the divergence of a vector field.
-    ! KEYWORDS: divergence, vector field
-    ! CONTEXT: Invoke this function via the unary .div. operator with a right-hand-side vector-field operand.
-
+    ! PURPOSE: Computes the discrete divergence of the vector_1D field by applying the mimetic
+    !          divergence operator, producing a divergence_1D_t object with cell-centered divergence
+    !          values and verified quadrature weights satisfying the Corbino & Castillo (2020) Eq. 19
+    !          identity.
+    ! KEYWORDS: divergence, mimetic, operator-application, Corbino-Castillo, vector_1D, divergence_1D,
+    !           quadrature-weights, summation-by-parts, verification
+    ! CONTEXT: This interface declares the .div. operator for vector_1D_t in the formal library. The
+    !          implementation in vector_1D_s applies the stored divergence_operator_1D_t to the
+    !          vector's m+1 face-centered values, strips the zero boundary entries to yield m
+    !          cell-centered divergence values, and verifies the Corbino & Castillo (2020) Eq. 19
+    !          summation-by-parts identity D^T * q = b/dx.
     pure module function div(self) result(divergence_1D)
       !! Result is mimetic divergence of the vector_1D_t "self"
       implicit none
@@ -440,11 +570,17 @@ module tensors_1D_m
     end function
     ! END CODE CHUNK
 
-    ! PURPOSE: Interface for procedure to perform mimetic volume integration of a vector/scalar-gradient dot product.
-    ! KEYWORDS: triple integral, volume integral
-    ! CONTEXT: Invoke this function in expressions of the form .SSS. (v .dot. .grad. f) * dV
-    !          with a vector_1D_t v, a scalar f, and a differential volume dV.
-
+    ! PURPOSE: Computes the discrete volume integral of a vector_dot_gradient_1D_t field by
+    !          performing a weighted sum of the node-centered product values using the mimetic
+    !          gradient quadrature weights.
+    ! KEYWORDS: volume-integral, quadrature, mimetic, vector-dot-gradient, weighted-sum,
+    !           summation-by-parts, node-centered
+    ! CONTEXT: This interface declares the .SSS. volume integration operator for
+    !          vector_dot_gradient_1D_t in the formal library. The implementation in
+    !          vector_dot_gradient_1D_s computes the integral as a direct weighted sum of the m+1
+    !          node-centered product values with the gradient quadrature weights. This appears in
+    !          compound expressions such as .SSS. (v .dot. .grad. f) * dV within the extended Gauss
+    !          divergence theorem test.
     pure module function volume_integrate_vector_dot_grad_scalar_1D(integrand) result(integral)
       !! Result is the mimetic quadrature corresponding to a volume integral of a vector-gradient dot product
       implicit none
@@ -453,11 +589,17 @@ module tensors_1D_m
     end function
     ! END CODE CHUNK
 
-    ! PURPOSE: Interface for procedure to perform mimetic volume integration of a scalar/divergence dot product.
-    ! KEYWORDS: triple integral, volume integral
-    ! CONTEXT: Invoke this function in expressions of the form  .SSS. (f * .div. v) * dV
-    !          with a vector_1D_t v, a scalar f, and a differential volume dV.
-
+    ! PURPOSE: Computes the discrete volume integral of a scalar_x_divergence_1D_t field by
+    !          performing a weighted sum of the cell-centered product values (zero-padded at
+    !          boundaries) using the mimetic divergence quadrature weights.
+    ! KEYWORDS: volume-integral, quadrature, mimetic, scalar-divergence-product, weighted-sum,
+    !           summation-by-parts, cell-centered, boundary-padding
+    ! CONTEXT: This interface declares the .SSS. volume integration operator for
+    !          scalar_x_divergence_1D_t in the formal library. The implementation in
+    !          scalar_x_divergence_1D_s zero-pads the m product values at both boundaries and
+    !          computes the weighted sum with the m+2 divergence quadrature weights. This appears in
+    !          compound expressions such as .SSS. (f * .div. v) * dV within the extended Gauss
+    !          divergence theorem test.
     pure module function volume_integrate_scalar_x_divergence_1D(integrand) result(integral)
       !! Result is the mimetic quadrature corresponding to a volume integral of a scalar-divergence product
       implicit none
@@ -466,11 +608,15 @@ module tensors_1D_m
     end function
     ! END CODE CHUNK
 
-    ! PURPOSE: Interface for procedure to perform mimetic surface integration of a scalar/vector product.
-    ! KEYWORDS: double integral, surface integral, flux
-    ! CONTEXT: Invoke this function in expressions of the form -.SS. (f .x. (v .dot. dA))
-    !          with a vector_1D_t v, a scalar_1D_t f, and a differential area dA.
-
+    ! PURPOSE: Computes the discrete surface integral of a weighted_product_1D_t field by summing
+    !          the stored boundary-weighted product values.
+    ! KEYWORDS: surface-integral, quadrature, mimetic, Corbino-Castillo, weighted-product,
+    !           boundary-operator, summation
+    ! CONTEXT: This interface declares the .SS. surface integration operator for
+    !          weighted_product_1D_t in the formal library. The implementation sums the stored values
+    !          that were computed as dx * B * v * f by the weighted_premultiply procedure, where B is
+    !          the Corbino & Castillo (2020) Eq. 7 boundary operator. This represents the surface
+    !          integral term in the extended Gauss divergence theorem.
     pure module function surface_integrate_vector_x_scalar_1D(integrand) result(integral)
       !! Result is the mimetic quadrature corresponding to a surface integral of a scalar-vector product
       implicit none
@@ -479,11 +625,17 @@ module tensors_1D_m
     end function
     ! END CODE CHUNK
 
-    ! PURPOSE: Interface for procedure to compute the scalar (dot) product of a vector and the gradient of a scalar.
-    ! KEYWORDS: scalar product, dot product, inner product
-    ! CONTEXT: Inovke this function via the .dot. binary infix operator in expressions of the form
-    !          g .dot. b with a gradient_1D_t g and a vector_1D_t b.
-
+    ! PURPOSE: Computes the element-wise dot product of a vector_1D field with a gradient_1D field,
+    !          producing a vector_dot_gradient_1D_t object that carries both the node-centered
+    !          product values and the gradient quadrature weights for subsequent volume integration.
+    ! KEYWORDS: dot-product, vector-gradient, mimetic, node-centered, quadrature-weights,
+    !           structured-grid, staggered-grid, operator-overloading
+    ! CONTEXT: This interface declares the .dot. operator between a vector_1D_t and a gradient_1D_t
+    !          in the formal library. The implementation in gradient_1D_s computes the element-wise
+    !          product of the vector and gradient face-centered values and stores the result along
+    !          with the gradient quadrature weights in a vector_dot_gradient_1D_t object. The
+    !          gradient_1D argument is the passed-object dummy, allowing the syntax
+    !          v .dot. (.grad. f) where the gradient result is the dispatching object.
     pure module function dot(vector_1D, gradient_1D) result(vector_dot_gradient_1D)
       !! Result is the mimetic divergence of the vector_1D_t "self"
       implicit none
@@ -493,11 +645,17 @@ module tensors_1D_m
     end function
     ! END CODE CHUNK
 
-    ! PURPOSE: Interface for procedure to compute the scalar (not) product of a vector and a differential area.
-    ! KEYWORDS: dot product, flux, surface-normal
-    ! CONTEXT: Inovke this function via the .dot. binary infix operator in expressions of the form
-    !          .SS. (f .x. (v .dot. dA)) with a saclar_1D_t f, a vector_1D_t v, and a differential area A.
-
+    ! PURPOSE: Computes the dot product of a vector_1D field with a surface normal differential area
+    !          element dS, producing a vector_1D_t object that carries the element-wise product of
+    !          the face-centered vector values with dS and inherits the vector's divergence operator.
+    ! KEYWORDS: dot-product, surface-normal, differential-area, vector_1D, operator-overloading,
+    !           structured-grid, staggered-grid, mimetic, boundary-integral, face-centered
+    ! CONTEXT: This interface declares the .dot. operator between a vector_1D_t and a scalar dS in
+    !          the formal library. The implementation in vector_1D_s performs element-wise
+    !          multiplication of the face-centered vector values with dS and returns a new vector_1D_t
+    !          that inherits the divergence operator. In 1D the surface normal dS is a scalar, so
+    !          the operation is a simple scaling. This is used in surface integral expressions such
+    !          as .SS. (f .x. (v .dot. dA)).
     pure module function dot_surface_normal(vector_1D, dS) result(v_dot_dS)
       !! Result is magnitude of a vector/surface-normal dot product for use in surface integrals of the form
       !! `.SS. (f .x. (v .dot. dA))`
@@ -509,11 +667,18 @@ module tensors_1D_m
     end function
     ! END CODE CHUNK
 
-    ! PURPOSE: Interface for procedure to compute a scalar/vector product weighted for subsequent surface integration.
-    ! KEYWORDS: integrand, surface integral, double integral
-    ! CONTEXT: Inovke this function .x. binary infix operator in expressions of the form
-    !          .SS. (f .x. (v .dot. dA)) with a saclar_1D_t f, a vector_1D_t v, and a differential area A.
-
+    ! PURPOSE: Computes the weighted product of a scalar_1D field and a vector_1D field using the
+    !          mimetic boundary operator B from Corbino & Castillo (2020) Eq. 7, producing a
+    !          weighted_product_1D_t suitable for surface integration.
+    ! KEYWORDS: weighted-product, boundary-operator, mimetic, Corbino-Castillo, product-rule,
+    !           structured-grid, staggered-grid, divergence, gradient, quadrature-weights,
+    !           summation-by-parts, scalar_1D, vector_1D
+    ! CONTEXT: This interface declares the .x. operator between a scalar_1D_t and a vector_1D_t in
+    !          the formal library. The implementation in vector_1D_s assembles the boundary operator
+    !          B = Q*D + G^T*P from Corbino & Castillo (2020) Eq. 7 and computes
+    !          dx * B * v * f. The result is a weighted_product_1D_t whose values can be surface-
+    !          integrated via the .SS. operator to yield the boundary term in the extended Gauss
+    !          divergence theorem.
     pure module function weighted_premultiply(scalar_1D, vector_1D) result(weighted_product_1D)
       !! Result is the product of a boundary-weighted vector_1D_t with a scalar_1D_t
       implicit none
@@ -523,12 +688,18 @@ module tensors_1D_m
     end function
     ! END CODE CHUNK
 
-    ! PURPOSE: Interface for procedure to compute the quadrature weights for use in the mimetic inner products of a vector
-    !          and the gradient of a scalar.
-    ! KEYWORDS: quadrature, numerical integration, coefficients, weights
-    ! CONTEXT: Inovke this function via the "weights" generic binding to produce the quadrature weights
-    !          associated with mimetic approximations to gradients.
-
+    ! PURPOSE: Computes the gradient quadrature weights for a tensor_1D_t object, returning an array
+    !          of m+1 weights used for weighted inner products involving gradient fields on the
+    !          node-centered staggered-grid.
+    ! KEYWORDS: quadrature-weights, gradient, mimetic, node-centered, structured-grid, staggered-grid,
+    !           summation-by-parts, accessor
+    ! CONTEXT: This interface declares the gradient quadrature weights accessor for tensor_1D_t in
+    !          the formal library. The implementation in weights_1D_s computes the m+1 quadrature
+    !          weights for integrating products on the node-centered grid where gradient fields are
+    !          defined. These weights appear in the summation-by-parts identities (Corbino & Castillo,
+    !          2020, Eq. 17) and in the boundary operator B construction (Eq. 7). The procedure is
+    !          bound to tensor_1D_t and exposed via the generic name weights on gradient_1D_t and
+    !          (conditionally) vector_1D_t.
     pure module function gradient_1D_weights(self) result(weights)
       !! Result is an array of quadrature coefficients that can be used to compute a weighted
       !! inner product  of a vector_1D_t object and a gradient_1D_t object.
@@ -538,12 +709,18 @@ module tensors_1D_m
     end function
     ! END CODE CHUNK
 
-    ! PURPOSE: Interface for procedure to compute the quadrature weights for use in the mimetic inner products of a scalar
-    !          and the divergence of a vector.
-    ! KEYWORDS: quadrature, numerical integration, coefficients, weights
-    ! CONTEXT: Invoke this function via the "weights" generic binding to produce the quadrature weights
-    !          associated with mimetic approximations to divergences.
-
+    ! PURPOSE: Computes the divergence quadrature weights for a tensor_1D_t object, returning an
+    !          array of m+2 weights used for weighted inner products involving divergence fields on
+    !          the cell-centered extended grid.
+    ! KEYWORDS: quadrature-weights, divergence, mimetic, cell-centered, structured-grid, staggered-grid,
+    !           summation-by-parts, accessor
+    ! CONTEXT: This interface declares the divergence quadrature weights accessor for tensor_1D_t in
+    !          the formal library. The implementation in weights_1D_s computes the m+2 quadrature
+    !          weights for integrating products on the cell-centered extended grid where divergence
+    !          fields are defined. These weights appear in the summation-by-parts identities (Corbino
+    !          & Castillo, 2020, Eq. 19) and in the boundary operator B construction (Eq. 7). The
+    !          procedure is bound to tensor_1D_t and exposed via the generic name weights on
+    !          divergence_1D_t.
     pure module function divergence_1D_weights(self) result(weights)
       !! Result is an array of quadrature coefficients that can be used to compute a weighted
       !! inner product  of a scalar_1D_t object and a divergence_1D_t object.
@@ -553,11 +730,18 @@ module tensors_1D_m
     end function
     ! END CODE CHUNK
 
-    ! PURPOSE: Interface for procedure to compute the product of a scalar and a divergence
-    ! KEYWORDS: scalar multiplication
-    ! CONTEXT: Invoke this function via the binary infix operator "*" with scalar and divergence left- and
-    !          right-hand operands, respectively
-
+    ! PURPOSE: Computes the element-wise product of a scalar_1D field premultiplied onto a
+    !          divergence_1D field, producing a scalar_x_divergence_1D_t that carries the
+    !          cell-centered product values and the divergence quadrature weights for subsequent
+    !          volume integration.
+    ! KEYWORDS: scalar-divergence-product, premultiply, mimetic, cell-centered, quadrature-weights,
+    !           structured-grid, staggered-grid, operator-overloading
+    ! CONTEXT: This interface declares the * operator with a scalar_1D_t on the left and a
+    !          divergence_1D_t on the right in the formal library. The implementation in
+    !          divergence_1D_s extracts the interior m cell-center values from the scalar field,
+    !          multiplies them element-wise with the divergence values, and stores the result along
+    !          with the divergence quadrature weights in a scalar_x_divergence_1D_t. The pass
+    !          attribute on divergence_1D makes this a type-bound procedure of divergence_1D_t.
     pure module function premultiply_scalar_1D(scalar_1D, divergence_1D) result(scalar_x_divergence_1D)
       !! Result is the point-wise product of a 1D scalar field and the divergence of a 1D vector field
       implicit none
@@ -567,11 +751,17 @@ module tensors_1D_m
     end function
     ! END CODE CHUNK
 
-    ! PURPOSE: Interface for procedure to compute the product of a divergence and a scalar
-    ! KEYWORDS: scalar multiplication
-    ! CONTEXT: Invoke this function via the binary infix operator "*" with divergence and scalar left- and
-    !          right-hand operands, respectively
-
+    ! PURPOSE: Computes the element-wise product of a divergence_1D field postmultiplied by a
+    !          scalar_1D field, producing a scalar_x_divergence_1D_t that carries the cell-centered
+    !          product values and the divergence quadrature weights for subsequent volume integration.
+    ! KEYWORDS: scalar-divergence-product, postmultiply, mimetic, cell-centered, quadrature-weights,
+    !           structured-grid, staggered-grid, operator-overloading
+    ! CONTEXT: This interface declares the * operator with a divergence_1D_t on the left and a
+    !          scalar_1D_t on the right in the formal library. The implementation in divergence_1D_s
+    !          extracts the interior m cell-center values from the scalar field, multiplies them
+    !          element-wise with the divergence values, and stores the result along with the
+    !          divergence quadrature weights in a scalar_x_divergence_1D_t. This provides
+    !          commutativity of the scalar-divergence product.
     pure module function postmultiply_scalar_1D(divergence_1D, scalar_1D) result(scalar_x_divergence_1D)
       !! Result is the point-wise product of a 1D scalar field and the divergence of a 1D vector field
       implicit none
@@ -587,6 +777,17 @@ module tensors_1D_m
 
 contains
 
+  ! PURPOSE: Computes the cell-center x-coordinates for a uniform 1D grid given the domain bounds
+  !          and number of cells, returning an array of cell-center locations offset by half a cell
+  !          width from x_min.
+  ! KEYWORDS: grid, cell-center, uniform-mesh, 1D, structured-grid, staggered-grid, utility
+  ! CONTEXT: This module-level function is compiled for non-gfortran compilers and provides
+  !          cell-center coordinate computation needed throughout the tensors_1D_m module. It
+  !          constructs a uniform grid with cell width dx = (x_max - x_min)/cells and places each
+  !          cell center at x_min + dx/2 + (cell-1)*dx using an implied do loop. For gfortran, an
+  !          identical function is defined locally within the scalar_1D_s submodule. This function
+  !          is used by scalar_1D_grid_locations to build the extended grid array that includes both
+  !          boundary points and cell centers.
   pure function cell_center_locations(x_min, x_max, cells) result(x)
     double precision, intent(in) :: x_min, x_max
     integer, intent(in) :: cells
@@ -597,6 +798,7 @@ contains
       x = x_min + dx/2. + [((cell-1)*dx, cell = 1, cells)]
     end associate
   end function
+  ! END CODE CHUNK
 
 #endif
 

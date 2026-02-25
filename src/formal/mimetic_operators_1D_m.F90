@@ -13,6 +13,18 @@ module mimetic_operators_1D_m
   public :: gradient_operator_1D_t
   public :: divergence_operator_1D_t
 
+  ! PURPOSE: Encapsulates the block-structured sparse storage of a 1D mimetic operator matrix
+  !          consisting of an upper boundary block A, a repeated interior stencil row M, and a lower
+  !          boundary block A', following the Corbino & Castillo (2020) formulation.
+  ! KEYWORDS: mimetic, sparse-matrix, block-structure, Corbino-Castillo, structured-grid,
+  !           staggered-grid, boundary-block, interior-stencil, base-type
+  ! CONTEXT: This type is the base type for gradient_operator_1D_t and divergence_operator_1D_t in
+  !          the formal library's mimetic finite-difference framework. Rather than storing the full
+  !          dense matrix, it stores only the upper boundary block A, the single interior stencil row
+  !          M (which repeats for all interior rows), and the lower boundary block A'. This compact
+  !          representation exploits the banded Toeplitz-like structure of mimetic operators where
+  !          all interior rows share the same stencil. The to_file_t type-bound procedure provides
+  !          serialization of the stored blocks for debugging and output.
   type mimetic_matrix_1D_t
     !! Encapsulate a mimetic matrix with a corresponding matrix-vector product operator
     private
@@ -22,9 +34,19 @@ module mimetic_operators_1D_m
   contains
     procedure, non_overridable :: to_file_t
   end type
+  ! END CODE CHUNK
 
   interface mimetic_matrix_1D_t
 
+    ! PURPOSE: Constructs a mimetic_matrix_1D_t object from the provided upper boundary block A,
+    !          interior stencil row M, and lower boundary block A'.
+    ! KEYWORDS: mimetic, sparse-matrix, construction, block-structure, Corbino-Castillo,
+    !           structured-grid, staggered-grid, boundary-block, interior-stencil
+    ! CONTEXT: This interface provides the constructor for the mimetic_matrix_1D_t base type in the
+    !          formal library. It accepts the three block components that define a mimetic operator
+    !          matrix: the upper boundary block A, the repeated interior stencil row M, and the lower
+    !          boundary block A'. The gradient and divergence operator constructors delegate to this
+    !          constructor after computing the order-specific stencil coefficients.
     pure module function construct_matrix_operator(upper, inner, lower) result(mimetic_matrix_1D)
       !! Construct discrete operator from matrix blocks
       implicit none
@@ -33,13 +55,24 @@ module mimetic_operators_1D_m
       double precision, intent(in) :: lower(:,:) !! A' submatrix block (cf. Corbino & Castillo, 2020)
       type(mimetic_matrix_1D_t) mimetic_matrix_1D
     end function
+    ! END CODE CHUNK
 
   end interface
 
-  ! PURPOSE: Definition of type to encapsulate a one-dimenstional (1D) mimetic gradient operator matrix.
-  ! KEYWORDS: type definition, 1D gradient operator matrix
-  ! CONTEXT: Use this type to assemble gradient-operator matrix for printing.
-
+  ! PURPOSE: Encapsulates a 1D mimetic gradient operator that maps from m+2 cell-centered values
+  !          (including boundary ghost values) to m+1 node-centered gradient values, extending the
+  !          mimetic_matrix_1D_t base type with the order of accuracy k, cell count m, and cell
+  !          width dx.
+  ! KEYWORDS: mimetic, gradient, operator, sparse-matrix, Corbino-Castillo, structured-grid,
+  !           staggered-grid, finite-difference, cell-to-node, extended-type
+  ! CONTEXT: This type extends mimetic_matrix_1D_t in the formal library's mimetic finite-difference
+  !          framework to represent the gradient operator specifically. It adds the order of accuracy
+  !          k, cell count m, and cell width dx as private components needed for matrix-vector
+  !          multiplication and assembly. The type provides a generic .x. operator for matrix-free
+  !          application of the gradient to a vector and an assemble procedure for constructing the
+  !          full dense matrix representation. The gradient operator maps from the m+2 extended
+  !          scalar grid (cell centers plus boundary ghost values) to the m+1 node-centered
+  !          staggered-grid.
   type, extends(mimetic_matrix_1D_t) :: gradient_operator_1D_t
     !! Encapsulate a 1D mimetic gradient operator
     private
@@ -56,10 +89,18 @@ module mimetic_operators_1D_m
 
   interface gradient_operator_1D_t
 
-    ! PURPOSE: Interface for procedure to construct a new mimetic gradient-operator matrix representation of kth order for 1D cells of width dx.
-    ! KEYWORDS: 1D, gradient-operator constructor, sparse matrix
-    ! CONTEXT: Use this function to construct a sparse-matrix represntation of a mimetic gradient operator.
-
+    ! PURPOSE: Constructs a 1D mimetic gradient operator for a given order of accuracy k, cell width
+    !          dx, and number of cells, assembling the block-structured operator matrix following
+    !          the Corbino & Castillo (2020) formulation.
+    ! KEYWORDS: mimetic, gradient, operator-construction, Corbino-Castillo, finite-difference,
+    !           structured-grid, staggered-grid, 2nd-order, 4th-order, boundary-block,
+    !           interior-stencil
+    ! CONTEXT: This interface provides the constructor for gradient_operator_1D_t in the formal
+    !          library's mimetic finite-difference framework. The implementation in
+    !          gradient_operator_1D_s computes the order-specific upper boundary block A, interior
+    !          stencil row M, and lower boundary block A' for the requested order of accuracy, and
+    !          stores them along with k, dx, and the cell count. The constructed operator is used by
+    !          the .grad. operator applied to scalar_1D_t objects.
     pure module function construct_1D_gradient_operator(k, dx, cells) result(gradient_operator_1D)
       !! Construct a mimetic gradient operator
       implicit none
@@ -72,10 +113,21 @@ module mimetic_operators_1D_m
 
   end interface
 
-  ! PURPOSE: Interface for procedure to encapsulate a 1D mimetic divergence operator matrix.
-  ! KEYWORDS: 1D, divergence operator, sparse matrix
-  ! CONTEXT: Use this type to assemble divergence-operator matrix for printing.
-
+  ! PURPOSE: Encapsulates a kth-order 1D mimetic divergence operator that maps from m+1
+  !          node-centered values to m+2 cell-centered values (with zero boundary rows), extending
+  !          the mimetic_matrix_1D_t base type with the order of accuracy k, cell count m, and cell
+  !          width dx.
+  ! KEYWORDS: mimetic, divergence, operator, sparse-matrix, Corbino-Castillo, structured-grid,
+  !           staggered-grid, finite-difference, node-to-cell, extended-type
+  ! CONTEXT: This type extends mimetic_matrix_1D_t in the formal library's mimetic finite-difference
+  !          framework to represent the divergence operator specifically. It adds the order of
+  !          accuracy k, cell count m, and cell width dx as private components needed for
+  !          matrix-vector multiplication and assembly. The type provides a generic .x. operator for
+  !          matrix-free application of the divergence to a vector, an assemble procedure for
+  !          constructing the full dense matrix representation, and a submatrix_A_rows accessor for
+  !          querying the boundary block depth. The divergence operator maps from the m+1
+  !          node-centered staggered-grid to the m+2 cell-centered grid with zero-padded boundary
+  !          rows.
   type, extends(mimetic_matrix_1D_t) :: divergence_operator_1D_t
     !! Encapsulate kth-order mimetic divergence operator on m_ cells of width dx
     private
@@ -92,10 +144,18 @@ module mimetic_operators_1D_m
 
   interface divergence_operator_1D_t
 
-    ! PURPOSE: Interface for procedure to construct an object representing a 1D mimetic divergence operator.
-    ! KEYWORDS: 1D, divergence operator, sparse matrix, constructor
-    ! CONTEXT: Use this type to assemble a divergence-operator matrix for printing.
-
+    ! PURPOSE: Constructs a 1D mimetic divergence operator for a given order of accuracy k, cell
+    !          width dx, and number of cells, assembling the block-structured operator matrix
+    !          following the Corbino & Castillo (2020) formulation.
+    ! KEYWORDS: mimetic, divergence, operator-construction, Corbino-Castillo, finite-difference,
+    !           structured-grid, staggered-grid, 2nd-order, 4th-order, boundary-block,
+    !           interior-stencil
+    ! CONTEXT: This interface provides the constructor for divergence_operator_1D_t in the formal
+    !          library's mimetic finite-difference framework. The implementation in
+    !          divergence_operator_1D_s computes the order-specific upper boundary block A, interior
+    !          stencil row M, and lower boundary block A' for the requested order of accuracy, and
+    !          stores them along with k, dx, and the cell count. The constructed operator is used by
+    !          the .div. operator applied to vector_1D_t objects.
     pure module function construct_1D_divergence_operator(k, dx, cells) result(divergence_operator_1D)
       !! Construct a mimetic gradient operator
       implicit none
@@ -110,13 +170,32 @@ module mimetic_operators_1D_m
 
   interface
 
+    ! PURPOSE: Returns the number of rows in the upper boundary block submatrix A of the mimetic
+    !          divergence operator.
+    ! KEYWORDS: mimetic, divergence, boundary-block, submatrix-rows, accessor, getter
+    ! CONTEXT: This interface declares the accessor that returns the row count of the upper boundary
+    !          block A stored in a divergence_operator_1D_t object. The implementation in
+    !          divergence_operator_1D_s queries the allocated upper_ component. The number of rows
+    !          in A determines the depth of the boundary region where the divergence stencil differs
+    !          from the interior stencil, which is used when partitioning convergence analysis into
+    !          boundary and interior regions.
     pure module function submatrix_A_rows(self) result(rows)
       !! Result is number of rows in the A block of the mimetic divergence matrix operator
       implicit none
       class(divergence_operator_1D_t), intent(in) :: self
       integer rows
     end function
+    ! END CODE CHUNK
 
+    ! PURPOSE: Computes the matrix-vector product of the mimetic gradient operator with an input
+    !          vector, producing the node-centered gradient values.
+    ! KEYWORDS: mimetic, gradient, matrix-vector-multiply, operator-application, Corbino-Castillo,
+    !           structured-grid, staggered-grid, do-concurrent
+    ! CONTEXT: This interface declares the matrix-free application of the mimetic gradient operator
+    !          to a vector in the formal library. The implementation in gradient_operator_1D_s
+    !          exploits the block structure to apply the upper boundary block, repeated interior
+    !          stencil, and lower boundary block separately, avoiding assembly of the full dense
+    !          matrix. This procedure backs the generic .x. operator on gradient_operator_1D_t.
     pure module function gradient_matrix_multiply(self, vec) result(matvec_product)
       !! Result is mimetic gradient vector
       implicit none
@@ -124,21 +203,51 @@ module mimetic_operators_1D_m
       double precision, intent(in) :: vec(:)
       double precision, allocatable :: matvec_product(:)
     end function
+    ! END CODE CHUNK
 
+    ! PURPOSE: Assembles the full dense matrix representation of the mimetic gradient operator,
+    !          producing an (m+1) x (m+2) matrix.
+    ! KEYWORDS: mimetic, gradient, matrix-assembly, dense-matrix, operator-assembly, structured-grid,
+    !           staggered-grid, Corbino-Castillo
+    ! CONTEXT: This interface declares the assembly of the full dense gradient operator matrix in the
+    !          formal library. The implementation in gradient_operator_1D_s constructs the matrix by
+    !          applying the operator to each standard basis vector via do concurrent. While the
+    !          operator is typically applied in matrix-free form for efficiency, the dense matrix is
+    !          useful for verifying the summation-by-parts identity and for debugging.
     pure module function assemble_gradient(self) result(G)
       !! Result is the assembled 1D mimetic gradient operator matrix
        implicit none
        class(gradient_operator_1D_t), intent(in) :: self
        double precision, allocatable :: G(:,:)
     end function
+    ! END CODE CHUNK
 
+    ! PURPOSE: Assembles the full dense matrix representation of the mimetic divergence operator,
+    !          producing an (m+2) x (m+1) matrix.
+    ! KEYWORDS: mimetic, divergence, matrix-assembly, dense-matrix, operator-assembly, structured-grid,
+    !           staggered-grid, Corbino-Castillo
+    ! CONTEXT: This interface declares the assembly of the full dense divergence operator matrix in
+    !          the formal library. The implementation in divergence_operator_1D_s constructs the
+    !          matrix by applying the operator to each standard basis vector via do concurrent. While
+    !          the operator is typically applied in matrix-free form for efficiency, the dense matrix
+    !          is useful for verifying the summation-by-parts identity and for debugging.
     pure module function assemble_divergence(self) result(D)
       !! Result is the assembled 1D mimetic divergence operator matrix
        implicit none
        class(divergence_operator_1D_t), intent(in) :: self
        double precision, allocatable :: D(:,:)
      end function
+    ! END CODE CHUNK
 
+    ! PURPOSE: Computes the matrix-vector product of the mimetic divergence operator with an input
+    !          vector, producing the cell-centered divergence values with zero boundary entries.
+    ! KEYWORDS: mimetic, divergence, matrix-vector-multiply, operator-application, Corbino-Castillo,
+    !           structured-grid, staggered-grid, do-concurrent
+    ! CONTEXT: This interface declares the matrix-free application of the mimetic divergence operator
+    !          to a vector in the formal library. The implementation in divergence_operator_1D_s
+    !          exploits the block structure to apply the upper boundary block, repeated interior
+    !          stencil, and lower boundary block separately, avoiding assembly of the full dense
+    !          matrix. This procedure backs the generic .x. operator on divergence_operator_1D_t.
     pure module function divergence_matrix_multiply(self, vec) result(matvec_product)
       !! Result is mimetic divergence defined at cell centers
       implicit none
@@ -146,12 +255,23 @@ module mimetic_operators_1D_m
       double precision, intent(in) :: vec(:)
       double precision, allocatable :: matvec_product(:)
     end function
+    ! END CODE CHUNK
 
+    ! PURPOSE: Serializes the mimetic_matrix_1D_t block components to a file_t object for output
+    !          and debugging.
+    ! KEYWORDS: mimetic, serialization, file-output, debugging, sparse-matrix, block-structure
+    ! CONTEXT: This interface declares the serialization procedure for the mimetic_matrix_1D_t base
+    !          type in the formal library. The implementation converts the stored upper block A,
+    !          interior stencil row M, and lower block A' into a file_t representation suitable for
+    !          writing to disk or displaying during debugging. This procedure is bound to the
+    !          mimetic_matrix_1D_t type and is inherited by both gradient_operator_1D_t and
+    !          divergence_operator_1D_t.
      pure module function to_file_t(self) result(file)
        implicit none
        class(mimetic_matrix_1D_t), intent(in) :: self
        type(file_t) file
      end function
+    ! END CODE CHUNK
 
   end interface
 
@@ -159,6 +279,18 @@ contains
 
 #if HAVE_DO_CONCURRENT_TYPE_SPEC_SUPPORT && HAVE_LOCALITY_SPECIFIER_SUPPORT
 
+  ! PURPOSE: Transforms the upper boundary block submatrix "A" of a mimetic operator into the
+  !          corresponding lower boundary block "A'" by reversing elements within rows (with sign
+  !          negation) and then reversing elements within columns, implementing the antisymmetric
+  !          reflection required by the Corbino & Castillo (2020) mimetic operator structure.
+  ! KEYWORDS: mimetic, boundary-block, matrix-transformation, antisymmetric, Corbino-Castillo,
+  !           do-concurrent, utility
+  ! CONTEXT: This module-level function is compiled for compilers that support do concurrent with
+  !          type specifiers and locality specifiers. It provides the transformation from the upper
+  !          block "A" to the lower block "A'" needed when constructing mimetic gradient and
+  !          divergence operators in the formal library. The gfortran-specific duplicates of this
+  !          function are defined in divergence_operator_1D_s and gradient_operator_1D_s. Both the
+  !          gradient and divergence operator constructors call this function during assembly.
   pure function negate_and_flip(A) result(Ap)
     !! Transform a mimetic matrix upper block into a lower block
     double precision, intent(in) :: A(:,:)
@@ -177,6 +309,7 @@ contains
     end do reverse_elements_within_columns
 
   end function
+  ! END CODE CHUNK
  
 #else
 
