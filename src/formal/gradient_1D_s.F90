@@ -16,12 +16,21 @@ submodule(tensors_1D_m) gradient_1D_s
 
 contains
 
-  ! PURPOSE: Definition of procedure to compute the quadrature weights for use in the mimetic inner products of a vector
-  !          and the gradient of a scalar.
-  ! KEYWORDS: quadrature, numerical integration, coefficients, weights
-  ! CONTEXT: Inovke this function via the "weights" generic binding to produce the quadrature weights
-  !          associated with mimetic approximations to gradients.
-
+  ! PURPOSE: Computes the mimetic quadrature weights for a gradient_1D_t object, returning an array
+  !          of m+1 weights where m is the number of cells, with boundary skin weights that ensure
+  !          discrete conservation properties and interior weights of 1.0.
+  ! KEYWORDS: quadrature-weights, mimetic, gradient, boundary-weights, structured-grid, staggered-grid,
+  !           2nd-order, 4th-order, conservation, summation-by-parts, accessor
+  ! CONTEXT: This procedure computes the quadrature weights used for discrete integration involving
+  !          gradient fields in the formal library's mimetic finite-difference framework. The gradient
+  !          lives on a staggered-grid with m+1 node-centered values, so the weights array has size
+  !          m+1. Boundary "skin" weights deviate from unity to maintain discrete conservation and
+  !          summation-by-parts properties. For 2nd-order discretizations the skin has 2 elements,
+  !          while for 4th-order discretizations the skin has 7 elements. The skin is mirrored
+  !          symmetrically at both domain boundaries with unity-valued weights filling the interior.
+  !          Assertions verify that the grid has sufficient cells to accommodate the skin depth on
+  !          both sides and that the resulting weights array has the expected size of cells+1.
+  !          Unsupported orders trigger an error stop.
   module procedure gradient_1D_weights
 
     integer face
@@ -46,12 +55,22 @@ contains
   end procedure
   ! END CODE CHUNK
 
-  ! PURPOSE: Definition of procedure to compute the scalar (dot) product of a vector and the gradient of a scalar.
-  ! KEYWORDS: scalar product, dot product, inner product
-  ! CONTEXT: Inovke this function via the .dot. binary infix operator in expressions of the form
-  !          g .dot. b with a gradient_1D_t g and a vector_1D_t b.
-
+  ! PURPOSE: Computes the element-wise dot product of a vector_1D field with a gradient_1D field,
+  !          producing a new vector_dot_gradient_1D_t object that carries both the multiplied values
+  !          and the gradient quadrature weights.
+  ! KEYWORDS: dot-product, gradient, vector_1D, operator-overloading, structured-grid, staggered-grid,
+  !           mimetic, quadrature-weights, element-wise-multiplication
+  ! CONTEXT: This procedure implements the dot product of a vector_1D_t with a gradient_1D_t in the
+  !          formal library's operator overloading framework. Both fields must live on the same
+  !          staggered-grid with matching sizes, orders, cell counts, and domain bounds, which are
+  !          verified via assertions. The element-wise product of the two fields' node-centered values
+  !          forms the resulting tensor, which inherits the gradient field's grid metadata and
+  !          quadrature weights. The quadrature weights are retrieved via a compiler-conditional call
+  !          to either weights() or gradient_1D_weights() to handle gfortran naming differences. The
+  !          resulting vector_dot_gradient_1D_t object can then be passed to the volume integration
+  !          operator .SSS. as part of compound expressions such as .SSS. (v .dot. .grad. f) * dV.
   module procedure dot
+
     call_julienne_assert(size(gradient_1D%values_) .equalsExpected. size(vector_1D%values_))
     call_julienne_assert(gradient_1D%order_ .equalsExpected. vector_1D%order_)
     call_julienne_assert(gradient_1D%cells_ .equalsExpected. vector_1D%cells_)
@@ -72,4 +91,5 @@ contains
 #endif
   end procedure
   ! END CODE CHUNK
+
 end submodule gradient_1D_s
