@@ -65,6 +65,27 @@ contains
     y = (x**2)/2
   end function
 
+  ! PURPOSE: Tests that the 2nd-order discrete divergence of the gradient operator correctly computes
+  !          div(grad(f)) for a parabolic function (x^2/2), which should yield a constant value of
+  !          1.0 everywhere, and reports a passing or failing test diagnosis based on whether the
+  !          computed values approximate the expected result within a tight tolerance.
+  ! KEYWORDS: divergence, gradient, div-grad, laplacian-equivalence, finite-difference,
+  !           defined operation, unit-test, scalar_1D, parabola, 2nd-order, structured-grid, staggered-grid,
+  !           test-diagnosis, differential-operator, verification, compound-operator
+  ! CONTEXT: This function is part of the operator test suite in the formal library, which provides
+  !          defined operations (.grad., .div., .laplacian., etc.) for staggered-grid
+  !          scalar fields. It tests the compound expression .div. (.grad. f), which should be
+  !          mathematically equivalent to the Laplacian but is computed by composing the gradient and
+  !          divergence operators separately rather than using the dedicated .laplacian. operator. The
+  !          scalar field is initialized as a parabola (x^2/2) on a 16-cell 1D domain [0, 5] at
+  !          2nd-order accuracy, and the expected div(grad) value is the constant 1.0. This
+  !          complements the direct Laplacian tests by verifying that the discrete gradient and
+  !          divergence operators compose correctly. A tight_tolerance is used, reflecting that the
+  !          parabola is within the polynomial exactness range of the 2nd-order stencils. The
+  !          conditional compilation directives handle differences between gfortran and other compilers
+  !          regarding associate-block support for user-defined operator results. The test result is
+  !          accumulated using the .also. and .approximates. defined operations and the
+  !          passing_test()/test_diagnosis_t testing infrastructure.
   function check_2nd_order_div_grad_parabola() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => parabola
@@ -84,7 +105,30 @@ contains
     end associate
 #endif
   end function
+  ! END CODE CHUNK
 
+  ! PURPOSE: Tests that the 4th-order discrete divergence of the gradient operator correctly computes
+  !          div(grad(f)) for a parabolic function (x^2/2), which should yield a constant value of
+  !          1.0 everywhere, and reports a passing or failing test diagnosis based on whether the
+  !          computed values approximate the expected result within a tight tolerance.
+  ! KEYWORDS: divergence, gradient, div-grad, laplacian-equivalence, finite-difference,
+  !           defined operation, unit-test, scalar_1D, parabola, 4th-order, structured-grid, staggered-grid,
+  !           test-diagnosis, differential-operator, verification, compound-operator,
+  !           higher-order-accuracy
+  ! CONTEXT: This function is part of the operator test suite in the formal library, which provides
+  !          defined operations (.grad., .div., .laplacian., etc.) for staggered-grid
+  !          scalar fields. It tests the compound expression .div. (.grad. f), which should be
+  !          mathematically equivalent to the Laplacian but is computed by composing the gradient and
+  !          divergence operators separately rather than using the dedicated .laplacian. operator. The
+  !          scalar field is initialized as a parabola (x^2/2) on a 16-cell 1D domain [0, 9] at
+  !          4th-order accuracy, and the expected div(grad) value is the constant 1.0. Compared to the
+  !          2nd-order variant, this test uses a wider domain [0, 9] vs [0, 5], which tests the
+  !          higher-order stencil on a coarser effective resolution. A tight_tolerance is still used,
+  !          as the parabola is well within the polynomial exactness range of the 4th-order stencils.
+  !          The conditional compilation directives handle differences between gfortran and other
+  !          compilers regarding associate-block support for user-defined operator results. The test
+  !          result is accumulated using the .also. and .approximates. defined operations and the
+  !          passing_test()/test_diagnosis_t testing infrastructure.
   function check_4th_order_div_grad_parabola() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => parabola
@@ -104,6 +148,7 @@ contains
     end associate
 #endif
   end function
+  ! END CODE CHUNK
 
   pure function sinusoid(x) result(y)
     double precision, intent(in) :: x(:)
@@ -111,6 +156,28 @@ contains
     y = sin(x) + cos(x)
   end function
 
+  ! PURPOSE: Tests that the 2nd-order discrete divergence operator converges at the expected rate by
+  !          comparing coarse-grid (100 cells) and fine-grid (101 cells) solutions of the divergence
+  !          of the vector field [sin(x) + cos(x)] against the analytical divergence cos(x) - sin(x).
+  !          It verifies that both grids approximate the expected divergence within a rough tolerance
+  !          and that the observed convergence rate matches 2nd-order accuracy.
+  ! KEYWORDS: divergence, finite-difference, convergence-rate, 2nd-order, defined operation,
+  !           unit-test, vector_1D, sinusoid, structured-grid, staggered-grid, test-diagnosis, differential-operator,
+  !           verification, grid-refinement, order-of-accuracy
+  ! CONTEXT: This function is part of the divergence operator test suite in the formal library, which
+  !          provides defined operations (.div., .grad., .laplacian., etc.) for
+  !          staggered-grid scalar and vector fields. It constructs two vector_1D_t objects
+  !          initialized with a sinusoidal function on the domain [0, 2*pi] at 2nd-order accuracy
+  !          with coarse (100) and fine (101) cell counts, applies the .div. operator to both, and
+  !          compares the results against the analytical divergence cos(x) - sin(x). This test mirrors
+  !          the structure of the gradient convergence tests but exercises the divergence operator on
+  !          a vector field rather than the gradient operator on a scalar field. The observed
+  !          convergence rate is computed via log(coarse_error/fine_error)/log(fine_cells/coarse_cells)
+  !          and checked against the desired 2nd order. A rough_tolerance is used for all checks. The
+  !          conditional compilation directives handle differences between gfortran and other compilers
+  !          regarding associate-block support for user-defined operator results. The test result is
+  !          accumulated using the .also. and .approximates. defined operations and the
+  !          passing_test()/test_diagnosis_t testing infrastructure.
   function check_2nd_order_div_sinusoid_convergence() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     procedure(vector_1D_initializer_i), pointer :: vector_1D_initializer => sinusoid
@@ -155,7 +222,32 @@ contains
     end associate
 #endif
   end function
+  ! END CODE CHUNK
 
+  ! PURPOSE: Tests that the 4th-order discrete divergence operator converges at the expected rate by
+  !          comparing coarse-grid (500 cells) and fine-grid (501 cells) solutions of the divergence
+  !          of the vector field [sin(x) + cos(x)] against the analytical divergence cos(x) - sin(x).
+  !          It verifies that both grids approximate the expected divergence within a loose tolerance
+  !          and that the observed convergence rate matches 4th-order accuracy.
+  ! KEYWORDS: divergence, finite-difference, convergence-rate, 4th-order, defined operation,
+  !           unit-test, vector_1D, sinusoid, structured-grid, staggered-grid, test-diagnosis, differential-operator,
+  !           verification, grid-refinement, order-of-accuracy, higher-order-accuracy
+  ! CONTEXT: This function is part of the divergence operator test suite in the formal library, which
+  !          provides defined operations (.div., .grad., .laplacian., etc.) for
+  !          staggered-grid scalar and vector fields. It constructs two vector_1D_t objects
+  !          initialized with a sinusoidal function on the domain [0, 2*pi] at 4th-order accuracy
+  !          with coarse (500) and fine (501) cell counts, applies the .div. operator to both, and
+  !          compares the results against the analytical divergence cos(x) - sin(x). Compared to the
+  !          2nd-order divergence convergence test, this test uses significantly more cells (500/501
+  !          vs 100/101) to ensure stable convergence rate estimation at higher order. The point-wise
+  !          accuracy checks use loose_tolerance rather than rough_tolerance, reflecting the tighter
+  !          errors achievable with the 4th-order stencil on finer grids, while the convergence rate
+  !          check uses crude_tolerance. The observed convergence rate is computed via
+  !          log(coarse_error/fine_error)/log(fine_cells/coarse_cells) and checked against the desired
+  !          4th order. The conditional compilation directives handle differences between gfortran and
+  !          other compilers regarding associate-block support for user-defined operator results. The
+  !          test result is accumulated using the .also. and .approximates. defined operations and
+  !          the passing_test()/test_diagnosis_t testing infrastructure.
   function check_4th_order_div_sinusoid_convergence() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     procedure(vector_1D_initializer_i), pointer :: vector_1D_initializer => sinusoid
@@ -203,5 +295,6 @@ contains
     end associate
 #endif
   end function
+  ! END CODE CHUNK
 
 end module divergence_operator_1D_test_m
