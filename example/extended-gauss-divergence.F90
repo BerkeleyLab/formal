@@ -1,12 +1,6 @@
 ! Copyright (c) 2026, The Regents of the University of California
 ! Terms of use are as specified in LICENSE.txt
 
-! PURPOSE: User-defined module functions for use in initializing scalar and vector fields on
-!          a one-dimensional (1D) staggered grid. Scalar functions will be sampled at cell
-!          centers and domian boundaries (domain interval end points in 1D).  Vector functions
-!          will be sampled at cell faces (subinterval end points).
-! KEYWORDS: module function, scalar, vector
-! CONTEXT: 
 module integrand_operands_m
   implicit none
 contains
@@ -24,7 +18,6 @@ contains
   end function
 
 end module
-! END CODE CHUNK
 
 program extended_gauss_divergence
   !! Print each term in the following residual formed from the extended Gauss-divergence
@@ -99,36 +92,21 @@ program extended_gauss_divergence
     ))
       print_all: &
       associate(all_terms => merge(.true., .false., all([flags%div_, flags%grad_, flags%vf_]) .or. .not. any([flags%div_, flags%grad_, flags%vf_])))
-        ! PURPOSE: Construct 1D scalar- and vector-field objects with a specified order of accuracy,
-        !          number of grid cells, and domain boundaries
-        ! KEYWORDS: scalar field, vector field, one-dimensional (1D)
-        ! CONTEXT: construct fields for use as operands in vector-calculus expressions
         integrand_factors: &
         associate( &
            f => scalar_1D_t(scalar_1D_initializer, args%order_, args%cells_, args%x_min_, args%x_max_) &
           ,v => vector_1D_t(vector_1D_initializer, args%order_, args%cells_, args%x_min_, args%x_max_) &
         )
-        ! END CODE CHUNK
           differential_volume: &
           associate(dV => f%dV())
 
             if (flags%grad_ .or. all_terms) then
-              ! PURPOSE: Evaluate a volume integral over the problem domain with an integrand formed
-              !          from the dot product of a vector field v with the gradient of a scalar f
-              ! KEYWORDS: volume integral, dot product, gradient
-              ! CONTEXT: Use to verfiy the extended Gauss divergence theorem.
               SSS_v_dot_grad_f_dV = .SSS. (v .dot. .grad. f) * dV
-              ! END CODE CHUNK
               print '(a,g0)', ".SSS. (v .dot. .grad. f) * dV =  ", SSS_v_dot_grad_f_dV
             end if
 
             if (flags%div_ .or. all_terms) then
-              ! PURPOSE: Evaluate a volume integral over the problem domain with an integrand formed
-              !          from the product of a scalar field f with the divergence of a vector field v
-              ! KEYWORDS: volume integral, divergence
-              ! CONTEXT: Use to verfiy the extended Gauss divergence theorem.
               SSS_f_div_v_dV      = .SSS. (f * .div. v) * dV
-              ! END CODE CHUNK
               print '(a,g0)', ".SSS. (     f * .div. v) * dV =  ", SSS_f_div_v_dV
             end if
 
@@ -137,23 +115,13 @@ program extended_gauss_divergence
           differential_area: &
           associate(dA => v%dA())
             if (flags%vf_ .or. all_terms) then
-              ! PURPOSE: Evaluate a boundary surface integral representing the flux of a vector field formed
-              !         from the product of a scalar field f and a vector field v
-              ! KEYWORDS: surface integral, flux
-              ! CONTEXT: Use to verfiy the extended Gauss divergence theorem.
               SS_f_v_dot_dA     =  .SS. (f .x. (v .dot. dA))
-              ! END CODE CHUNK
               print '(a,g0)', "   -.SS. (f .x. (v .dot. dA)) = ", -SS_f_v_dot_dA
             end if
 
             if (all_terms) then
               print '(a)'   , "----------------------------------------------------"
-              ! PURPOSE: Verify satisfaction of the Extended Gauss Divergence Theorem by computing a residual
-              !          formed from the two volume integrals and one surface integral in the theorem.
-              ! KEYWORDS: Extended Gauss Divergence Theorem, residual
-              ! CONTEXT: A small resudual verifies the satisfaction of the Extended Guass Divergence Theorem
               print '(26x,a,g0,a)',"sum = ", SSS_v_dot_grad_f_dV  +  SSS_f_div_v_dV - SS_f_v_dot_dA, " (residual)"
-              ! END CODE CHUNK
             end if
 
           end associate differential_area
