@@ -71,12 +71,12 @@ contains
   ! KEYWORDS: laplacian, finite-difference, defined operation, unit-test, scalar_1D, parabola, 2nd-order,
   !           structured-grid, staggered-grid, test-diagnosis, differential-operator, verification
   ! CONTEXT: This function is part of the Laplacian operator test suite in the formal library, which provides
-  !          overloaded mathematical operators (.laplacian., .gradient., etc.) for staggered-grid scalar fields.
+  !          defined operations (.laplacian., .gradient., etc.) for staggered-grid scalar fields.
   !          It constructs a scalar_1D_t object initialized with a parabola function on a 16-cell 1D domain [0, 5],
   !          applies the .laplacian. operator, and checks that all resulting values match the analytically expected
   !          constant Laplacian of 1.0. The conditional compilation directives handle differences between gfortran
   !          and other compilers regarding associate-block support for user-defined operator results. The test result
-  !          is accumulated using the .also. and .approximates. overloaded operators and the
+  !          is accumulated using the .also. and .approximates. defined operations and the
   !          passing_test()/test_diagnosis_t testing infrastructure.
   function check_2nd_order_laplacian_parabola() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
@@ -112,7 +112,7 @@ contains
   ! KEYWORDS: laplacian, finite-difference, defined operation, unit-test, scalar_1D, quartic, 4th-order,
   !           structured-grid, staggered-grid, test-diagnosis, differential-operator, verification, higher-order-accuracy
   ! CONTEXT: This function is part of the Laplacian operator test suite in the formal library, which provides
-  !          overloaded mathematical operators (.laplacian., .gradient., etc.) for staggered-grid scalar fields.
+  !          defined operations (.laplacian., .gradient., etc.) for staggered-grid scalar fields.
   !          It constructs a scalar_1D_t object initialized with a quartic function on a 16-cell 1D domain [0, 40],
   !          applies the .laplacian. operator at 4th-order accuracy, and checks that all resulting values match the
   !          analytically expected spatially-varying Laplacian of x^2. Unlike the 2nd-order parabola test, this test
@@ -121,7 +121,7 @@ contains
   !          reflecting the greater numerical challenge of the higher-order polynomial on a coarse grid. The
   !          conditional compilation directives handle differences between gfortran and other compilers regarding
   !          associate-block support for user-defined operator results. The test result is accumulated using
-  !          the .also. and .approximates. overloaded operators and the passing_test()/test_diagnosis_t testing infrastructure.
+  !          the .also. and .approximates. defined operations and the passing_test()/test_diagnosis_t testing infrastructure.
   function check_4th_order_laplacian_of_quartic() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => quartic
@@ -204,7 +204,7 @@ contains
   !           structured-grid, staggered-grid, test-diagnosis, differential-operator, verification, grid-refinement,
   !           boundary-accuracy, interior-accuracy, order-of-accuracy, sin-function
   ! CONTEXT: This function is part of the Laplacian operator test suite in the formal library, which
-  !          provides overloaded mathematical operators (.laplacian., .gradient., etc.) for structured-grid
+  !          provides defined operations (.laplacian., .gradient., etc.) for staggered-grid
   !          scalar fields. Unlike the parabola and quartic tests that verify correctness against known
   !          analytical results on a single grid, this test performs a grid-refinement convergence study
   !          using a trigonometric function f(x)=sin(x) on the domain [0, 2*pi]. It constructs two
@@ -217,7 +217,7 @@ contains
   !          order for the interior and desired order minus one for the boundary. The conditional
   !          compilation directives handle differences between gfortran and other compilers regarding
   !          associate-block support for user-defined operator results. The test result is accumulated
-  !          using the .also. and .approximates. overloaded operators and the passing_test()/test_diagnosis_t
+  !          using the .also. and .approximates. defined operations and the passing_test()/test_diagnosis_t
   !          testing infrastructure.
   function check_laplacian_convergence(order_desired, coarse_cells, fine_cells) result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis

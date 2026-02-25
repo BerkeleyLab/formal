@@ -91,7 +91,7 @@ contains
   !           2nd-order, 4th-order, structured-grid, staggered-grid, test-diagnosis, verification, grid-refinement,
   !           order-of-accuracy, integral-operator
   ! CONTEXT: This function is part of the operator test suite in the formal library, which provides
-  !          overloaded mathematical operators (.grad., .SSS., .dot., etc.) for staggered-grid scalar
+  !          defined operations (.grad., .SSS., .dot., etc.) for staggered-grid scalar
   !          and vector fields. It exercises a compound expression combining the gradient operator,
   !          vector dot product, volume element, and volume integration operator in a single test. The
   !          scalar field f is initialized as a parabola and the vector field v as a linear function,
@@ -103,7 +103,7 @@ contains
   !          integral on each, checks the high-resolution absolute error against a tight solution
   !          tolerance, and verifies the convergence rate via log(lo_res/hi_res)/log(cells_/cells)
   !          against the expected order within a percentage tolerance. The test result is accumulated
-  !          using the .also., .isAtMost., .approximates., and .withinPercentage. overloaded operators
+  !          using the .also., .isAtMost., .approximates., and .withinPercentage. defined operations
   !          and the passing_test()/test_diagnosis_t testing infrastructure.
   function check_volume_integral_of_v_dot_grad_f() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
@@ -163,7 +163,7 @@ contains
   !           2nd-order, 4th-order, structured-grid, staggered-grid, test-diagnosis, verification, grid-refinement,
   !           order-of-accuracy, integral-operator
   ! CONTEXT: This function is part of the operator test suite in the formal library, which provides
-  !          overloaded mathematical operators (.grad., .div., .SSS., etc.) for staggered-grid scalar
+  !          defined operations (.grad., .div., .SSS., etc.) for staggered-grid scalar
   !          and vector fields. It exercises a compound expression combining the divergence operator,
   !          scalar-field multiplication, volume element, and volume integration operator in a single
   !          test. The scalar field f is initialized as a parabola and the vector field v as a linear
@@ -180,7 +180,7 @@ contains
   !          absolute error against a tight solution tolerance, and verifies the convergence rate via
   !          log(lo_res/hi_res)/log(cells_/cells) against the expected order within a percentage
   !          tolerance. The test result is accumulated using the .also., .isAtMost., .approximates.,
-  !          and .withinPercentage. overloaded operators and the passing_test()/test_diagnosis_t
+  !          and .withinPercentage. defined operations and the passing_test()/test_diagnosis_t
   !          testing infrastructure.
   function check_volume_integral_of_f_div_v() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
@@ -241,7 +241,7 @@ contains
   !           2nd-order, 4th-order, structured-grid, staggered-grid, test-diagnosis, verification, grid-refinement,
   !           order-of-accuracy, integral-operator, surface-area-element
   ! CONTEXT: This function is part of the operator test suite in the formal library, which provides
-  !          overloaded mathematical operators (.grad., .div., .SS., .dot., .x., etc.) for
+  !          defined operations (.grad., .div., .SS., .dot., .x., etc.) for
   !          staggered-grid scalar and vector fields. It exercises a compound expression combining
   !          scalar-vector multiplication, the vector dot product with the surface area element dA,
   !          and the surface integration operator .SS. in a single test. The scalar field f is
@@ -259,7 +259,7 @@ contains
   !          high-resolution absolute error against a tight solution tolerance, and verifies the
   !          convergence rate via log(lo_res/hi_res)/log(cells_/cells) against the expected order
   !          within a percentage tolerance. The test result is accumulated using the .also.,
-  !          .isAtMost., .approximates., and .withinPercentage. overloaded operators and the
+  !          .isAtMost., .approximates., and .withinPercentage. defined operations and the
   !          passing_test()/test_diagnosis_t testing infrastructure.
   function check_surface_integral_of_vf() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
@@ -334,7 +334,7 @@ contains
   !           quartic, exponential, 2nd-order, 4th-order, structured-grid, staggered-grid, test-diagnosis,
   !           verification, integral-identity, conservation
   ! CONTEXT: This function is part of the operator test suite in the formal library, which provides
-  !          overloaded mathematical operators (.grad., .div., .SSS., .SS., .dot., .x., etc.) for
+  !          defined operations (.grad., .div., .SSS., .SS., .dot., .x., etc.) for
   !          staggered-grid scalar and vector fields. It serves as a capstone verification test that
   !          ties together the volume integral of v dot grad(f), the volume integral of f times div(v),
   !          and the surface integral of f times (v dot dA) through the extended Gauss divergence
@@ -348,7 +348,7 @@ contains
   !          cells is used, emphasizing that the discrete identity should hold even on under-resolved
   !          grids. The test loops over 2nd-order and 4th-order discretizations, computing the
   !          residual for each and checking its absolute value against residual_tolerance. The test
-  !          result is accumulated using the .also. and .isAtMost. overloaded operators and the
+  !          result is accumulated using the .also. and .isAtMost. defined operations and the
   !          passing_test()/test_diagnosis_t testing infrastructure.
   function check_gauss_divergence_theorem() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis

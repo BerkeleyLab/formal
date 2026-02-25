@@ -73,7 +73,7 @@ contains
   !           defined operation, unit-test, scalar_1D, parabola, 2nd-order, structured-grid, staggered-grid,
   !           test-diagnosis, differential-operator, verification, compound-operator
   ! CONTEXT: This function is part of the operator test suite in the formal library, which provides
-  !          overloaded mathematical operators (.grad., .div., .laplacian., etc.) for structured-grid
+  !          defined operations (.grad., .div., .laplacian., etc.) for staggered-grid
   !          scalar fields. It tests the compound expression .div. (.grad. f), which should be
   !          mathematically equivalent to the Laplacian but is computed by composing the gradient and
   !          divergence operators separately rather than using the dedicated .laplacian. operator. The
@@ -84,7 +84,7 @@ contains
   !          parabola is within the polynomial exactness range of the 2nd-order stencils. The
   !          conditional compilation directives handle differences between gfortran and other compilers
   !          regarding associate-block support for user-defined operator results. The test result is
-  !          accumulated using the .also. and .approximates. overloaded operators and the
+  !          accumulated using the .also. and .approximates. defined operations and the
   !          passing_test()/test_diagnosis_t testing infrastructure.
   function check_2nd_order_div_grad_parabola() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
@@ -116,7 +116,7 @@ contains
   !           test-diagnosis, differential-operator, verification, compound-operator,
   !           higher-order-accuracy
   ! CONTEXT: This function is part of the operator test suite in the formal library, which provides
-  !          defined operations (.grad., .div., .laplacian., etc.) for structured-grid
+  !          defined operations (.grad., .div., .laplacian., etc.) for staggered-grid
   !          scalar fields. It tests the compound expression .div. (.grad. f), which should be
   !          mathematically equivalent to the Laplacian but is computed by composing the gradient and
   !          divergence operators separately rather than using the dedicated .laplacian. operator. The
@@ -165,7 +165,7 @@ contains
   !           unit-test, vector_1D, sinusoid, structured-grid, staggered-grid, test-diagnosis, differential-operator,
   !           verification, grid-refinement, order-of-accuracy
   ! CONTEXT: This function is part of the divergence operator test suite in the formal library, which
-  !          provides overloaded mathematical operators (.div., .grad., .laplacian., etc.) for
+  !          provides defined operations (.div., .grad., .laplacian., etc.) for
   !          staggered-grid scalar and vector fields. It constructs two vector_1D_t objects
   !          initialized with a sinusoidal function on the domain [0, 2*pi] at 2nd-order accuracy
   !          with coarse (100) and fine (101) cell counts, applies the .div. operator to both, and
@@ -176,7 +176,7 @@ contains
   !          and checked against the desired 2nd order. A rough_tolerance is used for all checks. The
   !          conditional compilation directives handle differences between gfortran and other compilers
   !          regarding associate-block support for user-defined operator results. The test result is
-  !          accumulated using the .also. and .approximates. overloaded operators and the
+  !          accumulated using the .also. and .approximates. defined operations and the
   !          passing_test()/test_diagnosis_t testing infrastructure.
   function check_2nd_order_div_sinusoid_convergence() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
@@ -233,7 +233,7 @@ contains
   !           unit-test, vector_1D, sinusoid, structured-grid, staggered-grid, test-diagnosis, differential-operator,
   !           verification, grid-refinement, order-of-accuracy, higher-order-accuracy
   ! CONTEXT: This function is part of the divergence operator test suite in the formal library, which
-  !          provides overloaded mathematical operators (.div., .grad., .laplacian., etc.) for
+  !          provides defined operations (.div., .grad., .laplacian., etc.) for
   !          staggered-grid scalar and vector fields. It constructs two vector_1D_t objects
   !          initialized with a sinusoidal function on the domain [0, 2*pi] at 4th-order accuracy
   !          with coarse (500) and fine (501) cell counts, applies the .div. operator to both, and
@@ -246,7 +246,7 @@ contains
   !          log(coarse_error/fine_error)/log(fine_cells/coarse_cells) and checked against the desired
   !          4th order. The conditional compilation directives handle differences between gfortran and
   !          other compilers regarding associate-block support for user-defined operator results. The
-  !          test result is accumulated using the .also. and .approximates. overloaded operators and
+  !          test result is accumulated using the .also. and .approximates. defined operations and
   !          the passing_test()/test_diagnosis_t testing infrastructure.
   function check_4th_order_div_sinusoid_convergence() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis

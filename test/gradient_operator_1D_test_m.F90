@@ -70,7 +70,7 @@ contains
   ! KEYWORDS: gradient, finite-difference, defined operation, unit-test, scalar_1D, constant-function,
   !           2nd-order, 4th-order, structured-grid, staggered-grid, test-diagnosis, differential-operator, verification
   ! CONTEXT: This function is part of the gradient operator test suite in the formal library, which
-  !          provides overloaded mathematical operators (.grad., .laplacian., etc.) for structured-grid
+  !          provides defined operations (.grad., .laplacian., etc.) for staggered-grid
   !          scalar fields. It constructs a scalar_1D_t object initialized with a constant function and
   !          applies the .grad. operator twice: first at 2nd-order on the domain [0, 4], then at
   !          4th-order on the domain [0, 8]. In both cases the analytically expected gradient is zero,
@@ -78,8 +78,8 @@ contains
   !          non-zero gradients for a trivial input. A loose_tolerance is used for both checks. The
   !          conditional compilation directives handle differences between gfortran and other compilers
   !          regarding associate-block support for user-defined operator results. The test result is
-  !          accumulated across both order checks using the .also. and .approximates. overloaded
-  !          operators and the passing_test()/test_diagnosis_t testing infrastructure.
+  !          accumulated across both order checks using the .also. and .approximates. defined
+  !          operations and the passing_test()/test_diagnosis_t testing infrastructure.
   function check_grad_const() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     double precision, parameter :: grad_expected = 0.
@@ -130,7 +130,7 @@ contains
   ! KEYWORDS: gradient, finite-difference, defined operation, unit-test, scalar_1D, linear-function,
   !           2nd-order, 4th-order, structured-grid, staggered-grid, test-diagnosis, differential-operator, verification
   ! CONTEXT: This function is part of the gradient operator test suite in the formal library, which
-  !          provides overloaded mathematical operators (.grad., .laplacian., etc.) for structured-grid
+  !          provides defined operations (.grad., .laplacian., etc.) for staggered-grid
   !          scalar fields. It constructs a scalar_1D_t object initialized with a linear function and
   !          applies the .grad. operator twice: first at 2nd-order on the domain [0, 4], then at
   !          4th-order on the domain [0, 8]. In both cases the analytically expected gradient is the
@@ -141,7 +141,7 @@ contains
   !          is used for both checks. The conditional compilation directives handle differences between
   !          gfortran and other compilers regarding associate-block support for user-defined operator
   !          results. The test result is accumulated across both order checks using the .also. and
-  !          .approximates. overloaded operators and the passing_test()/test_diagnosis_t testing
+  !          .approximates. defined operations and the passing_test()/test_diagnosis_t testing
   !          infrastructure.
   function check_grad_line() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
@@ -193,7 +193,7 @@ contains
   !           2nd-order, 4th-order, structured-grid, staggered-grid, test-diagnosis, differential-operator,
   !           verification, spatially-varying
   ! CONTEXT: This function is part of the gradient operator test suite in the formal library, which
-  !          provides overloaded mathematical operators (.grad., .laplacian., etc.) for structured-grid
+  !          provides defined operations (.grad., .laplacian., etc.) for staggered-grid
   !          scalar fields. It constructs a scalar_1D_t object initialized with a parabolic function
   !          and applies the .grad. operator twice: first at 2nd-order on the domain [0, 4], then at
   !          4th-order on the domain [0, 8]. Unlike the constant and linear gradient tests, the
@@ -204,7 +204,7 @@ contains
   !          A loose_tolerance is used for both checks. The conditional compilation directives handle
   !          differences between gfortran and other compilers regarding associate-block support for
   !          user-defined operator results. The test result is accumulated across both order checks
-  !          using the .also. and .approximates. overloaded operators and the passing_test()/
+  !          using the .also. and .approximates. defined operations and the passing_test()/
   !          test_diagnosis_t testing infrastructure.
   function check_grad_parabola() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
@@ -264,7 +264,7 @@ contains
   !           unit-test, scalar_1D, sinusoid, structured-grid, staggered-grid, test-diagnosis, differential-operator,
   !           verification, grid-refinement, order-of-accuracy
   ! CONTEXT: This function is part of the gradient operator test suite in the formal library, which
-  !          provides overloaded mathematical operators (.grad., .laplacian., etc.) for structured-grid
+  !          provides defined operations (.grad., .laplacian., etc.) for staggered-grid
   !          scalar fields. It constructs two scalar_1D_t objects initialized with a sinusoidal
   !          function on the domain [0, 2*pi] at 2nd-order accuracy with coarse (200) and fine (201)
   !          cell counts, applies the .grad. operator to both, and compares the results against the
@@ -276,7 +276,7 @@ contains
   !          check interior and boundary convergence rates. A rough_tolerance is used for all checks.
   !          The conditional compilation directives handle differences between gfortran and other
   !          compilers regarding associate-block support for user-defined operator results. The test
-  !          result is accumulated using the .also. and .approximates. overloaded operators and the
+  !          result is accumulated using the .also. and .approximates. defined operations and the
   !          passing_test()/test_diagnosis_t testing infrastructure.
   function check_2nd_order_grad_convergence() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
@@ -335,7 +335,7 @@ contains
   !           unit-test, scalar_1D, sinusoid, structured-grid, staggered-grid, test-diagnosis, differential-operator,
   !           verification, grid-refinement, order-of-accuracy, higher-order-accuracy
   ! CONTEXT: This function is part of the gradient operator test suite in the formal library, which
-  !          provides overloaded mathematical operators (.grad., .laplacian., etc.) for structured-grid
+  !          provides defined operations (.grad., .laplacian., etc.) for staggered-grid
   !          scalar fields. It constructs two scalar_1D_t objects initialized with a sinusoidal
   !          function on the domain [0, 2*pi] at 4th-order accuracy, applies the .grad. operator to
   !          both, and compares the results against the analytical derivative cos(x) - sin(x). The
@@ -348,7 +348,7 @@ contains
   !          all checks. The conditional compilation directives handle both the differing cell counts
   !          and the differences between gfortran and other compilers regarding associate-block support
   !          for user-defined operator results. The test result is accumulated using the .also. and
-  !          .approximates. overloaded operators and the passing_test()/test_diagnosis_t testing
+  !          .approximates. defined operations and the passing_test()/test_diagnosis_t testing
   !          infrastructure.
   function check_4th_order_grad_convergence() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
