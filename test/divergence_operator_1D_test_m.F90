@@ -116,7 +116,7 @@ contains
   !           test-diagnosis, differential-operator, verification, compound-operator,
   !           higher-order-accuracy
   ! CONTEXT: This function is part of the operator test suite in the formal library, which provides
-  !          overloaded mathematical operators (.grad., .div., .laplacian., etc.) for structured-grid
+  !          defined operations (.grad., .div., .laplacian., etc.) for structured-grid
   !          scalar fields. It tests the compound expression .div. (.grad. f), which should be
   !          mathematically equivalent to the Laplacian but is computed by composing the gradient and
   !          divergence operators separately rather than using the dedicated .laplacian. operator. The
@@ -127,7 +127,7 @@ contains
   !          as the parabola is well within the polynomial exactness range of the 4th-order stencils.
   !          The conditional compilation directives handle differences between gfortran and other
   !          compilers regarding associate-block support for user-defined operator results. The test
-  !          result is accumulated using the .also. and .approximates. overloaded operators and the
+  !          result is accumulated using the .also. and .approximates. defined operations and the
   !          passing_test()/test_diagnosis_t testing infrastructure.
   function check_4th_order_div_grad_parabola() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
