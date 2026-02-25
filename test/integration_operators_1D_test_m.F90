@@ -87,11 +87,11 @@ contains
   !          for each order, compares the high-resolution result against a known analytical integral,
   !          and verifies that the observed convergence rate matches the expected order of accuracy.
   ! KEYWORDS: volume-integral, gradient, dot-product, finite-difference, convergence-rate,
-  !           operator-overloading, unit-test, scalar_1D, vector_1D, parabola, linear-function,
-  !           2nd-order, 4th-order, structured-grid, test-diagnosis, verification, grid-refinement,
+  !           defined operation, unit-test, scalar_1D, vector_1D, parabola, linear-function,
+  !           2nd-order, 4th-order, structured-grid, staggered-grid, test-diagnosis, verification, grid-refinement,
   !           order-of-accuracy, integral-operator
   ! CONTEXT: This function is part of the operator test suite in the formal library, which provides
-  !          overloaded mathematical operators (.grad., .SSS., .dot., etc.) for structured-grid scalar
+  !          overloaded mathematical operators (.grad., .SSS., .dot., etc.) for staggered-grid scalar
   !          and vector fields. It exercises a compound expression combining the gradient operator,
   !          vector dot product, volume element, and volume integration operator in a single test. The
   !          scalar field f is initialized as a parabola and the vector field v as a linear function,
@@ -159,11 +159,11 @@ contains
   !          each order, compares the high-resolution result against a known analytical integral, and
   !          verifies that the observed convergence rate matches the expected order of accuracy.
   ! KEYWORDS: volume-integral, divergence, scalar-multiplication, finite-difference, convergence-rate,
-  !           operator-overloading, unit-test, scalar_1D, vector_1D, parabola, linear-function,
-  !           2nd-order, 4th-order, structured-grid, test-diagnosis, verification, grid-refinement,
+  !           defined operation, unit-test, scalar_1D, vector_1D, parabola, linear-function,
+  !           2nd-order, 4th-order, structured-grid, staggered-grid, test-diagnosis, verification, grid-refinement,
   !           order-of-accuracy, integral-operator
   ! CONTEXT: This function is part of the operator test suite in the formal library, which provides
-  !          overloaded mathematical operators (.grad., .div., .SSS., etc.) for structured-grid scalar
+  !          overloaded mathematical operators (.grad., .div., .SSS., etc.) for staggered-grid scalar
   !          and vector fields. It exercises a compound expression combining the divergence operator,
   !          scalar-field multiplication, volume element, and volume integration operator in a single
   !          test. The scalar field f is initialized as a parabola and the vector field v as a linear
@@ -237,12 +237,12 @@ contains
   !          integral, and verifies that the observed convergence rate matches the expected order of
   !          accuracy.
   ! KEYWORDS: surface-integral, dot-product, scalar-multiplication, finite-difference, convergence-rate,
-  !           operator-overloading, unit-test, scalar_1D, vector_1D, parabola, linear-function,
-  !           2nd-order, 4th-order, structured-grid, test-diagnosis, verification, grid-refinement,
+  !           defined operation, unit-test, scalar_1D, vector_1D, parabola, linear-function,
+  !           2nd-order, 4th-order, structured-grid, staggered-grid, test-diagnosis, verification, grid-refinement,
   !           order-of-accuracy, integral-operator, surface-area-element
   ! CONTEXT: This function is part of the operator test suite in the formal library, which provides
   !          overloaded mathematical operators (.grad., .div., .SS., .dot., .x., etc.) for
-  !          structured-grid scalar and vector fields. It exercises a compound expression combining
+  !          staggered-grid scalar and vector fields. It exercises a compound expression combining
   !          scalar-vector multiplication, the vector dot product with the surface area element dA,
   !          and the surface integration operator .SS. in a single test. The scalar field f is
   !          initialized as a parabola and the vector field v as a linear function, yielding an
@@ -330,12 +330,12 @@ contains
   !          residual of the identity .SSS. (v dot grad f) dV + .SSS. (f div v) dV - .SS. (f v dot dA)
   !          is near zero for both 2nd-order and 4th-order discretizations on a 20-cell 1D domain.
   ! KEYWORDS: gauss-divergence-theorem, volume-integral, surface-integral, gradient, divergence,
-  !           dot-product, finite-difference, operator-overloading, unit-test, scalar_1D, vector_1D,
-  !           quartic, exponential, 2nd-order, 4th-order, structured-grid, test-diagnosis,
+  !           dot-product, finite-difference, defined operation, unit-test, scalar_1D, vector_1D,
+  !           quartic, exponential, 2nd-order, 4th-order, structured-grid, staggered-grid, test-diagnosis,
   !           verification, integral-identity, conservation
   ! CONTEXT: This function is part of the operator test suite in the formal library, which provides
   !          overloaded mathematical operators (.grad., .div., .SSS., .SS., .dot., .x., etc.) for
-  !          structured-grid scalar and vector fields. It serves as a capstone verification test that
+  !          staggered-grid scalar and vector fields. It serves as a capstone verification test that
   !          ties together the volume integral of v dot grad(f), the volume integral of f times div(v),
   !          and the surface integral of f times (v dot dA) through the extended Gauss divergence
   !          theorem identity. Unlike the individual volume and surface integral convergence tests

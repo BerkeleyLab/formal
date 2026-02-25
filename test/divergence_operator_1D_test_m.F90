@@ -70,7 +70,7 @@ contains
   !          1.0 everywhere, and reports a passing or failing test diagnosis based on whether the
   !          computed values approximate the expected result within a tight tolerance.
   ! KEYWORDS: divergence, gradient, div-grad, laplacian-equivalence, finite-difference,
-  !           operator-overloading, unit-test, scalar_1D, parabola, 2nd-order, structured-grid,
+  !           defined operation, unit-test, scalar_1D, parabola, 2nd-order, structured-grid, staggered-grid,
   !           test-diagnosis, differential-operator, verification, compound-operator
   ! CONTEXT: This function is part of the operator test suite in the formal library, which provides
   !          overloaded mathematical operators (.grad., .div., .laplacian., etc.) for structured-grid
@@ -112,7 +112,7 @@ contains
   !          1.0 everywhere, and reports a passing or failing test diagnosis based on whether the
   !          computed values approximate the expected result within a tight tolerance.
   ! KEYWORDS: divergence, gradient, div-grad, laplacian-equivalence, finite-difference,
-  !           operator-overloading, unit-test, scalar_1D, parabola, 4th-order, structured-grid,
+  !           defined operation, unit-test, scalar_1D, parabola, 4th-order, structured-grid, staggered-grid,
   !           test-diagnosis, differential-operator, verification, compound-operator,
   !           higher-order-accuracy
   ! CONTEXT: This function is part of the operator test suite in the formal library, which provides
@@ -161,12 +161,12 @@ contains
   !          of the vector field [sin(x) + cos(x)] against the analytical divergence cos(x) - sin(x).
   !          It verifies that both grids approximate the expected divergence within a rough tolerance
   !          and that the observed convergence rate matches 2nd-order accuracy.
-  ! KEYWORDS: divergence, finite-difference, convergence-rate, 2nd-order, operator-overloading,
-  !           unit-test, vector_1D, sinusoid, structured-grid, test-diagnosis, differential-operator,
+  ! KEYWORDS: divergence, finite-difference, convergence-rate, 2nd-order, defined operation,
+  !           unit-test, vector_1D, sinusoid, structured-grid, staggered-grid, test-diagnosis, differential-operator,
   !           verification, grid-refinement, order-of-accuracy
   ! CONTEXT: This function is part of the divergence operator test suite in the formal library, which
   !          provides overloaded mathematical operators (.div., .grad., .laplacian., etc.) for
-  !          structured-grid scalar and vector fields. It constructs two vector_1D_t objects
+  !          staggered-grid scalar and vector fields. It constructs two vector_1D_t objects
   !          initialized with a sinusoidal function on the domain [0, 2*pi] at 2nd-order accuracy
   !          with coarse (100) and fine (101) cell counts, applies the .div. operator to both, and
   !          compares the results against the analytical divergence cos(x) - sin(x). This test mirrors
@@ -229,12 +229,12 @@ contains
   !          of the vector field [sin(x) + cos(x)] against the analytical divergence cos(x) - sin(x).
   !          It verifies that both grids approximate the expected divergence within a loose tolerance
   !          and that the observed convergence rate matches 4th-order accuracy.
-  ! KEYWORDS: divergence, finite-difference, convergence-rate, 4th-order, operator-overloading,
-  !           unit-test, vector_1D, sinusoid, structured-grid, test-diagnosis, differential-operator,
+  ! KEYWORDS: divergence, finite-difference, convergence-rate, 4th-order, defined operation,
+  !           unit-test, vector_1D, sinusoid, structured-grid, staggered-grid, test-diagnosis, differential-operator,
   !           verification, grid-refinement, order-of-accuracy, higher-order-accuracy
   ! CONTEXT: This function is part of the divergence operator test suite in the formal library, which
   !          provides overloaded mathematical operators (.div., .grad., .laplacian., etc.) for
-  !          structured-grid scalar and vector fields. It constructs two vector_1D_t objects
+  !          staggered-grid scalar and vector fields. It constructs two vector_1D_t objects
   !          initialized with a sinusoidal function on the domain [0, 2*pi] at 4th-order accuracy
   !          with coarse (500) and fine (501) cell counts, applies the .div. operator to both, and
   !          compares the results against the analytical divergence cos(x) - sin(x). Compared to the

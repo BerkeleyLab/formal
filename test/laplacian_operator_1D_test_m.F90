@@ -68,10 +68,10 @@ contains
   !          a parabolic function (x^2/2), which should yield a constant value of 1.0 everywhere, and
   !          reports a passing or failing test diagnosis based on whether the computed values approximate
   !          the expected analytical result within a tight tolerance.
-  ! KEYWORDS: laplacian, finite-difference, operator-overloading, unit-test, scalar_1D, parabola, 2nd-order,
-  !           structured-grid, test-diagnosis, differential-operator, verification
+  ! KEYWORDS: laplacian, finite-difference, defined operation, unit-test, scalar_1D, parabola, 2nd-order,
+  !           structured-grid, staggered-grid, test-diagnosis, differential-operator, verification
   ! CONTEXT: This function is part of the Laplacian operator test suite in the formal library, which provides
-  !          overloaded mathematical operators (.laplacian., .gradient., etc.) for structured-grid scalar fields.
+  !          overloaded mathematical operators (.laplacian., .gradient., etc.) for staggered-grid scalar fields.
   !          It constructs a scalar_1D_t object initialized with a parabola function on a 16-cell 1D domain [0, 5],
   !          applies the .laplacian. operator, and checks that all resulting values match the analytically expected
   !          constant Laplacian of 1.0. The conditional compilation directives handle differences between gfortran
@@ -109,10 +109,10 @@ contains
   !          of a quartic function (x^4/24), which should yield x^2 at each grid point, and reports a passing or
   !          failing test diagnosis based on whether the computed values approximate the expected spatially-varying
   !          analytical result within a loose tolerance.
-  ! KEYWORDS: laplacian, finite-difference, operator-overloading, unit-test, scalar_1D, quartic, 4th-order,
-  !           structured-grid, test-diagnosis, differential-operator, verification, higher-order-accuracy
+  ! KEYWORDS: laplacian, finite-difference, defined operation, unit-test, scalar_1D, quartic, 4th-order,
+  !           structured-grid, staggered-grid, test-diagnosis, differential-operator, verification, higher-order-accuracy
   ! CONTEXT: This function is part of the Laplacian operator test suite in the formal library, which provides
-  !          overloaded mathematical operators (.laplacian., .gradient., etc.) for structured-grid scalar fields.
+  !          overloaded mathematical operators (.laplacian., .gradient., etc.) for staggered-grid scalar fields.
   !          It constructs a scalar_1D_t object initialized with a quartic function on a 16-cell 1D domain [0, 40],
   !          applies the .laplacian. operator at 4th-order accuracy, and checks that all resulting values match the
   !          analytically expected spatially-varying Laplacian of x^2. Unlike the 2nd-order parabola test, this test
@@ -200,8 +200,8 @@ contains
   !          analytical second derivative. It verifies that both grids approximate the expected Laplacian
   !          within a crude tolerance, that the interior convergence rate matches the desired order, and
   !          that the boundary convergence rate matches one order lower than the desired order.
-  ! KEYWORDS: laplacian, finite-difference, convergence-rate, operator-overloading, unit-test, scalar_1D,
-  !           structured-grid, test-diagnosis, differential-operator, verification, grid-refinement,
+  ! KEYWORDS: laplacian, finite-difference, convergence-rate, defined operation, unit-test, scalar_1D,
+  !           structured-grid, staggered-grid, test-diagnosis, differential-operator, verification, grid-refinement,
   !           boundary-accuracy, interior-accuracy, order-of-accuracy, sin-function
   ! CONTEXT: This function is part of the Laplacian operator test suite in the formal library, which
   !          provides overloaded mathematical operators (.laplacian., .gradient., etc.) for structured-grid

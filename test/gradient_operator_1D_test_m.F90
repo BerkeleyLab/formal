@@ -67,8 +67,8 @@ contains
   !          function, which should yield zero everywhere, at both 2nd-order and 4th-order accuracy
   !          on 16-cell 1D domains, and reports a passing or failing test diagnosis based on whether
   !          the computed values approximate zero within a loose tolerance.
-  ! KEYWORDS: gradient, finite-difference, operator-overloading, unit-test, scalar_1D, constant-function,
-  !           2nd-order, 4th-order, structured-grid, test-diagnosis, differential-operator, verification
+  ! KEYWORDS: gradient, finite-difference, defined operation, unit-test, scalar_1D, constant-function,
+  !           2nd-order, 4th-order, structured-grid, staggered-grid, test-diagnosis, differential-operator, verification
   ! CONTEXT: This function is part of the gradient operator test suite in the formal library, which
   !          provides overloaded mathematical operators (.grad., .laplacian., etc.) for structured-grid
   !          scalar fields. It constructs a scalar_1D_t object initialized with a constant function and
@@ -127,8 +127,8 @@ contains
   !          2nd-order and 4th-order accuracy on 16-cell 1D domains, and reports a passing or failing
   !          test diagnosis based on whether the computed values approximate the expected constant
   !          gradient within a loose tolerance.
-  ! KEYWORDS: gradient, finite-difference, operator-overloading, unit-test, scalar_1D, linear-function,
-  !           2nd-order, 4th-order, structured-grid, test-diagnosis, differential-operator, verification
+  ! KEYWORDS: gradient, finite-difference, defined operation, unit-test, scalar_1D, linear-function,
+  !           2nd-order, 4th-order, structured-grid, staggered-grid, test-diagnosis, differential-operator, verification
   ! CONTEXT: This function is part of the gradient operator test suite in the formal library, which
   !          provides overloaded mathematical operators (.grad., .laplacian., etc.) for structured-grid
   !          scalar fields. It constructs a scalar_1D_t object initialized with a linear function and
@@ -189,8 +189,8 @@ contains
   !          at each grid point, at both 2nd-order and 4th-order accuracy on 16-cell 1D domains, and
   !          reports a passing or failing test diagnosis based on whether the computed values
   !          approximate the expected gradient within a loose tolerance.
-  ! KEYWORDS: gradient, finite-difference, operator-overloading, unit-test, scalar_1D, parabola,
-  !           2nd-order, 4th-order, structured-grid, test-diagnosis, differential-operator,
+  ! KEYWORDS: gradient, finite-difference, defined operation, unit-test, scalar_1D, parabola,
+  !           2nd-order, 4th-order, structured-grid, staggered-grid, test-diagnosis, differential-operator,
   !           verification, spatially-varying
   ! CONTEXT: This function is part of the gradient operator test suite in the formal library, which
   !          provides overloaded mathematical operators (.grad., .laplacian., etc.) for structured-grid
@@ -260,8 +260,8 @@ contains
   !          of sin(x) + cos(x) against the analytical derivative cos(x) - sin(x). It verifies that
   !          both grids approximate the expected gradient within a rough tolerance and that the
   !          observed convergence rate matches 2nd-order accuracy.
-  ! KEYWORDS: gradient, finite-difference, convergence-rate, 2nd-order, operator-overloading,
-  !           unit-test, scalar_1D, sinusoid, structured-grid, test-diagnosis, differential-operator,
+  ! KEYWORDS: gradient, finite-difference, convergence-rate, 2nd-order, defined operation,
+  !           unit-test, scalar_1D, sinusoid, structured-grid, staggered-grid, test-diagnosis, differential-operator,
   !           verification, grid-refinement, order-of-accuracy
   ! CONTEXT: This function is part of the gradient operator test suite in the formal library, which
   !          provides overloaded mathematical operators (.grad., .laplacian., etc.) for structured-grid
@@ -331,8 +331,8 @@ contains
   !          the analytical derivative cos(x) - sin(x). It verifies that both grids approximate the
   !          expected gradient within a rough tolerance and that the observed convergence rate matches
   !          4th-order accuracy.
-  ! KEYWORDS: gradient, finite-difference, convergence-rate, 4th-order, operator-overloading,
-  !           unit-test, scalar_1D, sinusoid, structured-grid, test-diagnosis, differential-operator,
+  ! KEYWORDS: gradient, finite-difference, convergence-rate, 4th-order, defined operation,
+  !           unit-test, scalar_1D, sinusoid, structured-grid, staggered-grid, test-diagnosis, differential-operator,
   !           verification, grid-refinement, order-of-accuracy, higher-order-accuracy
   ! CONTEXT: This function is part of the gradient operator test suite in the formal library, which
   !          provides overloaded mathematical operators (.grad., .laplacian., etc.) for structured-grid
