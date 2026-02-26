@@ -12,7 +12,7 @@ submodule(mimetic_operators_1D_m) divergence_operator_1D_s
   implicit none
 contains
 
-#ifdef __GFORTRAN__
+#if !(HAVE_DO_CONCURRENT_TYPE_SPEC_SUPPORT && HAVE_LOCALITY_SPECIFIER_SUPPORT)
 
   pure function negate_and_flip(A) result(Ap)
     !! Transform a mimetic matrix upper block into a lower block
