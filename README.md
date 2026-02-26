@@ -71,16 +71,17 @@ compiling [fpm-0.12.0.F90] and placing the resulting executable file in your
 
 Building and testing
 --------------------
- Vendor | Compiler    | Version(s) Tested | Build/Test Command
---------|-------------|-------------------|-------------------
- GCC    | `gfortran`  | 14-15             | fpm test --compiler gfortran --profile release
- GCC    | `gfortran`  | 13                | fpm test --compiler gfortran --profile release --flag "-ffree-line-length-none"
- Intel  | `ifx`       | 2025.1.2          | FOR_COARRAY_NUM_IMAGES=1 fpm test --compiler ifx --flag "-fpp -O3 -coarray" --profile release
- LLVM   | `flang-new` | 20-21             | fpm test --compiler flang-new --flag "-O3"
- LLVM   | `flang-new` | 19                | fpm test --compiler flang-new --flag "-O3 -mmlir -allow-assumed-rank"
- NAG    | `nagfor`    | 7.2 Build 7242    | fpm test --compiler nagfor --flag "-O3 -fpp"
+ Vendor   | Compiler    | Version(s) Tested     | Build/Test Command
+----------|-------------|-----------------------|-------------------
+ GCC      | `gfortran`  | 14-15                 | `fpm test --compiler gfortran --profile release`
+ GCC      | `gfortran`  | 13                    | `fpm test --compiler gfortran --profile release --flag "-ffree-line-length-none"`
+ Intel    | `ifx`       | 2025.1.2              | `FOR_COARRAY_NUM_IMAGES=1 fpm test --compiler ifx --flag "-fpp -O3 -coarray" --profile release`
+ LFortran | `lfortran`  | 0.60.0-421-ge2c448c79 | `fpm test --compiler lfortran --flag "--cpp --realloc-lhs-arrays"`
+ LLVM     | `flang`     | 20-21                 | `fpm test --compiler flang --flag "-O3"`
+ LLVM     | `flang`     | 19                    | `fpm test --compiler flang --flag "-O3 -mmlir -allow-assumed-rank"`
+ NAG      | `nagfor`    | 7.2 Build 7242        | `fpm test --compiler nagfor --flag "-O3 -fpp"`
 
-With `fpm` versions _after_ 0.12.0, `flang-new` can be shortened to `flang` in the above `fpm` commands.
+With `fpm` versions before 0.13.0, replace `flang` with `flang-new` above.
 
 Documentation
 -------------
