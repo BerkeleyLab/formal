@@ -36,8 +36,7 @@ program claude_prompted_by_qwen_target
     )
       volume_integral: &
       associate( &
-         !volume_term => dV .SSS. (v .dot. (.grad. f)) & ! <-- claude-generated
-          volume_term => .SSS. (v .dot. (.grad. f)) * dV & ! <-- manually corrected
+          volume_term => .SSS. (v .dot. (.grad. f)) * dV &
       )
       end associate volume_integral
     end associate differential_elements
