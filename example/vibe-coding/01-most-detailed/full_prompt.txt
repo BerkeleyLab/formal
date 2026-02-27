@@ -1,0 +1,386 @@
+
+You are an expert Fortran/HPC developer.
+You MUST output code **only in Fortran**.
+Do NOT provide Python, Julia, Matlab, or Octave code.
+
+
+You are given reference code from a large HPC codebase.
+This is NOT the answer.
+It is background knowledge to help you understand available APIs,
+data structures, naming conventions, and style.
+
+Use this knowledge to write new code that satisfies the user request.
+
+Do not copy large portions of the reference unless necessary.
+Do not output the reference code itself.
+
+---------------- REFERENCE CODE ----------------
+
+PURPOSE: Assembles the full dense matrix representation of the mimetic gradient operator by applying the operator to each column of the identity matrix via the matrix-vector multiply procedure, producing an (m+1) x (m+2) matrix. An internal helper function e generates the unit basis vectors used as identity matrix columns. structured-grid, staggered-grid, do-concurrent, Corbino-Castillo
+KEYWORDS: mimetic, gradient, matrix-assembly, dense-matrix, identity-matrix, operator-assembly
+CONTEXT: This procedure constructs the full dense matrix form of the mimetic gradient operator in the formal library. While the operator is typically applied in matrix-free form via gradient_matrix_multiply for efficiency, the dense matrix is useful for debugging, visualization, and verification purposes. The assembly works by applying the operator to each standard basis vector e_i of length m+2 using do concurrent, where each resulting column of the output matrix is the operator's response to that basis vector. Conditional compilation handles differences in do concurrent syntax support across compilers, with a gfortran workaround that calls gradient_matrix_multiply directly rather than using the overloaded .x. operator. The internal function e constructs the i-th unit vector of the specified length.
+FILE: gradient_operator_1D_s.F90
+
+CODE:
+  module procedure assemble_gradient
+
+    associate(rows => self%m_ + 1, cols => self%m_ + 2)
+
+      allocate(G(rows, cols), source = 0D0)
+
+#if HAVE_DO_CONCURRENT_TYPE_SPEC_SUPPORT && HAVE_LOCALITY_SPECIFIER_SUPPORT
+      do concurrent(integer :: col=1:cols) default(none) shared(G, self, cols)
+        G(:,col) = self .x. e(dir=col, length=cols)
+      end do
+#else
+      block
+        integer col
+        do concurrent(col=1:cols)
+          G(:,col) = gradient_matrix_multiply(self, e(dir=col, length=cols)) !! work around gfortran 13-14 issue
+        end do
+      end block
+#endif
+    end associate
+
+  contains
+
+    pure function e(dir, length) result(unit_vector)
+      !! Result is the dir-th column of the len x len identity matrix
+      integer, intent(in) :: dir, length
+      double precision :: unit_vector(length)
+      unit_vector(1:dir-1) = 0D0
+      unit_vector(dir)     = 1D0
+      unit_vector(dir+1:)  = 0D0
+    end function
+
+  end procedure
+
+
+
+PURPOSE: Assembles the full dense matrix representation of the mimetic divergence operator by applying the operator to each column of the identity matrix via the matrix-vector multiply procedure, producing an (m+2) x (m+1) matrix. An internal helper function e generates the unit basis vectors used as identity matrix columns. structured-grid, staggered-grid, do-concurrent, Corbino-Castillo
+KEYWORDS: mimetic, divergence, matrix-assembly, dense-matrix, identity-matrix, operator-assembly
+CONTEXT: This procedure constructs the full dense matrix form of the mimetic divergence operator in the formal library. While the operator is typically applied in matrix-free form via divergence_matrix_multiply for efficiency, the dense matrix is useful for debugging, visualization, and verification purposes. The assembly works by applying the operator to each standard basis vector e_i of length m+1 using do concurrent, where each resulting column of the output matrix is the operator's response to that basis vector. Conditional compilation handles differences in do concurrent syntax support across compilers, with a gfortran workaround that calls divergence_matrix_multiply directly rather than using the overloaded .x. operator. The internal function e constructs the i-th unit vector of the specified length.
+FILE: divergence_operator_1D_s.F90
+
+CODE:
+  module procedure assemble_divergence
+
+    associate(rows => self%m_ + 2, cols => self%m_ + 1)
+
+      allocate(D(rows, cols))
+
+#if HAVE_DO_CONCURRENT_TYPE_SPEC_SUPPORT && HAVE_LOCALITY_SPECIFIER_SUPPORT
+      do concurrent(integer :: col=1:cols) default(none) shared(D, self, cols)
+        D(:,col) = self .x. e(dir=col, length=cols)
+      end do
+#else
+      block
+        integer col
+        do concurrent(col=1:cols)
+          D(:,col) = divergence_matrix_multiply(self, e(dir=col, length=cols)) ! work around gfortran 13-14 on Ubuntu
+        end do
+      end block
+#endif
+    end associate
+
+  contains
+
+    pure function e(dir, length) result(unit_vector)
+      !! Result is the dir-th column of the len x len identity matrix
+      integer, intent(in) :: dir, length
+      double precision :: unit_vector(length)
+      unit_vector(1:dir-1) = 0D0
+      unit_vector(dir)     = 1D0
+      unit_vector(dir+1:)  = 0D0
+    end function
+
+  end procedure
+
+
+
+PURPOSE: Tests that the volume integral of v dot grad(f) converges at the expected rate and produces sufficiently accurate results for both 2nd-order and 4th-order discretizations. It computes the integral .SSS. (v .dot. .grad. f) * dV on two grids (500 and 501 cells) for each order, compares the high-resolution result against a known analytical integral, and verifies that the observed convergence rate matches the expected order of accuracy. defined operation, unit-test, scalar_1D, vector_1D, parabola, linear-function, 2nd-order, 4th-order, structured-grid, staggered-grid, test-diagnosis, verification, grid-refinement, order-of-accuracy, integral-operator
+KEYWORDS: volume-integral, gradient, dot-product, finite-difference, convergence-rate
+CONTEXT: This function is part of the operator test suite in the formal library, which provides defined operations (.grad., .SSS., .dot., etc.) for staggered-grid scalar and vector fields. It exercises a compound expression combining the gradient operator, vector dot product, volume element, and volume integration operator in a single test. The scalar field f is initialized as a parabola and the vector field v as a linear function, yielding an analytically known volume integral via the antiderivative SSS_v_dot_grad_f evaluated at the domain boundaries [0, 1]. The test loops over 2nd-order and 4th-order discretizations, using order-specific expected convergence rates and solution tolerances stored in parameter arrays indexed by order. For each order, it constructs low-resolution (500 cells) and high-resolution (501 cells) scalar and vector fields, computes the volume integral on each, checks the high-resolution absolute error against a tight solution tolerance, and verifies the convergence rate via log(lo_res/hi_res)/log(cells_/cells) against the expected order within a percentage tolerance. The test result is accumulated using the .also., .isAtMost., .approximates., and .withinPercentage. defined operations and the passing_test()/test_diagnosis_t testing infrastructure.
+FILE: integration_operators_1D_test_m.F90
+
+CODE:
+  function check_volume_integral_of_v_dot_grad_f() result(test_diagnosis)
+    type(test_diagnosis_t) test_diagnosis
+    procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer
+    procedure(vector_1D_initializer_i), pointer :: vector_1D_initializer
+    double precision, parameter :: x_min = 0D0, x_max = 1D0
+    integer, parameter :: cells = 500, cells_ = cells + 1
+    double precision, parameter, dimension(*) :: expected  = [0, 2, 0, 1]
+    double precision, parameter, dimension(*) :: order_tolerance = [0, 1, 0, 1]
+    double precision, parameter, dimension(*) :: solution_tolerance = [0D0, 5D-7, 0D0, 5D-10]
+    integer order
+
+    scalar_1D_initializer => parabola
+    vector_1D_initializer => line
+
+    test_diagnosis = passing_test()
+
+    do order = 2, 4, 2
+      associate( &
+         f  => scalar_1D_t(scalar_1D_initializer, order, cells , x_min, x_max) &
+        ,f_ => scalar_1D_t(scalar_1D_initializer, order, cells_, x_min, x_max) &
+        ,v  => vector_1D_t(vector_1D_initializer, order, cells , x_min, x_max) &
+        ,v_ => vector_1D_t(vector_1D_initializer, order, cells_, x_min, x_max) &
+        ,expected_integral => SSS_v_dot_grad_f(x_max) - SSS_v_dot_grad_f(x_min) &
+      )
+        associate( &
+           dV  => f%dV() &
+          ,dV_ => f_%dV() &
+        )
+          associate( &
+             lo_res => abs((.SSS. (v  .dot. .grad. f ) * dV  - expected_integral)) &
+            ,hi_res => abs((.SSS. (v_ .dot. .grad. f_) * dV_ - expected_integral)) &
+          )
+            test_diagnosis = test_diagnosis .also. &
+              (hi_res .isAtMost. solution_tolerance(order)) &
+              // " for " // ordinal(order) // "-order discretization of .SSS. (v .dot. .grad. f) * dV"
+              associate(calculated_order => log(lo_res/hi_res)/log(dble(cells_)/cells))
+                test_diagnosis = test_diagnosis .also. &
+                  (calculated_order .approximates. expected(order) .withinPercentage. order_tolerance(order)) &
+                  // " for convergence rate of " // ordinal(order) //  "-order discretization of .SSS. (v .dot. .grad. f) * dV"
+              end associate
+            end associate
+          end associate
+      end associate
+    end do
+
+  end function
+
+
+
+PURPOSE: Constructs a vector_1D_t object by evaluating a user-provided initializer function on the face-centered grid and storing the resulting values along with a pre-built divergence operator. divergence-operator, mimetic, face-centered
+KEYWORDS: vector_1D, construction, initializer, structured-grid, staggered-grid
+CONTEXT: This interface provides the constructor for vector_1D_t from an initializer function in the formal library's mimetic finite-difference framework. The implementation in vector_1D_s evaluates the initializer function pointer on the m+1 face-centered grid, stores the values as the tensor_1D_t base component, and pre-builds a divergence_operator_1D_t for the specified order and grid spacing. Assertions verify that x_max > x_min and that the cell count is at least 2*order+1. A gfortran-specific variant with an explicit function signature is provided in the implementation.
+FILE: tensors_1D_m.F90
+
+CODE:
+    pure module function construct_1D_vector_from_function(initializer, order, cells, x_min, x_max) result(vector_1D)
+      !! Result is a 1D vector with values initialized by the provided procedure pointer sampled on the specified
+      !! number of evenly spaced cells covering [x_min, x_max]
+      implicit none
+      procedure(vector_1D_initializer_i), pointer :: initializer
+      integer, intent(in) :: order !! order of accuracy
+      integer, intent(in) :: cells !! number of grid cells spanning the domain
+      double precision, intent(in) :: x_min !! grid location minimum
+      double precision, intent(in) :: x_max !! grid location maximum
+      type(vector_1D_t) vector_1D
+    end function
+
+
+
+PURPOSE: Tests that the extended Gauss divergence theorem holds discretely by verifying that the residual of the identity .SSS. (v dot grad f) dV + .SSS. (f div v) dV - .SS. (f v dot dA) is near zero for both 2nd-order and 4th-order discretizations on a 20-cell 1D domain. dot-product, finite-difference, defined operation, unit-test, scalar_1D, vector_1D, quartic, exponential, 2nd-order, 4th-order, structured-grid, staggered-grid, test-diagnosis, verification, integral-identity, conservation
+KEYWORDS: gauss-divergence-theorem, volume-integral, surface-integral, gradient, divergence
+CONTEXT: This function is part of the operator test suite in the formal library, which provides defined operations (.grad., .div., .SSS., .SS., .dot., .x., etc.) for staggered-grid scalar and vector fields. It serves as a capstone verification test that ties together the volume integral of v dot grad(f), the volume integral of f times div(v), and the surface integral of f times (v dot dA) through the extended Gauss divergence theorem identity. Unlike the individual volume and surface integral convergence tests that compare each integral against an analytical result, this test checks that the three discrete integrals satisfy the theorem's algebraic relationship with a residual below residual_tolerance, regardless of how closely each individual integral matches its analytical value. The scalar field f is initialized as a quartic function and the vector field v as an exponential function, providing a non-trivial test case where neither field is within the polynomial exactness range of the stencils. A relatively coarse grid of 20 cells is used, emphasizing that the discrete identity should hold even on under-resolved grids. The test loops over 2nd-order and 4th-order discretizations, computing the residual for each and checking its absolute value against residual_tolerance. The test result is accumulated using the .also. and .isAtMost. defined operations and the passing_test()/test_diagnosis_t testing infrastructure.
+FILE: integration_operators_1D_test_m.F90
+
+CODE:
+  function check_gauss_divergence_theorem() result(test_diagnosis)
+    type(test_diagnosis_t) test_diagnosis
+    procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer
+    procedure(vector_1D_initializer_i), pointer :: vector_1D_initializer
+    integer, parameter :: cells=20
+    double precision, parameter :: x_min = 0D0, x_max = 1D0
+    integer order
+
+    scalar_1D_initializer => quartic
+    vector_1D_initializer => exponential
+
+    test_diagnosis = passing_test()
+
+    do order = 2, 4, 2
+      associate( &
+         f  => scalar_1D_t(scalar_1D_initializer, order, cells , x_min, x_max) &
+        ,v  => vector_1D_t(vector_1D_initializer, order, cells , x_min, x_max) &
+      )
+        associate( &
+           dA => v%dA() &
+          ,dV => f%dV() &
+        )
+          associate(residual => (.SSS. (v  .dot. .grad. f )*dV) + (.SSS. (f  * .div. v )*dV) - .SS. (f .x. (v .dot. dA)))
+            test_diagnosis = test_diagnosis .also. (abs(residual) .isAtMost. residual_tolerance) &
+              // " for " // ordinal(order) // "-order Extended Gauss Divergence Theorem residual"
+          end associate
+        end associate
+      end associate
+    end do
+
+  end function
+
+
+
+PURPOSE: Constructs a scalar_1D_t object by evaluating a user-provided initializer function on the extended grid (boundary + cell-center locations) and storing the resulting values along with grid metadata and a pre-built gradient operator for the specified order of accuracy and cell count. finite-difference, mimetic, cell-centered, boundary-values
+KEYWORDS: scalar_1D, construction, initializer, structured-grid, staggered-grid, gradient-operator
+CONTEXT: This procedure constructs a scalar_1D_t object in the formal library's mimetic finite-difference framework. The scalar field is initialized on an extended grid consisting of the two domain boundary points plus all cell-center locations, yielding m+2 values where m is the number of cells. The gradient_operator_1D_t is pre-built and stored within the scalar object so that subsequent calls to the .grad. operator can apply it without reconstruction. Assertions verify that x_max > x_min and that the cell count is at least 2*order to support the mimetic stencil width. This version is compiled for non-gfortran compilers; gfortran uses an alternate definition below due to differences in procedure pointer handling in module procedure definitions.
+FILE: scalar_1D_s.F90
+
+CODE:
+  module procedure construct_1D_scalar_from_function
+    call_julienne_assert(x_max .greaterThan. x_min)
+    call_julienne_assert(cells .isAtLeast. 2*order)
+
+    associate(values => initializer(scalar_1D_grid_locations(x_min, x_max, cells)))
+      scalar_1D%tensor_1D_t = tensor_1D_t(values, x_min, x_max, cells, order)
+    end associate
+    scalar_1D%gradient_operator_1D_ = gradient_operator_1D_t(k=order, dx=(x_max - x_min)/cells, cells=cells)
+  end procedure
+
+
+
+PURPOSE: Constructs a vector_1D_t object by evaluating a user-provided initializer function on the face-centered grid locations and storing the resulting values along with grid metadata and a pre-built divergence operator for the specified order of accuracy and cell count. finite-difference, mimetic, face-centered
+KEYWORDS: vector_1D, construction, initializer, structured-grid, staggered-grid, divergence-operator
+CONTEXT: This procedure constructs a vector_1D_t object in the formal library's mimetic finite-difference framework. The vector field is initialized on a face-centered grid consisting of m+1 face locations (including both domain boundaries), where m is the number of cells. The divergence_operator_1D_t is pre-built and stored within the vector object so that subsequent calls to the .div. operator can apply it without reconstruction. Assertions verify that x_max > x_min and that the cell count is at least 2*order+1 to support the mimetic stencil width. This version is compiled for non-gfortran compilers; gfortran uses an alternate definition below due to differences in procedure pointer handling in module procedure definitions.
+FILE: vector_1D_s.F90
+
+CODE:
+  module procedure construct_1D_vector_from_function
+    call_julienne_assert(x_max .greaterThan. x_min)
+    call_julienne_assert(cells .isAtLeast. 2*order+1)
+
+    associate(values => initializer(faces(x_min, x_max, cells)))
+      vector_1D%tensor_1D_t = tensor_1D_t(values, x_min, x_max, cells, order)
+    end associate
+    vector_1D%divergence_operator_1D_ = divergence_operator_1D_t(k=order, dx=(x_max - x_min)/cells, cells=cells)
+  end procedure
+
+
+
+PURPOSE: Computes the element-wise dot product of a vector_1D field with a gradient_1D field, producing a new vector_dot_gradient_1D_t object that carries both the multiplied values and the gradient quadrature weights. mimetic, quadrature-weights, element-wise-multiplication
+KEYWORDS: dot-product, gradient, vector_1D, operator-overloading, structured-grid, staggered-grid
+CONTEXT: This procedure implements the dot product of a vector_1D_t with a gradient_1D_t in the formal library's operator overloading framework. Both fields must live on the same staggered-grid with matching sizes, orders, cell counts, and domain bounds, which are verified via assertions. The element-wise product of the two fields' node-centered values forms the resulting tensor, which inherits the gradient field's grid metadata and quadrature weights. The quadrature weights are retrieved via a compiler-conditional call to either weights() or gradient_1D_weights() to handle gfortran naming differences. The resulting vector_dot_gradient_1D_t object can then be passed to the volume integration operator .SSS. as part of compound expressions such as .SSS. (v .dot. .grad. f) * dV.
+FILE: gradient_1D_s.F90
+
+CODE:
+  module procedure dot
+
+    call_julienne_assert(size(gradient_1D%values_) .equalsExpected. size(vector_1D%values_))
+    call_julienne_assert(gradient_1D%order_ .equalsExpected. vector_1D%order_)
+    call_julienne_assert(gradient_1D%cells_ .equalsExpected. vector_1D%cells_)
+    call_julienne_assert(gradient_1D%x_min_ .approximates.    vector_1D%x_min_ .within. double_equivalence)
+    call_julienne_assert(gradient_1D%x_max_ .approximates.    vector_1D%x_max_ .within. double_equivalence)
+
+    vector_dot_gradient_1D%tensor_1D_t = tensor_1D_t(   &
+       values = gradient_1D%values_ * vector_1D%values_ &
+      ,x_min  = gradient_1D%x_min_ &
+      ,x_max  = gradient_1D%x_max_ &
+      ,cells  = gradient_1D%cells_ &
+      ,order  = gradient_1D%order_ &
+    )
+#ifndef __GFORTRAN__
+    vector_dot_gradient_1D%weights_ = gradient_1D%weights()
+#else
+    vector_dot_gradient_1D%weights_ = gradient_1D%gradient_1D_weights()
+#endif
+  end procedure
+
+
+
+PURPOSE: Computes the cell-center x-coordinates for a uniform 1D grid given the domain bounds and number of cells, returning an array of cell-center locations offset by half a cell width from x_min.
+KEYWORDS: grid, cell-center, uniform-mesh, 1D, structured-grid, staggered-grid, utility, gfortran
+CONTEXT: This helper function is only compiled under gfortran and provides cell-center coordinate computation needed by the scalar_1D submodule. It constructs a uniform grid with cell width dx = (x_max - x_min)/cells and places each cell center at x_min + dx/2 + (cell-1)*dx using an implied do loop. Other compilers use a cell_center_locations function defined elsewhere. This function is used by scalar_1D_grid_locations to build the extended grid array that includes both boundary points and cell centers.
+FILE: scalar_1D_s.F90
+
+CODE:
+  pure function cell_center_locations(x_min, x_max, cells) result(x)
+    double precision, intent(in) :: x_min, x_max
+    integer, intent(in) :: cells
+    double precision, allocatable:: x(:)
+    integer cell
+
+    associate(dx => (x_max - x_min)/cells)
+      x = x_min + dx/2. + [((cell-1)*dx, cell = 1, cells)]
+    end associate
+  end function
+
+
+
+PURPOSE: Tests that the 2nd-order discrete divergence of the gradient operator correctly computes div(grad(f)) for a parabolic function (x^2/2), which should yield a constant value of 1.0 everywhere, and reports a passing or failing test diagnosis based on whether the computed values approximate the expected result within a tight tolerance. defined operation, unit-test, scalar_1D, parabola, 2nd-order, structured-grid, staggered-grid, test-diagnosis, differential-operator, verification, compound-operator
+KEYWORDS: divergence, gradient, div-grad, laplacian-equivalence, finite-difference
+CONTEXT: This function is part of the operator test suite in the formal library, which provides defined operations (.grad., .div., .laplacian., etc.) for staggered-grid scalar fields. It tests the compound expression .div. (.grad. f), which should be mathematically equivalent to the Laplacian but is computed by composing the gradient and divergence operators separately rather than using the dedicated .laplacian. operator. The scalar field is initialized as a parabola (x^2/2) on a 16-cell 1D domain [0, 5] at 2nd-order accuracy, and the expected div(grad) value is the constant 1.0. This complements the direct Laplacian tests by verifying that the discrete gradient and divergence operators compose correctly. A tight_tolerance is used, reflecting that the parabola is within the polynomial exactness range of the 2nd-order stencils. The conditional compilation directives handle differences between gfortran and other compilers regarding associate-block support for user-defined operator results. The test result is accumulated using the .also. and .approximates. defined operations and the passing_test()/test_diagnosis_t testing infrastructure.
+FILE: divergence_operator_1D_test_m.F90
+
+CODE:
+  function check_2nd_order_div_grad_parabola() result(test_diagnosis)
+    type(test_diagnosis_t) test_diagnosis
+    procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => parabola
+    double precision, parameter :: expected_divergence = 1D0
+#ifdef __GFORTRAN__
+    type(divergence_1D_t) div_grad_scalar
+    div_grad_scalar = .div. (.grad. scalar_1D_t(scalar_1D_initializer, order=2, cells=16, x_min=0D0, x_max=5D0))
+#else
+    associate(div_grad_scalar => .div. (.grad. scalar_1D_t(scalar_1D_initializer, order=2, cells=16, x_min=0D0, x_max=5D0)))
+#endif
+ 
+      test_diagnosis = passing_test()
+      test_diagnosis = test_diagnosis .also. (.all. (div_grad_scalar%values() .approximates. expected_divergence .within. tight_tolerance)) &
+                     // " (2nd-order .div. (.grad. (x**2)/2))"
+
+#ifndef __GFORTRAN__
+    end associate
+#endif
+  end function
+
+------------------------------------------------
+
+USER PROMPT:
+You are a member of the committee that drafted the Fortran 2018 standard and you are
+familiar with vector calculus.
+
+Write a module named claude_integrand_operands_m containing one function named "scalar" 
+and one function named "vector".  Both functions should have the "pure" attribute and
+should have one double precision, one-dimensional (1D) assumed-shape dummy array argument
+named "x" and a deferred-shape array result.  Name the "scalar" function result "f" and
+define the result to be (x**2)/2 in an array statement.  Name the "vector" function result "v"
+and define the result to be x in an array statement.
+
+Write a main program named "claude_code" that uses the only following entities from the
+"formal_m" module:
+  - the scalar_1D_t and and vector_1D_t types,
+  - the scalar_1D_initializer_i and vector_1D_initializer_i abstract intefaces,
+and only the "scalar" and "vector" functions from the claude_integrand_operands_m module.
+
+Declare two procedure pointers: 
+   - one named "scalar_1D_initializer" associated with the "scalar" function
+     and conforming to the "scalar_1D_initializer_i" abstract interface.  
+   - one named "vector_1D_initializer" associated with the the "vector" function
+     and conforming to the "vector_1D_initializer_i" abstract interface.
+
+Use associate statements when defining named entities that will not change after definition.
+Define "f" as an invocation of the user-defined structure constructor scalar_1D_t with the
+actual arguments 
+  - scalar_1D_initializer
+  - order = 4
+  - cells = 200
+  - x_min = 0D0
+  - x_max = 1D0
+Define "v" as an invocation of the user-defined structure constructor vector_1D_t with the
+actual arguments 
+  - vector_1D_initializer
+  - order = 4
+  - cells = 200
+  - x_min = 0D0
+  - x_max = 1D0
+
+Define the differential volume "dV" by invoking the dV type-bound procedure on f.
+Define the differential area "dA" by invoking the dA type-bound procedure on v.
+
+Define one term in the extended Gauss divergence theorem as a volume integral in
+which the integrand is formed from by the dot product of v with the gradient of f.
+Use the defined operation .SSS. to compute the volume integral.  Use the defined
+operations .dot. and .grad. and to compute the dot product and the gradient, 
+respectively.
+
+Define a second term as a volume integral in which the integrand is formed from the
+product of f with the divergence of v.  Use the defined operation .div. to compute
+the divergence.
+ 
+Define a third term as a integral in which the integrand is formed by a weighted
+product of f with the dot product of v and dA.  Use the defined operation .x. for the
+weighted product.  Use the defined operation .SS. to compute the surface integral.
+
+Compute and print a residual formed by summing the two volume integrals and subtracting
+the area integral.
