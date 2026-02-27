@@ -26,25 +26,13 @@ program extended_gauss_divergence
   !! where `.SSS.` and `.SS.` are the 1D equivalents of a volume integral over the whole
   !! domain and a surface integral over a domain boundary of unit area, respectively.
 
-  ! PURPOSE: Import derived types (*_t) and abstract interfaces (*_i) from modules (*_m) that
-  !          export the public entities provided by the Formal mimetic abstraction library and
-  !          the Julienne correctness-checking framework.  Also import scalar and vector functions
-  !          from a user-defined module: integrand_operands_m.
-  ! KEYWORDS: derived type, use association, abstract interface
-  ! CONTEXT: demonstration of satisfaction of an extended form of the Gauss Divergence Theorem
-  
   use julienne_m, only : command_line_t
   use formal_m, only : scalar_1D_t, scalar_1D_initializer_i, vector_1D_t, vector_1D_initializer_i
   use integrand_operands_m, only : scalar, vector
-  ! END CODE CHUNK
 
   implicit none
-  ! PURPOSE: Define procedure pointers for 1D scalar- and vector-field initialization functions
-  ! KEYWORDS: initial condition, 1D, scalar, vector
-  ! CONTEXT: pass as the first argument in a scalar_1D_t or vector_1D_t constructor function invocation
   procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => scalar
   procedure(vector_1D_initializer_i), pointer :: vector_1D_initializer => vector
-  ! END CODE CHUNK
 
   type numerical_arguments_t
     !! Define default initializations that can be overridden with the command-line arguments

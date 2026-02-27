@@ -15,6 +15,19 @@ contains
 
 #ifdef __GFORTRAN__
 
+  ! PURPOSE: Transforms the upper boundary block submatrix "A" of a mimetic gradient operator into
+  !          the corresponding lower boundary block "A'" by reversing elements within rows (with sign
+  !          negation) and then reversing elements within columns, implementing the antisymmetric
+  !          reflection required by the Corbino & Castillo (2020) mimetic operator structure.
+  ! KEYWORDS: mimetic, gradient, boundary-block, matrix-transformation, antisymmetric, Corbino-Castillo,
+  !           gfortran, utility
+  ! CONTEXT: This helper function is only compiled under gfortran and provides the transformation from
+  !          the upper block "A" to the lower block "A'" needed when constructing the mimetic gradient
+  !          operator matrix in the formal library. The mimetic gradient operator has a block structure
+  !          consisting of an upper boundary block A, a repeated interior row M, and a lower boundary
+  !          block A' that is derived from A by negating and flipping. Other compilers may access this
+  !          functionality through a different code path. This function is called by
+  !          construct_1D_gradient_operator during operator assembly.
   pure function negate_and_flip(A) result(Ap)
     !! Transform a mimetic matrix upper block into a lower block
     double precision, intent(in) :: A(:,:)
@@ -34,13 +47,32 @@ contains
     end do reverse_elements_within_columns
 
   end function
+  ! END CODE CHUNK
 
 #endif
 
-  ! PURPOSE: Definition of procedure to construct a new mimetic gradient-operator matrix representation of kth order for 1D cells of width dx.
-  ! KEYWORDS: 1D, gradient-operator constructor, sparse matrix
-  ! CONTEXT: Use this function to construct a sparse-matrix represntation of a mimetic gradient operator.
-
+  ! PURPOSE: Constructs a 1D mimetic gradient operator for a given order of accuracy k and cell width
+  !          dx on a grid with the specified number of cells. The operator is assembled in the block
+  !          structure of Corbino & Castillo (2020), consisting of an upper boundary block A, a
+  !          repeated interior stencil row M, and a lower boundary block A' derived from A via
+  !          antisymmetric reflection. Internal helper functions corbino_castillo_A and
+  !          corbino_castillo_M compute the order-specific stencil coefficients for 2nd-order and
+  !          4th-order accuracy.
+  ! KEYWORDS: mimetic, gradient, operator-construction, Corbino-Castillo, finite-difference,
+  !           structured-grid, staggered-grid, 2nd-order, 4th-order, boundary-block, interior-stencil,
+  !           block-matrix
+  ! CONTEXT: This procedure constructs the gradient_operator_1D_t object in the formal library's
+  !          mimetic finite-difference framework following the formulation of Corbino & Castillo (2020).
+  !          The gradient operator maps from m+2 cell-centered values (including boundary ghost values)
+  !          to m+1 node-centered values, where m is the number of cells. The internal function
+  !          corbino_castillo_A returns the upper boundary submatrix specific to the requested order:
+  !          a 1x3 row for 2nd-order and a 2x5 block for 4th-order. The internal function
+  !          corbino_castillo_M returns the interior stencil row: a 2-point stencil for 2nd-order and
+  !          a 4-point stencil for 4th-order. The lower block A' is computed from A via
+  !          negate_and_flip. An assertion verifies the grid has enough cells to accommodate the
+  !          boundary blocks. The constructed object stores the block components along with the order
+  !          k, cell width dx, and cell count m for use by the matrix-vector multiply and assembly
+  !          procedures.
   module procedure construct_1D_gradient_operator
 
     call_julienne_assert(cells .isAtLeast. 2*k)
@@ -98,6 +130,24 @@ contains
   end procedure construct_1D_gradient_operator
   ! END CODE CHUNK
 
+  ! PURPOSE: Computes the matrix-vector product of the mimetic gradient operator with an input vector
+  !          of m+2 cell-centered values (including boundary ghost values), producing an output vector
+  !          of m+1 node-centered values, by applying the upper block A, the repeated interior stencil
+  !          M via do concurrent, and the lower block A' separately.
+  ! KEYWORDS: mimetic, gradient, matrix-vector-multiply, operator-application, Corbino-Castillo,
+  !           structured-grid, staggered-grid, do-concurrent, boundary-block, interior-stencil,
+  !           block-matrix
+  ! CONTEXT: This procedure implements the action of the mimetic gradient operator on a vector in the
+  !          formal library's mimetic finite-difference framework. Rather than assembling and storing
+  !          the full dense matrix, it exploits the block structure of the Corbino & Castillo (2020)
+  !          operator: the upper boundary rows are computed via matmul with the stored upper block, the
+  !          interior rows are computed via dot_product with the repeated interior stencil in a do
+  !          concurrent loop, and the lower boundary rows are computed via matmul with the stored lower
+  !          block. Unlike the divergence operator, which has zero-padded first and last rows, the
+  !          gradient operator produces values at all m+1 nodes without zero padding. The interior
+  !          stencil is applied starting from an offset of 1 to account for the node-centered output
+  !          grid's relationship to the cell-centered input grid. Conditional compilation handles
+  !          differences in do concurrent syntax support across compilers.
   module procedure gradient_matrix_multiply
 
     double precision, allocatable :: product_inner(:)
@@ -139,7 +189,24 @@ contains
       ]
     end associate
   end procedure
+  ! END CODE CHUNK
 
+  ! PURPOSE: Assembles the full dense matrix representation of the mimetic gradient operator by
+  !          applying the operator to each column of the identity matrix via the matrix-vector
+  !          multiply procedure, producing an (m+1) x (m+2) matrix. An internal helper function e
+  !          generates the unit basis vectors used as identity matrix columns.
+  ! KEYWORDS: mimetic, gradient, matrix-assembly, dense-matrix, identity-matrix, operator-assembly,
+  !           structured-grid, staggered-grid, do-concurrent, Corbino-Castillo
+  ! CONTEXT: This procedure constructs the full dense matrix form of the mimetic gradient operator in
+  !          the formal library. While the operator is typically applied in matrix-free form via
+  !          gradient_matrix_multiply for efficiency, the dense matrix is useful for debugging,
+  !          visualization, and verification purposes. The assembly works by applying the operator to
+  !          each standard basis vector e_i of length m+2 using do concurrent, where each resulting
+  !          column of the output matrix is the operator's response to that basis vector. Conditional
+  !          compilation handles differences in do concurrent syntax support across compilers, with a
+  !          gfortran workaround that calls gradient_matrix_multiply directly rather than using the
+  !          overloaded .x. operator. The internal function e constructs the i-th unit vector of the
+  !          specified length.
   module procedure assemble_gradient
 
     associate(rows => self%m_ + 1, cols => self%m_ + 2)
@@ -172,5 +239,6 @@ contains
     end function
 
   end procedure
+  ! END CODE CHUNK
 
 end submodule gradient_operator_1D_s
