@@ -34,3 +34,11 @@ Use RAG embeddings and user prompt to get response from LLM
 cd $MODCON_DIR/AstraAI/AstraAI_fortran
 python3 pr_watcher.py --llm-model=Qwen2.5-Coder-32B-Instruct-for-ollama --embed-model=all-minilm --rag-metadata-dir=$OUTPUT_DIR --top-k=10  --ollama-bin=/global/cfs/cdirs/m2957/nataraj2/Tools/ollama/bin/ollama --prompt-file=user_prompt.txt --terminal
 ```
+
+Save the resulting program to claude-rag-response.f90 somewhere in the "example" subdirectory.
+Run the program as follows:
+
+ fpm run \
+  --example claude-rag-response \
+  --compiler flang \
+  --profile release
