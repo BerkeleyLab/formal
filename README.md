@@ -31,7 +31,7 @@ $$ \iiint_V (\vec{v} \cdot \nabla f) dV + \iiint_V (f \nabla \cdot \vec{v}) dV =
 
 Running the program as follows
 ```fortran
-fpm run --example extended-gauss-divergence --compiler flang-new --flag -O3
+fpm run --example extended-gauss-divergence --compiler flang --profile release
 ```
 produces output that includes actual program syntax:
 ```fortran
@@ -77,11 +77,19 @@ Building and testing
  GCC      | `gfortran`  | 13                    | `fpm test --compiler gfortran --profile release --flag "-ffree-line-length-none"`
  Intel    | `ifx`       | 2025.1.2              | `FOR_COARRAY_NUM_IMAGES=1 fpm test --compiler ifx --flag "-fpp -O3 -coarray" --profile release`
  LFortran | `lfortran`  | 0.60.0-421-ge2c448c79 | `fpm test --compiler lfortran --flag "--cpp --realloc-lhs-arrays"`
- LLVM     | `flang`     | 20-21                 | `fpm test --compiler flang --flag "-O3"`
- LLVM     | `flang`     | 19                    | `fpm test --compiler flang --flag "-O3 -mmlir -allow-assumed-rank"`
+ LLVM     | `flang`     | 20-21                 | `fpm test --compiler flang --profile release
+ LLVM     | `flang`     | 19                    | `fpm test --compiler flang --profile release --flag "-mmlir -allow-assumed-rank"`
  NAG      | `nagfor`    | 7.2 Build 7242        | `fpm test --compiler nagfor --flag "-O3 -fpp"`
 
-With `fpm` versions before 0.13.0, replace `flang` with `flang-new` above.
+### `fpm` versions before 0.13.0
+With LLVM 20-22, replace the above `flang` command with
+```
+  fpm test --compiler flang --flag "-O3"
+```
+With LLVM 19, replace the above `flang` command with
+```
+ fpm test --compiler flang --flag "-O3 -mmlir -allow-assumed-rank"
+```
 
 Documentation
 -------------
