@@ -311,8 +311,8 @@ module tensors_1D_m
       integer num_nodes
     end function
 
-    pure module function div_dyad(self) result(divergence_1D)
-      !! Result is mimetic divergence of the dyad_1D_t "self"
+    pure module function div_dyad(self) result(vector_1D)
+      !! Result is the vector divergence of the dyad_1D_t "self"
       implicit none
       class(dyad_1D_t), intent(in) :: self
       type(vector_1D_t) vector_1D
