@@ -35,13 +35,12 @@ program burgers_1D
     stop                  new_line('') // new_line('') &
       // 'Usage:'                      // new_line('') &
       // '  fpm run \'                 // new_line('') &
-      // '  --example burgers-1D \'    // new_line('') &
-      // '  --compiler flang-new \'    // new_line('') &
-      // '  --flag "-O3" \'            // new_line('') & 
-      // '  -- [--help|-h] | [--order <integer>]' // new_line('') // new_line('') &
+      // '    --example burgers-1D \'  // new_line('') &
+      // '    --compiler flang \'      // new_line('') &
+      // '    --flag "-O3" \'          // new_line('') & 
+      // '    [--help|-h] | [--order <integer>]' // new_line('') // new_line('') &
       // 'where square brackets indicate optional arguments and angular brackets indicate user input values.' // new_line('')
   end if
-
 
   print *, new_line('')
   print *,"   Initial condition"
@@ -60,8 +59,14 @@ program burgers_1D
   print *, "order = ", order
 
   u = vector_1D_t(vector_1D_initializer, order, x_min=0D0, x_max=1D0, cells=50)
-  associate(div_uu_2 => .div. (u*u/2)) ! result is at cell centers; To Do: interpolate to cell faces
-  end associate
+
+  block
+    double precision dt
+    dt = 1D0
+    !associate(dt_grad_u2_2 => dt * (.div. ((u*u))))
+    associate(dt_div_uu => .div. (u*u))
+    end associate
+  end block
 
 #ifdef __GFORTRAN__
     stop

@@ -5,6 +5,7 @@
 
 submodule(tensors_1D_m) dyad_1D_s
   use julienne_m, only : call_julienne_assert_
+  use interpolator_1D_m, only : centers_to_faces_1D_t
   implicit none
 contains
 
@@ -28,18 +29,26 @@ contains
     associate(D => (self%divergence_operator_1D_))
 #endif
       call_julienne_assert(size(self%values_))
-      associate(Dv => D .x. self%values_)
-        divergence_1D%tensor_1D_t = tensor_1D_t(Dv(2:size(Dv)-1), self%x_min_, self%x_max_, self%cells_, self%order_)
-        error stop "To Do: interploate the dyad's divergence to the cell faces and construct a vector_1D_t"
+      associate( &
+         Dv => D .x. self%values_ &
+        ,dx => (self%x_max_ - self%x_min_)/self%cells_ &
+      )
+        associate(interpolator => centers_to_faces_1D_t(order=self%order_, cells=self%cells_, dx=dx))
+          vector_1D = vector_1D_t( &
+              tensor_1D_t(interpolator .center. Dv(2:size(Dv)-1), self%x_min_, self%x_max_, self%cells_, self%order_) &
+            ,divergence_operator_1D_t(k=self%order_, dx=dx, cells=self%cells_) &
+          )
+        end associate
 #if ASSERTIONS
-        associate( &
-           q  => divergence_1D%weights() &
-          ,dx => (self%x_max_ - self%x_min_)/self%cells_ &
-          ,b => [-1D0, [(0D0, center = 1, self%cells_-1)], 1D0] &
-        )
-          call_julienne_assert(.all. ([size(Dv), size(q)] .equalsExpected. self%cells_+2))
-          call_julienne_assert((.all. (matmul(transpose(D%assemble()), q) .approximates. b/dx .within. double_equivalence)))
-            ! Check D^T * a = b_{m+1},  Eq. (19), Corbino & Castillo (2020)
+        associate(divergence_1D => divergence_1D_t(tensor_1D_t(Dv(2:size(Dv)-1), self%x_min_, self%x_max_, self%cells_, self%order_)))
+          associate( &
+             q => divergence_1D%weights() &
+            ,b => [-1D0, [(0D0, center = 1, self%cells_-1)], 1D0] &
+          )
+            call_julienne_assert(.all. ([size(Dv), size(q)] .equalsExpected. self%cells_+2))
+            call_julienne_assert((.all. (matmul(transpose(D%assemble()), q) .approximates. b/dx .within. double_equivalence)))
+              ! Check D^T * a = b_{m+1},  Eq. (19), Corbino & Castillo (2020)
+          end associate
         end associate
 #endif
       end associate
