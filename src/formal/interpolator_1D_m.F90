@@ -22,8 +22,7 @@ module interpolator_1D_m
 
   type, extends(interpolator_1D_t) :: centers_to_faces_1D_t
   contains
-    generic :: operator(.center.) => interpolate_to_faces
-    procedure, non_overridable, private :: interpolate_to_faces
+    procedure, non_overridable :: face_values
   end type
 
   type, extends(interpolator_1D_t) :: faces_to_centers_1D_t
@@ -55,11 +54,11 @@ module interpolator_1D_m
 
   interface
 
-    pure module function interpolate_to_faces(self, centers) result(faces)
+    pure module function face_values(self, centers_extended) result(faces)
       !! Interpolate cell-centered values to face-centered values
       implicit none
       class(centers_to_faces_1D_t), intent(in) :: self
-      double precision, intent(in) :: centers(:)
+      double precision, intent(in) :: centers_extended(:)
       double precision, allocatable :: faces(:)
     end function
 

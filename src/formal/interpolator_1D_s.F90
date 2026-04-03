@@ -4,7 +4,7 @@
 #include "julienne-assert-macros.h"
 
 submodule(interpolator_1D_m) interpolator_1D_s
-  use julienne_m, only : call_julienne_assert_, operator(.equalsExpected.)
+  use julienne_m, only : call_julienne_assert_, operator(.all.), operator(.equalsExpected.)
   implicit none
 
 contains
@@ -17,11 +17,11 @@ contains
 
     select case(order)
     case(2)
-      centers_to_faces_1D%first_ = 1D0
-      centers_to_faces_1D%upper_ = reshape([double precision::], [0,3])
-      centers_to_faces_1D%inner_ = [1D0,1D0]/2D0
-      centers_to_faces_1D%lower_ = reshape([double precision::], [0,3])
-      centers_to_faces_1D%final_ = 1D0
+      centers_to_faces_1D%first_ = (2D0                                 )/2
+      centers_to_faces_1D%upper_ = (reshape([double precision::], [0,3]))/2
+      centers_to_faces_1D%inner_ = ([1D0,1D0]                           )/2
+      centers_to_faces_1D%lower_ = (reshape([double precision::], [0,3]))/2
+      centers_to_faces_1D%final_ = (2D0                                 )/2
     case(4)
       centers_to_faces_1D%first_ = 1D0
       centers_to_faces_1D%upper_ = reshape([-16,  70, 70, -14,   2], [1,5])/112D0
@@ -32,7 +32,7 @@ contains
       error stop "c2f_component_constructor: unsupported order"
     end select
 
-    call_julienne_assert(shape(self%lower_) .equalsExpected. shape(self%upper_))
+    call_julienne_assert(.all. (shape(centers_to_faces_1D%lower_) .equalsExpected. shape(centers_to_faces_1D%upper_)))
   end procedure
 
   module procedure f2c_constructor
@@ -58,22 +58,28 @@ contains
       error stop "f2c_component_constructor: unsupported order"
     end select
 
-    call_julienne_assert(shape(self%lower_) .equalsExpected. shape(self%upper_))
+    call_julienne_assert(.all. (shape(faces_to_centers_1D%lower_) .equalsExpected. shape(faces_to_centers_1D%upper_)))
   end procedure
 
-  module procedure interpolate_to_faces
+  module procedure face_values
     integer row
+    integer, parameter :: end_point = 1
     associate( &
-       N => size(centers)               , inner_cols => size(self%inner_) &
+       N => size(centers_extended)      , inner_cols => size(self%inner_) &
       ,upper_rows => size(self%upper_,1), upper_cols => size(self%upper_,2) &
       ,lower_rows => size(self%lower_,1), lower_cols => size(self%lower_,2) &
     )
-      faces = [        self%first_ * centers(1) &
-        ,       matmul(self%upper_ , centers(1:upper_cols)) &
-        ,[(dot_product(self%inner_ , centers(row-upper_rows+1 : row-upper_rows+inner_cols)), row = upper_rows+1, N-lower_rows-1)] &
-        ,       matmul(self%lower_ , centers(N-lower_cols+1:N)) &
-        ,              self%final_ * centers(N) &
-      ]
+      call_julienne_assert(N .equalsExpected. self%cells_ + 2*end_point)
+      associate(inner_rows => N - (2*end_point + upper_rows + lower_rows))
+        faces = [        self%first_ * centers_extended(1) &
+          ,       matmul(self%upper_ , centers_extended(1:upper_cols)) &
+          ,[(dot_product(self%inner_ , centers_extended(row - upper_rows : row - upper_rows + inner_cols - 1)),  &
+            row = end_point + upper_rows + 1, end_point + upper_rows + inner_rows - 1)] &
+          ,       matmul(self%lower_ , centers_extended(N-lower_cols+1:N)) &
+          ,              self%final_ * centers_extended(N) &
+        ]
+      end associate
+      call_julienne_assert(size(faces) .equalsExpected. self%cells_ + 1)
     end associate
   end procedure
 
