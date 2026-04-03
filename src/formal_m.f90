@@ -20,6 +20,9 @@ module formal_m
      gradient_operator_1D_t & ! matrix operator defining a 1D mimetic gradient
     ,divergence_operator_1D_t ! matrix operator defining a 1D mimetic divergence
 
+  use interpolator_1D_m, only : &
+      centers_to_faces_1D_t ! 1D mimetic estimator producing cell-centered values given facial values
+
   implicit none
 
 end module formal_m

@@ -4,9 +4,17 @@
 #include "julienne-assert-macros.h"
 
 submodule(tensors_1D_m) dyad_1D_s
-  use julienne_m, only : call_julienne_assert_
+  use julienne_m, only : &
+     call_julienne_assert_ &
+    ,operator(.all.) &
+    ,operator(.approximates.) &
+    ,operator(.equalsExpected.) &
+    ,operator(.within.)
   use interpolator_1D_m, only : centers_to_faces_1D_t
   implicit none
+
+  double precision, parameter :: double_equivalence = 2D-4
+
 contains
 
   module procedure dyad_over_integer
@@ -28,14 +36,13 @@ contains
 #else
     associate(D => (self%divergence_operator_1D_))
 #endif
-      call_julienne_assert(size(self%values_))
       associate( &
          Dv => D .x. self%values_ &
         ,dx => (self%x_max_ - self%x_min_)/self%cells_ &
       )
         associate(interpolator => centers_to_faces_1D_t(order=self%order_, cells=self%cells_, dx=dx))
           vector_1D = vector_1D_t( &
-              tensor_1D_t(interpolator .center. Dv(2:size(Dv)-1), self%x_min_, self%x_max_, self%cells_, self%order_) &
+              tensor_1D_t(interpolator%face_values(Dv(2:size(Dv)-1)), self%x_min_, self%x_max_, self%cells_, self%order_) &
             ,divergence_operator_1D_t(k=self%order_, dx=dx, cells=self%cells_) &
           )
         end associate
