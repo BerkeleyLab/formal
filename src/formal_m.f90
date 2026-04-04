@@ -21,7 +21,8 @@ module formal_m
     ,divergence_operator_1D_t ! matrix operator defining a 1D mimetic divergence
 
   use interpolator_1D_m, only : &
-      centers_to_faces_1D_t ! 1D mimetic estimator producing cell-centered values given facial values
+     centers_to_faces_1D_t & ! 1D mimetic interpolator producing cell-centered values from face-centered values
+    ,faces_to_centers_1D_t   ! 1D mimetic interpolator producing face-centered values from cell-centered values
 
   implicit none
 

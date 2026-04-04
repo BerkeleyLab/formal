@@ -43,11 +43,11 @@ contains
 
     select case(order)
     case(2)
-      faces_to_centers_1D%first_ = 1D0
-      faces_to_centers_1D%upper_ = reshape([double precision::], [0,3])
-      faces_to_centers_1D%inner_ = [1D0,1D0]/2D0
-      faces_to_centers_1D%lower_ = reshape([double precision::], [0,3])
-      faces_to_centers_1D%final_ = 1D0
+      faces_to_centers_1D%first_ = (2D0                               )/2
+      faces_to_centers_1D%upper_ = reshape([double precision::], [0,3])/2
+      faces_to_centers_1D%inner_ =                            [1D0,1D0]/2
+      faces_to_centers_1D%lower_ = reshape([double precision::], [0,3])/2
+      faces_to_centers_1D%final_ = (2D0                               )/2
     case(4)
       faces_to_centers_1D%first_ = 1D0
       faces_to_centers_1D%upper_ = reshape([35, 140, -70, 28, -5], [1,5])/128D0
@@ -80,6 +80,28 @@ contains
         ]
       end associate
       call_julienne_assert(size(faces) .equalsExpected. self%cells_ + 1)
+    end associate
+  end procedure
+
+  module procedure center_values
+    integer row
+    integer, parameter :: end_point = 1
+    associate( &
+       N => size(faces)                 , inner_cols => size(self%inner_) &
+      ,upper_rows => size(self%upper_,1), upper_cols => size(self%upper_,2) &
+      ,lower_rows => size(self%lower_,1), lower_cols => size(self%lower_,2) &
+    )
+      call_julienne_assert(N .equalsExpected. self%cells_ + 1)
+      associate(inner_rows => N + 1 - (2*end_point + upper_rows + lower_rows))
+        centers_extended = &
+          [               self%first_ * faces(1) &
+           ,       matmul(self%upper_ , faces(1:upper_cols)) &
+           ,[(dot_product(self%inner_ , faces(row : row + inner_cols - 1)), row = 1, inner_rows )] &
+           ,       matmul(self%lower_ , faces(N-lower_cols+1:N)) &
+           ,              self%final_ * faces(N) &
+          ]
+      end associate
+      call_julienne_assert(size(centers_extended) .equalsExpected. self%cells_ + 2)
     end associate
   end procedure
 
