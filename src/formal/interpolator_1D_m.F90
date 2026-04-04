@@ -8,6 +8,7 @@ module interpolator_1D_m
 
   private
   public :: centers_to_faces_1D_t
+  public :: faces_to_centers_1D_t
 
   type, abstract :: interpolator_1D_t
     !! Encapsulate a staggered-grid interpolation matrix with a corresponding matrix-vector product operator
@@ -26,6 +27,8 @@ module interpolator_1D_m
   end type
 
   type, extends(interpolator_1D_t) :: faces_to_centers_1D_t
+  contains
+    procedure, non_overridable :: center_values
   end type
 
   interface centers_to_faces_1D_t
@@ -47,7 +50,7 @@ module interpolator_1D_m
       implicit none
       integer, intent(in) :: order, cells
       double precision, intent(in) :: dx
-      type(centers_to_faces_1D_t) faces_to_centers_1D
+      type(faces_to_centers_1D_t) faces_to_centers_1D
     end function
 
   end interface
@@ -60,6 +63,14 @@ module interpolator_1D_m
       class(centers_to_faces_1D_t), intent(in) :: self
       double precision, intent(in) :: centers_extended(:)
       double precision, allocatable :: faces(:)
+    end function
+
+    pure module function center_values(self, faces) result(centers_extended)
+      !! Interpolate face-centered values to cell-centered values
+      implicit none
+      class(faces_to_centers_1D_t), intent(in) :: self
+      double precision, intent(in) :: faces(:)
+      double precision, allocatable :: centers_extended(:)
     end function
 
   end interface
