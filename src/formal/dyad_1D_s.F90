@@ -18,7 +18,7 @@ submodule(tensors_1D_m) dyad_1D_s
 contains
 
   module procedure dyad_over_integer
-    ratio%tensor_1D_t = tensor_1D_t(self%tensor_1D_t%values_/numerator, self%x_min_, self%x_max_, self%cells_, order = self%order_)
+    ratio%tensor_1D_t = tensor_1D_t(self%values_/numerator, self%x_min_, self%x_max_, self%cells_, order = self%order_)
     ratio%divergence_operator_1D_ = self%divergence_operator_1D_
   end procedure
 
