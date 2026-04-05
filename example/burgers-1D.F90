@@ -53,7 +53,7 @@ program burgers_1D
   if (len(order_string)==0) then 
     order = 4 
   else
-    read(order_string,"(i)") order 
+    read(order_string,"(i1)") order 
   end if
 
   print *, "order = ", order
