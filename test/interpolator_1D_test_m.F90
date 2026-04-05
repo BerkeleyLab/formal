@@ -58,9 +58,11 @@ contains
     double precision, allocatable :: y(:)
     y = 7*x**3 + 4*x**2 + x + 2
   end function
+
   function check_centers_to_faces() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => null()
+    procedure(vector_1D_initializer_i), pointer :: vector_1D_initializer => line
     double precision, parameter :: x_min = 0D0, x_max = 20D0
     integer order, cells
 
@@ -81,16 +83,15 @@ contains
 
       associate( &
          scalar_1D => scalar_1D_t(scalar_1D_initializer, order=order, cells=cells, x_min=x_min, x_max=x_max) &
+        ,vector_1D => vector_1D_t(vector_1D_initializer, order=order, cells=cells, x_min=x_min, x_max=x_max) &
         ,interpolator => centers_to_faces_1D_t(order=order, cells=cells, dx=(x_max - x_min)/cells) &
       )
         associate( &
            scalar_at_faces => interpolator%face_values(scalar_1D%values()) &
-          ,gradient => .grad. scalar_1D &
+          ,face_locations => vector_1D%grid() &
         )
-          associate(face_locations => gradient%grid())
             test_diagnosis = test_diagnosis .also. .all. (scalar_at_faces .approximates. scalar_1D_initializer(face_locations) .within. tolerance) &
               // string_t(" for order ") // string_t(order)
-          end associate
         end associate
       end associate
 
@@ -100,6 +101,7 @@ contains
   function check_faces_to_centers() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     procedure(vector_1D_initializer_i), pointer :: vector_1D_initializer => null()
+    procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => line
     double precision, parameter :: x_min = 0D0, x_max = 20D0
     integer order, cells
 
@@ -120,14 +122,14 @@ contains
 
       associate( &
          vector_1D => vector_1D_t(vector_1D_initializer, order=order, cells=cells, x_min=x_min, x_max=x_max) &
+        ,scalar_1D => scalar_1D_t(scalar_1D_initializer, order=order, cells=cells, x_min=x_min, x_max=x_max) &
         ,interpolator => faces_to_centers_1D_t(order=order, cells=cells, dx=(x_max - x_min)/cells) &
       )
         associate( &
            vector_at_centers => interpolator%center_values(vector_1D%values()) &
-          ,divergence => .div. vector_1D &
           ,faces => vector_1D%grid() &
         )
-          associate( centers_extended => [faces(lbound(faces,1)), divergence%grid(), faces(ubound(faces,1))] )
+          associate( centers_extended => scalar_1D%grid() )
             test_diagnosis = test_diagnosis .also. &
               .all. (vector_at_centers .approximates. vector_1D_initializer(centers_extended) .within. tolerance) &
               // string_t(" for order ") // string_t(order)
