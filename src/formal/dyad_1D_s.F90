@@ -41,10 +41,13 @@ contains
         ,dx => (self%x_max_ - self%x_min_)/self%cells_ &
       )
         associate(interpolator => centers_to_faces_1D_t(order=self%order_, cells=self%cells_, dx=dx))
-          vector_1D = vector_1D_t( &
-              tensor_1D_t(interpolator%face_values(Dv(2:size(Dv)-1)), self%x_min_, self%x_max_, self%cells_, self%order_) &
-            ,divergence_operator_1D_t(k=self%order_, dx=dx, cells=self%cells_) &
-          )
+          associate(face_values => interpolator%face_values(Dv))
+            vector_1D = vector_1D_t( &
+               tensor_1D_t(face_values, self%x_min_, self%x_max_, self%cells_, self%order_) &
+              ,divergence_operator_1D_t(k=self%order_, dx=dx, cells=self%cells_) &
+            )
+            call_julienne_assert(size(face_values) .equalsExpected. self%cells_ + 1)
+          end associate
         end associate
 #if ASSERTIONS
         associate(divergence_1D => divergence_1D_t(tensor_1D_t(Dv(2:size(Dv)-1), self%x_min_, self%x_max_, self%cells_, self%order_)))

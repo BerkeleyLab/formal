@@ -11,7 +11,7 @@ contains
     double precision, intent(in) :: x(:)
     double precision, allocatable :: initial_condition(:)
     double precision, parameter :: pi = acos(-1D0)
-    initial_condition = sin(2*pi*x)
+    initial_condition = x/sqrt(2D0)
     ! To change this function, please edit only the right-hand-side (RHS) expression,
     ! keeping the rest in place for proper display of the function at runtime.
   end function
@@ -51,20 +51,21 @@ program burgers_1D
   order_string = command_line%flag_value("--order")
 
   if (len(order_string)==0) then 
-    order = 4 
+    order = 2
   else
     read(order_string,"(i1)") order 
   end if
 
   print *, "order = ", order
 
-  u = vector_1D_t(vector_1D_initializer, order, x_min=0D0, x_max=1D0, cells=50)
+  u = vector_1D_t(vector_1D_initializer, order, x_min=0D0, x_max=20D0, cells=10)
 
   block
     double precision dt
     dt = 1D0
-    !associate(dt_grad_u2_2 => dt * (.div. ((u*u))))
-    associate(dt_div_uu => .div. (u*u))
+    !associate(dt_div_uu=> dt * (.div. ((u*u))))
+    associate(div_uu => .div. (u*u))
+     print *,div_uu%values()
     end associate
   end block
 
