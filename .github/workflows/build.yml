@@ -81,29 +81,38 @@ jobs:
             container: phhargrove/llvm-flang:19.1.1-latest
 
           # --- Intel coverage ---
-
-          # Intel provides two docker packages with Intel Fortran.
-          # The first is very compact, but lacks Intel C++:
-          #   https://hub.docker.com/r/intel/fortran-essentials/tags
-          #   This can be used with GNU C/C++
-          # The second includes Intel C++ and tons of other stuff,
-          # hence is much larger and can lead to slower container load:
-          #   https://hub.docker.com/r/intel/oneapi-hpckit/tags
-
           # Julienne requires 2025.2.0 or later
+
+          # https://hub.docker.com/r/intel/oneapi-toolkit/tags
           - os: ubuntu-24.04
             compiler: ifx
             version: latest
-            container: intel/fortran-essentials:latest
+            error_stop_code: 128
+            container: intel/oneapi-toolkit:latest
+
+          - os: ubuntu-24.04
+            compiler: ifx
+            version: 2026.0.0
+            error_stop_code: 128
+            container: intel/oneapi-toolkit:2026.0.0-devel-ubuntu24.04
+
+          # https://hub.docker.com/r/intel/fortran-essentials/tags
+          - os: ubuntu-24.04
+            compiler: ifx
+            version: 2025.3.0
+            error_stop_code: 128
+            container: intel/fortran-essentials:2025.3.0-0-devel-ubuntu24.04
 
           - os: ubuntu-24.04
             compiler: ifx
             version: 2025.2.2
+            error_stop_code: 128
             container: intel/fortran-essentials:2025.2.2-0-devel-ubuntu24.04
 
           - os: ubuntu-24.04
             compiler: ifx
             version: 2025.2.0
+            error_stop_code: 128
             container: intel/fortran-essentials:2025.2.0-0-devel-ubuntu24.04
 
           # --- LFortran coverage ---
