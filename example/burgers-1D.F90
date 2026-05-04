@@ -22,13 +22,13 @@ program burgers_1D
   !! Advance the 1D Burgers partial differential equation over time.
   use initial_condition_m, only : initial_condition
   use julienne_m, only :  command_line_t
-  use formal_m, only : vector_1D_t, vector_1D_initializer_i
+  use formal_m, only : scalar_1D_t, scalar_1D_initializer_i
   implicit none
 
-  procedure(vector_1D_initializer_i), pointer :: vector_1D_initializer => initial_condition
+  procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => initial_condition
   character(len=:), allocatable :: order_string
   type(command_line_t) command_line
-  type(vector_1D_t) :: u
+  type(scalar_1D_t) :: u
   integer order
 
   if (command_line%argument_present([character(len=len("--help")) :: ("--help"), "-h"])) then
@@ -58,14 +58,13 @@ program burgers_1D
 
   print *, "order = ", order
 
-  u = vector_1D_t(vector_1D_initializer, order, x_min=0D0, x_max=20D0, cells=10)
+  u = scalar_1D_t(scalar_1D_initializer, order, x_min=0D0, x_max=20D0, cells=10)
 
   block
     double precision dt
     dt = 1D0
-    !associate(dt_div_uu=> dt * (.div. ((u*u))))
-    associate(div_uu => .div. (u*u))
-     print *,div_uu%values()
+    !associate(dt_du22_dx => dt * .d_dx. ((u**2)/2))
+    associate(dt_du22_dx => u**2)
     end associate
   end block
 

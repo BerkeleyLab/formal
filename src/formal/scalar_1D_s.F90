@@ -65,6 +65,27 @@ contains
 
 #endif
 
+  module procedure exponentiate
+    power%tensor_1D_t = tensor_1D_t( &
+      values = self%values_**2, x_min = self%x_min_, x_max = self%x_max_, cells = self%cells_, order = self%order_ &
+    )
+    power%gradient_operator_1D_ = gradient_operator_1D_t( &
+      k = self%order_, dx = (self%x_max_ - self%x_min_)/self%cells_, cells = self%cells_ &
+    )
+  end procedure
+
+  module procedure construct_1D_scalar_from_parent
+
+    call_julienne_assert(tensor_1D%is_cell_centers_extended())
+
+    scalar_1D%tensor_1D_t = tensor_1D_t( &
+      values = tensor_1D%values_, x_min = tensor_1D%x_min_, x_max = tensor_1D%x_max_, cells = tensor_1D%cells_, order = tensor_1D%order_ &
+    )
+    scalar_1D%gradient_operator_1D_ = gradient_operator_1D_t( &
+      k = tensor_1D%order_, dx = (tensor_1D%x_max_-tensor_1D%x_min_)/tensor_1D%cells_, cells = tensor_1D%cells_ &
+    )
+  end procedure
+
   module procedure grad
 
     integer c

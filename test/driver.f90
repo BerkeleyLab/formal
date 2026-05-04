@@ -9,6 +9,7 @@ program test_suite_driver
   use laplacian_operator_1D_test_m, only : laplacian_operator_1D_test_t
   use integration_operators_1D_test_m, only : integration_operators_1D_test_t
   use interpolator_1D_test_m, only : interpolator_1D_test_t
+  use scalar_1D_test_m, only : scalar_1D_test_t
   implicit none
 
   associate(test_harness => test_harness_t([ &
@@ -17,6 +18,7 @@ program test_suite_driver
     ,test_fixture_t(laplacian_operator_1D_test_t()) &
     ,test_fixture_t(integration_operators_1D_test_t()) &
     ,test_fixture_t(interpolator_1D_test_t()) &
+    ,test_fixture_t(scalar_1D_test_t()) &
   ]))
     call test_harness%report_results
   end associate

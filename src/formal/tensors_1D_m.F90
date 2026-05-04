@@ -52,6 +52,9 @@ module tensors_1D_m
     integer order_          !! order of accuracy of mimetic discretization
     double precision, allocatable :: values_(:) !! tensor components at spatial locations
   contains
+    procedure, non_overridable, private :: is_cell_centered
+    procedure, non_overridable, private :: is_face_centered
+    procedure, non_overridable, private :: is_cell_centers_extended
     procedure, non_overridable, private :: gradient_1D_weights
     procedure, non_overridable, private :: divergence_1D_weights
     generic :: dV => dx
@@ -78,10 +81,12 @@ module tensors_1D_m
     private
     type(gradient_operator_1D_t) gradient_operator_1D_
   contains
+    generic :: operator(**) => exponentiate
     generic :: operator(.grad.) => grad
     generic :: operator(.laplacian.) => laplacian
     generic :: grid   => scalar_1D_grid
     generic :: values => scalar_1D_values
+    procedure, non_overridable, private :: exponentiate
     procedure, non_overridable, private :: grad
     procedure, non_overridable, private :: laplacian
     procedure, non_overridable, private :: scalar_1D_values
@@ -98,6 +103,12 @@ module tensors_1D_m
       integer, intent(in) :: cells !! number of grid cells spanning the domain
       double precision, intent(in) :: x_min !! grid location minimum
       double precision, intent(in) :: x_max !! grid location maximum
+      type(scalar_1D_t) scalar_1D
+    end function
+
+    pure module function construct_1D_scalar_from_parent(tensor_1D) result(scalar_1D)
+      !! Result is a 1D vector with the provided parent component tensor_1D and the provided divergence operatror
+      type(tensor_1D_t), intent(in) :: tensor_1D
       type(scalar_1D_t) scalar_1D
     end function
 
@@ -225,6 +236,24 @@ module tensors_1D_m
 
   interface
 
+    pure logical module function is_face_centered(self)
+      !! Result is .true. if the values are face-centered and .false. otherwise
+      implicit none
+      class(tensor_1D_t), intent(in) :: self
+    end function
+
+    pure logical module function is_cell_centered(self)
+      !! Result is .true. if the values are cell-centered and .false. otherwise
+      implicit none
+      class(tensor_1D_t), intent(in) :: self
+    end function
+
+    pure logical module function is_cell_centers_extended(self)
+      !! Result is .true. if the values are at cell centers + boundaries and .false. otherwise
+      implicit none
+      class(tensor_1D_t), intent(in) :: self
+    end function
+
     pure module function dyad_over_integer(self, numerator) result(ratio)
       !! Result is the dyad divided by the numerator
       implicit none
@@ -295,6 +324,14 @@ module tensors_1D_m
       implicit none
       class(scalar_1D_t), intent(in) :: self
       type(gradient_1D_t) gradient_1D
+    end function
+
+    pure module function exponentiate(self, exponent) result(power)
+      !! Result is mimetic Laplacian of the scalar_1D_t "self"
+      implicit none
+      class(scalar_1D_t), intent(in) :: self
+      integer, intent(in) :: exponent
+      type(scalar_1D_t) power
     end function
 
     pure module function laplacian(self) result(laplacian_1D)
