@@ -81,16 +81,18 @@ module tensors_1D_m
     private
     type(gradient_operator_1D_t) gradient_operator_1D_
   contains
+    generic :: grid   => scalar_1D_grid
+    generic :: values => scalar_1D_values
+    generic :: operator(/) => divide_by_integer
     generic :: operator(**) => exponentiate
     generic :: operator(.grad.) => grad
     generic :: operator(.laplacian.) => laplacian
-    generic :: grid   => scalar_1D_grid
-    generic :: values => scalar_1D_values
+    procedure, non_overridable, private :: scalar_1D_values
+    procedure, non_overridable, private :: scalar_1D_grid
+    procedure, non_overridable, private :: divide_by_integer 
     procedure, non_overridable, private :: exponentiate
     procedure, non_overridable, private :: grad
     procedure, non_overridable, private :: laplacian
-    procedure, non_overridable, private :: scalar_1D_values
-    procedure, non_overridable, private :: scalar_1D_grid
   end type
 
   interface scalar_1D_t
@@ -332,6 +334,14 @@ module tensors_1D_m
       class(scalar_1D_t), intent(in) :: self
       integer, intent(in) :: exponent
       type(scalar_1D_t) power
+    end function
+
+    pure module function divide_by_integer(self, denominator) result(ratio)
+      !! Result is scalar_1D_t "self" divided by the integer denominator
+      implicit none
+      class(scalar_1D_t), intent(in) :: self
+      integer, intent(in) :: denominator
+      type(scalar_1D_t) ratio
     end function
 
     pure module function laplacian(self) result(laplacian_1D)

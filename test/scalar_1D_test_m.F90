@@ -41,6 +41,7 @@ contains
 
    test_results = scalar_1D_test%run([ & 
       test_description_t('raising a 1D scalar field to a power', usher(check_exponentiation)) &
+     ,test_description_t('dividing a 1D scalar field by a constant', usher(check_divison_operator)) &
    ])
   end function
 
@@ -63,6 +64,26 @@ contains
         associate( scalar_1D_squared => scalar_1D**2 )
           test_diagnosis = test_diagnosis .also. .all. &
             (scalar_1D_squared%values() .approximates. scalar_1D%values()**2 .within. tolerance) &
+            // string_t(" for order ") // string_t(order)
+        end associate
+      end associate
+    end do
+
+  end function
+
+  function check_divison_operator() result(test_diagnosis)
+    type(test_diagnosis_t) test_diagnosis
+    procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => null()
+    integer order
+
+    scalar_1D_initializer => line
+    test_diagnosis = passing_test()
+
+    do order = 2, 4, 2
+      associate(scalar_1D => scalar_1D_t(scalar_1D_initializer, order=order, cells=10, x_min=0D0, x_max=10D0) )
+        associate( scalar_1D_squared => scalar_1D/2 )
+          test_diagnosis = test_diagnosis .also. .all. &
+            (scalar_1D_squared%values() .approximates. scalar_1D%values()/2 .within. tolerance) &
             // string_t(" for order ") // string_t(order)
         end associate
       end associate
