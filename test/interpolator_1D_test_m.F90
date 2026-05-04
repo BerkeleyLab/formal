@@ -86,12 +86,9 @@ contains
         ,vector_1D => vector_1D_t(vector_1D_initializer, order=order, cells=cells, x_min=x_min, x_max=x_max) &
         ,interpolator => centers_to_faces_1D_t(order=order, cells=cells, dx=(x_max - x_min)/cells) &
       )
-        associate( &
-           scalar_at_faces => interpolator%face_values(scalar_1D%values()) &
-          ,face_locations => vector_1D%grid() &
-        )
-            test_diagnosis = test_diagnosis .also. .all. (scalar_at_faces .approximates. scalar_1D_initializer(face_locations) .within. tolerance) &
-              // string_t(" for order ") // string_t(order)
+        associate(scalar_at_faces => interpolator%face_values(scalar_1D%values()))
+          test_diagnosis = test_diagnosis .also. .all. (scalar_at_faces .approximates. scalar_1D_initializer(vector_1D%grid()) .within. tolerance) &
+            // string_t(" for order ") // string_t(order)
         end associate
       end associate
 
@@ -125,13 +122,10 @@ contains
         ,scalar_1D => scalar_1D_t(scalar_1D_initializer, order=order, cells=cells, x_min=x_min, x_max=x_max) &
         ,interpolator => faces_to_centers_1D_t(order=order, cells=cells, dx=(x_max - x_min)/cells) &
       )
-        associate( &
-           vector_at_centers => interpolator%center_values(vector_1D%values()) &
-          ,faces => vector_1D%grid() &
-        )
+        associate(vector_at_centers_extended => interpolator%center_values(vector_1D%values()))
           associate( centers_extended => scalar_1D%grid() )
             test_diagnosis = test_diagnosis .also. &
-              .all. (vector_at_centers .approximates. vector_1D_initializer(centers_extended) .within. tolerance) &
+              .all. (vector_at_centers_extended .approximates. vector_1D_initializer(centers_extended) .within. tolerance) &
               // string_t(" for order ") // string_t(order)
           end associate
         end associate
