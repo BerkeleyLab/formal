@@ -16,6 +16,7 @@ submodule(tensors_1D_m) scalar_1D_s
    ,operator(.greaterThan.) &
    ,operator(.within.) &
    ,string_t
+  use interpolator_1D_m, only : faces_to_centers_1d_t
   implicit none
 
 contains
@@ -109,6 +110,25 @@ contains
         end associate check_corbino_castillo_eq_17
       end associate
     end associate
+
+  end procedure
+
+  module procedure d_dx
+
+    associate( &
+       dx => (self%x_max_ - self%x_min_)/self%cells_ &
+      ,interpolator => faces_to_centers_1D_t(order=self%order_, cells=self%cells_, dx=(self%x_max_ - self%x_min_)/self%cells_) &
+    )
+      dself_dx%gradient_operator_1D_ = gradient_operator_1D_t(self%order_, dx, self%cells_)
+      associate(tensor_1D => &
+        tensor_1D_t(dself_dx%gradient_operator_1D_ .x. self%values_, self%x_min_, self%x_max_, cells=self%cells_, order=self%order_) &
+      ) 
+        dself_dx%tensor_1D_t = &
+          tensor_1D_t(interpolator%center_values(tensor_1D%values_), self%x_min_, self%x_max_, cells=self%cells_, order=self%order_)
+      end associate
+    end associate
+
+    call_julienne_assert(dself_dx%is_cell_centers_extended())
 
   end procedure
 

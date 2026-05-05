@@ -63,8 +63,9 @@ program burgers_1D
   block
     double precision dt
     dt = 1D0
-    !associate(dt_du22_dx => dt * .d_dx. ((u**2)/2))
-    associate(dt_du22_dx => (u**2)/2)
+    ! u_next = u + dt * .d_dt. u
+    ! u_next = u + dt * (nu * .d2_dx2. u - .ddx. (u**2)/2)
+    associate( u_next => .ddx. ((u**2)/2) )
     end associate
   end block
 

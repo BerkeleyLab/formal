@@ -85,12 +85,14 @@ module tensors_1D_m
     generic :: values => scalar_1D_values
     generic :: operator(/) => divide_by_integer
     generic :: operator(**) => exponentiate
+    generic :: operator(.ddx.) => d_dx
     generic :: operator(.grad.) => grad
     generic :: operator(.laplacian.) => laplacian
     procedure, non_overridable, private :: scalar_1D_values
     procedure, non_overridable, private :: scalar_1D_grid
     procedure, non_overridable, private :: divide_by_integer 
     procedure, non_overridable, private :: exponentiate
+    procedure, non_overridable, private :: d_dx
     procedure, non_overridable, private :: grad
     procedure, non_overridable, private :: laplacian
   end type
@@ -319,6 +321,13 @@ module tensors_1D_m
       implicit none
       class(divergence_1D_t), intent(in) :: self
       double precision, allocatable :: cell_centered_values(:)
+    end function
+
+    pure module function d_dx(self) result(dself_dx)
+      !! Result is a scalar_1D_t approximating the spatial derivative of the "self"
+      implicit none
+      class(scalar_1D_t), intent(in) :: self
+      type(scalar_1D_t) dself_dx
     end function
 
     pure module function grad(self) result(gradient_1D)
