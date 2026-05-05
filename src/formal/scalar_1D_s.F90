@@ -132,6 +132,10 @@ contains
 
   end procedure
 
+  module procedure d2_dx2
+    d2_self_dx2 = d_dx(d_dx(self))
+  end procedure
+
   module procedure laplacian
 
 #ifndef __GFORTRAN__

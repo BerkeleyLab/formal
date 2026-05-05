@@ -13,8 +13,10 @@ module formal_m
     ,gradient_1D_t   & ! result of `.grad. s` for a scalar_1D_t s
     ,divergence_1D_t & ! result of `.div. v` for a vector_1D_t v
     ,laplacian_1D_t  & ! result of `.laplacian. s` for a scalar_1D_t s
-    ,scalar_1D_initializer_i  & ! scalar_1D_t initializer abstract interface
-    ,vector_1D_initializer_i    ! vector_1D_t initializar abstract interface
+    ,scalar_1D_initializer_i & ! scalar_1D_t initializer abstract interface
+    ,vector_1D_initializer_i & ! vector_1D_t initializar abstract interface
+    ,d_dx   & ! scalar_1D_t spatial derivative
+    ,d2_dx2   ! scalar_1D_t spatial derivative
 
   use differential_operators_1D_m, only : &
      gradient_operator_1D_t & ! matrix operator defining a 1D mimetic gradient

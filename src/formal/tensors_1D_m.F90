@@ -22,6 +22,8 @@ module tensors_1D_m
   public :: divergence_1D_t
   public :: scalar_1D_initializer_i
   public :: vector_1D_initializer_i
+  public :: d_dx
+  public :: d2_dx2
 
   abstract interface
 
@@ -85,14 +87,12 @@ module tensors_1D_m
     generic :: values => scalar_1D_values
     generic :: operator(/) => divide_by_integer
     generic :: operator(**) => exponentiate
-    generic :: operator(.ddx.) => d_dx
     generic :: operator(.grad.) => grad
     generic :: operator(.laplacian.) => laplacian
     procedure, non_overridable, private :: scalar_1D_values
     procedure, non_overridable, private :: scalar_1D_grid
     procedure, non_overridable, private :: divide_by_integer 
     procedure, non_overridable, private :: exponentiate
-    procedure, non_overridable, private :: d_dx
     procedure, non_overridable, private :: grad
     procedure, non_overridable, private :: laplacian
   end type
@@ -324,10 +324,17 @@ module tensors_1D_m
     end function
 
     pure module function d_dx(self) result(dself_dx)
-      !! Result is a scalar_1D_t approximating the spatial derivative of the "self"
+      !! Result is a scalar_1D_t approximating the spatial derivative of "self"
       implicit none
       class(scalar_1D_t), intent(in) :: self
       type(scalar_1D_t) dself_dx
+    end function
+
+    pure module function d2_dx2(self) result(d2_self_dx2)
+      !! Result is a scalar_1D_t approximating the spatial second derivative of "self"
+      implicit none
+      class(scalar_1D_t), intent(in) :: self
+      type(scalar_1D_t) d2_self_dx2
     end function
 
     pure module function grad(self) result(gradient_1D)

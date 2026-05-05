@@ -22,7 +22,7 @@ program burgers_1D
   !! Advance the 1D Burgers partial differential equation over time.
   use initial_condition_m, only : initial_condition
   use julienne_m, only :  command_line_t
-  use formal_m, only : scalar_1D_t, scalar_1D_initializer_i
+  use formal_m, only : scalar_1D_t, scalar_1D_initializer_i, d_dx, d2_dx2
   implicit none
 
   procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => initial_condition
@@ -63,9 +63,11 @@ program burgers_1D
   block
     double precision dt
     dt = 1D0
-    ! u_next = u + dt * .d_dt. u
-    ! u_next = u + dt * (nu * .d2_dx2. u - .ddx. (u**2)/2)
-    associate( u_next => .ddx. ((u**2)/2) )
+    ! u_next = u + dt * d_dt(u)
+    ! u_next = u + dt * (nu * d2_dx2(u) - d_dx((u**2)/2))
+    associate(du_dx => d_dx((u**2)/2))
+    associate(d2u_dx2 => d2_dx2(u))
+    end associate
     end associate
   end block
 
