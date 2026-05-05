@@ -22,16 +22,6 @@ submodule(tensors_1D_m) vector_1D_s
 
 contains
 
-  module procedure outer_product
-
-    call_julienne_assert(.all. ([lhs%x_min_, lhs%x_max_] .approximates.   [rhs%x_min_, rhs%x_max_] .within. 0D0))
-    call_julienne_assert(.all. ([lhs%cells_, lhs%order_] .equalsExpected. [rhs%cells_, rhs%order_]))
-
-    dyad_1D%tensor_1D_t = tensor_1D_t(lhs%values_ * rhs%values_, lhs%x_min_, lhs%x_max_, lhs%cells_, lhs%order_ ) 
-    dyad_1D%divergence_operator_1D_ = divergence_operator_1D_t(k=lhs%order_, dx=(lhs%x_max_ - lhs%x_min_)/lhs%cells_, cells=lhs%cells_)
-
-  end procedure
-
   module procedure dot_surface_normal
      v_dot_dS%tensor_1D_t = tensor_1D_t(vector_1D%values_*dS, vector_1D%x_min_, vector_1D%x_max_, vector_1D%cells_, vector_1D%order_)
      v_dot_dS%divergence_operator_1D_ = vector_1D%divergence_operator_1D_

@@ -16,7 +16,6 @@ module tensors_1D_m
 
   public :: scalar_1D_t
   public :: vector_1D_t
-  public :: dyad_1D_t 
   public :: gradient_1D_t
   public :: laplacian_1D_t
   public :: divergence_1D_t
@@ -133,7 +132,6 @@ module tensors_1D_m
     generic :: operator(.x.)   => weighted_premultiply
     generic :: operator(.div.) => div
     generic :: operator(.dot.) => dot_surface_normal
-    generic :: operator(*)     => outer_product
     generic :: grid   => vector_1D_grid
     generic :: values => vector_1D_values
 #ifdef __INTEL_COMPILER
@@ -141,32 +139,11 @@ module tensors_1D_m
 #endif
     procedure, non_overridable :: dA
     procedure, non_overridable, private, pass(vector_1D) :: weighted_premultiply
-    procedure, non_overridable, private :: outer_product
     procedure, non_overridable, private :: div
     procedure, non_overridable, private :: dot_surface_normal
     procedure, non_overridable, private :: vector_1D_grid
     procedure, non_overridable, private :: vector_1D_values
   end type
-
-  type, extends(tensor_1D_t) :: dyad_1D_t 
-    type(divergence_operator_1D_t) divergence_operator_1D_
-  contains
-    generic :: operator(.div.) =>  div_dyad
-    generic :: operator(/)     =>  dyad_over_integer
-    procedure, non_overridable, private :: dyad_over_integer
-    procedure, non_overridable, private :: div_dyad
-  end type
-
-  interface dyad_1D_t
-
-    pure module function construct_1D_dyad_from_components(tensor_1D, divergence_operator_1D) result(dyad_1D)
-      !! Result is a 1D dyadic tensor with the provided parent component tensor_1D and the provided divergence operatror
-      type(tensor_1D_t), intent(in) :: tensor_1D
-      type(divergence_operator_1D_t), intent(in) :: divergence_operator_1D
-      type(dyad_1D_t) dyad_1D
-    end function
-
-  end interface
 
   type, extends(tensor_1D_t) :: weighted_product_1D_t
   contains
@@ -263,14 +240,6 @@ module tensors_1D_m
       !! Result is .true. if the values are at cell centers + boundaries and .false. otherwise
       implicit none
       class(tensor_1D_t), intent(in) :: self
-    end function
-
-    pure module function dyad_over_integer(self, numerator) result(ratio)
-      !! Result is the dyad divided by the numerator
-      implicit none
-      class(dyad_1D_t), intent(in) :: self
-      integer, intent(in) :: numerator
-      type(dyad_1D_t) ratio
     end function
 
     pure module function dA(self)
@@ -413,13 +382,6 @@ module tensors_1D_m
       integer num_nodes
     end function
 
-    pure module function div_dyad(self) result(vector_1D)
-      !! Result is the vector divergence of the dyad_1D_t "self"
-      implicit none
-      class(dyad_1D_t), intent(in) :: self
-      type(vector_1D_t) vector_1D
-    end function
-
     pure module function div(self) result(divergence_1D)
       !! Result is mimetic divergence of the vector_1D_t "self"
       implicit none
@@ -472,13 +434,6 @@ module tensors_1D_m
       type(scalar_1D_t), intent(in) :: scalar_1D
       class(vector_1D_t), intent(in) :: vector_1D
       type(weighted_product_1D_t) weighted_product_1D
-    end function
-
-    pure module function outer_product(lhs, rhs) result(dyad_1D)
-      !! Result is the dyadic product of two vector operands
-      implicit none
-      class(vector_1D_t), intent(in) :: lhs, rhs
-      type(dyad_1D_t) dyad_1D
     end function
 
     pure module function gradient_1D_weights(self) result(weights)
