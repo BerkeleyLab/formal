@@ -75,6 +75,12 @@ contains
     )
   end procedure
 
+  module procedure subtract_scalar_1D
+    difference%gradient_operator_1D_ = lhs%gradient_operator_1D_
+    difference%tensor_1D_t = &
+      tensor_1D_t(values =  lhs%values_ - rhs%values_, x_min = rhs%x_min_, x_max = rhs%x_max_, cells = rhs%cells_, order = rhs%order_)
+  end procedure
+
   module procedure premultiply_double
     lhs_x_rhs%gradient_operator_1D_ = rhs%gradient_operator_1D_
     lhs_x_rhs%tensor_1D_t = &

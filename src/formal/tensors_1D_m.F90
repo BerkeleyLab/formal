@@ -85,11 +85,13 @@ module tensors_1D_m
   contains
     generic :: grid   => scalar_1D_grid
     generic :: values => scalar_1D_values
+    generic :: operator(-) => subtract_scalar_1D
     generic :: operator(/) => divide_by_integer
     generic :: operator(*) => premultiply_double
     generic :: operator(**) => exponentiate
     generic :: operator(.grad.) => grad
     generic :: operator(.laplacian.) => laplacian
+    procedure, non_overridable, private :: subtract_scalar_1D
     procedure, non_overridable, private :: scalar_1D_values
     procedure, non_overridable, private :: scalar_1D_grid
     procedure, non_overridable, private :: divide_by_integer 
@@ -347,11 +349,19 @@ module tensors_1D_m
     end function
 
     pure module function premultiply_double(lhs, rhs) result(lhs_x_rhs)
-      !! Result is product of lhs and rhs
+      !! Result is the product of lhs and rhs
       implicit none
       double precision, intent(in) :: lhs 
       class(scalar_1D_t), intent(in) :: rhs
       type(scalar_1D_t) lhs_x_rhs
+    end function
+
+    pure module function subtract_scalar_1D(lhs, rhs) result(difference)
+      !! Result is the difference between scalar_1D_t lhs and rhs
+      implicit none
+      class(scalar_1D_t), intent(in) :: lhs
+      type(scalar_1D_t), intent(in) :: rhs
+      type(scalar_1D_t) difference
     end function
 
     pure module function exponentiate(self, exponent) result(power)

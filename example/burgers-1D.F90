@@ -66,9 +66,7 @@ program burgers_1D
     nu = 1D0
     ! u_next = u + dt * d_dt(u)
     ! u_next = u + dt * (nu * d2_dx2(u) - d_dx((u**2)/2))
-    associate(du_dx => d_dx((u**2)/2))
-    associate(nu_d2u_dx2 => nu*d2_dx2(u))
-    end associate
+    associate(du_dt => nu*d2_dx2(u) - d_dx((u**2)/2))
     end associate
   end block
 
