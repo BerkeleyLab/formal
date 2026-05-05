@@ -10,8 +10,7 @@ contains
     !! Initial solution to Burgers equation
     double precision, intent(in) :: x(:)
     double precision, allocatable :: initial_condition(:)
-    double precision, parameter :: pi = acos(-1D0)
-    initial_condition = x/sqrt(2D0)
+    initial_condition = 10*sin(x)
     ! To change this function, please edit only the right-hand-side (RHS) expression,
     ! keeping the rest in place for proper display of the function at runtime.
   end function
@@ -25,10 +24,8 @@ program burgers_1D
   use formal_m, only : scalar_1D_t, scalar_1D_initializer_i, d_dx, d2_dx2
   implicit none
 
-  procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => initial_condition
   character(len=:), allocatable :: order_string
   type(command_line_t) command_line
-  type(scalar_1D_t) :: u
   integer order
 
   if (command_line%argument_present([character(len=len("--help")) :: ("--help"), "-h"])) then
@@ -58,20 +55,34 @@ program burgers_1D
 
   print *, "order = ", order
 
-  u = scalar_1D_t(scalar_1D_initializer, order, x_min=0D0, x_max=20D0, cells=10)
-
   block
-    double precision dt, nu
-    dt = 1D0
-    nu = 1D0
-    ! u_next = u + dt * d_dt(u)
-    ! u_next = u + dt * (nu * d2_dx2(u) - d_dx((u**2)/2))
-    associate(du_dt => nu*d2_dx2(u) - d_dx((u**2)/2))
-    end associate
+    procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => initial_condition
+    double precision, parameter :: dt = 1D0, pi = acos(-1D0)
+    type(scalar_1D_t) u
+
+    u = scalar_1D_t(scalar_1D_initializer, order, x_min=0D0, x_max=2*pi, cells=20)
+    !dt = u%runge_kutta_2nd_step(nu ,grid_resolution)
+
+    !do while (t<=t_final) ! 2nd-order Runge-Kutta:
+      associate(u_half => u + d_dt(u)*dt/2) ! first substep
+        u = u + d_dt(u_half)*dt ! second substep
+      end associate
+      !t = t + dt
+    !end do
+
   end block
 
 #ifdef __GFORTRAN__
     stop
 #endif
+
+contains
+
+  pure function d_dt(u) result(du_dt)
+    type(scalar_1D_t), intent(in) :: u
+    type(scalar_1D_t) du_dt
+    double precision, parameter :: nu=1D0
+    du_dt = nu*d2_dx2(u) - d_dx((u**2)/2)
+  end function
 
 end program
