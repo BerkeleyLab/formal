@@ -75,6 +75,12 @@ contains
     )
   end procedure
 
+  module procedure premultiply_double
+    lhs_x_rhs%gradient_operator_1D_ = rhs%gradient_operator_1D_
+    lhs_x_rhs%tensor_1D_t = &
+      tensor_1D_t(values = lhs*rhs%values_, x_min = rhs%x_min_, x_max = rhs%x_max_, cells = rhs%cells_, order = rhs%order_)
+  end procedure
+
   module procedure exponentiate
     power%tensor_1D_t = tensor_1D_t( &
       values = self%values_**2, x_min = self%x_min_, x_max = self%x_max_, cells = self%cells_, order = self%order_ &

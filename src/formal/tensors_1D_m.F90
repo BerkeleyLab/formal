@@ -86,12 +86,14 @@ module tensors_1D_m
     generic :: grid   => scalar_1D_grid
     generic :: values => scalar_1D_values
     generic :: operator(/) => divide_by_integer
+    generic :: operator(*) => premultiply_double
     generic :: operator(**) => exponentiate
     generic :: operator(.grad.) => grad
     generic :: operator(.laplacian.) => laplacian
     procedure, non_overridable, private :: scalar_1D_values
     procedure, non_overridable, private :: scalar_1D_grid
     procedure, non_overridable, private :: divide_by_integer 
+    procedure, non_overridable, private, pass(rhs) :: premultiply_double
     procedure, non_overridable, private :: exponentiate
     procedure, non_overridable, private :: grad
     procedure, non_overridable, private :: laplacian
@@ -342,6 +344,14 @@ module tensors_1D_m
       implicit none
       class(scalar_1D_t), intent(in) :: self
       type(gradient_1D_t) gradient_1D
+    end function
+
+    pure module function premultiply_double(lhs, rhs) result(lhs_x_rhs)
+      !! Result is product of lhs and rhs
+      implicit none
+      double precision, intent(in) :: lhs 
+      class(scalar_1D_t), intent(in) :: rhs
+      type(scalar_1D_t) lhs_x_rhs
     end function
 
     pure module function exponentiate(self, exponent) result(power)

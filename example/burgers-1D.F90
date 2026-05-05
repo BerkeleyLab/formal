@@ -61,12 +61,13 @@ program burgers_1D
   u = scalar_1D_t(scalar_1D_initializer, order, x_min=0D0, x_max=20D0, cells=10)
 
   block
-    double precision dt
+    double precision dt, nu
     dt = 1D0
+    nu = 1D0
     ! u_next = u + dt * d_dt(u)
     ! u_next = u + dt * (nu * d2_dx2(u) - d_dx((u**2)/2))
     associate(du_dx => d_dx((u**2)/2))
-    associate(d2u_dx2 => d2_dx2(u))
+    associate(nu_d2u_dx2 => nu*d2_dx2(u))
     end associate
     end associate
   end block
