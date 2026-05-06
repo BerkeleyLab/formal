@@ -24,6 +24,9 @@ program burgers_1D
   use formal_m, only : scalar_1D_t, scalar_1D_initializer_i, d_dx, d2_dx2
   implicit none
 
+#ifdef __GFORTRAN__
+  procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer
+#endif
   character(len=:), allocatable :: order_string
   type(command_line_t) command_line
   integer order
@@ -56,10 +59,13 @@ program burgers_1D
   print *, "order = ", order
 
   block
-    procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => initial_condition
+#ifndef __GFORTRAN__
+    procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer
+#endif
     double precision, parameter :: dt = 1D0, pi = acos(-1D0)
     type(scalar_1D_t) u
 
+    scalar_1D_initializer => initial_condition
     u = scalar_1D_t(scalar_1D_initializer, order, x_min=0D0, x_max=2*pi, cells=20)
     !dt = u%runge_kutta_2nd_step(nu ,grid_resolution)
 
@@ -67,7 +73,7 @@ program burgers_1D
       associate(u_half => u + d_dt(u)*dt/2) ! first substep
         u = u + d_dt(u_half)*dt ! second substep
       end associate
-      !t = t + dt
+     !t = t + dt
     !end do
 
   end block
