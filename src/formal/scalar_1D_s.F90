@@ -107,7 +107,7 @@ contains
 
   module procedure exponentiate
     power%tensor_1D_t = tensor_1D_t( &
-      values = self%values_**2, x_min = self%x_min_, x_max = self%x_max_, cells = self%cells_, order = self%order_ &
+      values = self%values_**exponent, x_min = self%x_min_, x_max = self%x_max_, cells = self%cells_, order = self%order_ &
     )
     power%gradient_operator_1D_ = gradient_operator_1D_t( &
       k = self%order_, dx = (self%x_max_ - self%x_min_)/self%cells_, cells = self%cells_ &
