@@ -19,8 +19,16 @@ defaults:
     shell: bash
 
 jobs:
+  setup: # This job currently just exists to reduce cancelled job spam in PRs
+    name: Ignore me
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve job concurrency
+        run: sleep 5
+
   build:
     name: ${{ matrix.compiler }}-${{ matrix.version }} (${{ matrix.os }})
+    needs: setup
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
