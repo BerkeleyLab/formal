@@ -2,11 +2,14 @@
 ! Terms of use are as specified in LICENSE.txt
 
 program test_suite_driver
+  !! Run the test suite and report results
   use julienne_m, only : test_fixture_t, test_harness_t
   use gradient_operator_1D_test_m, only : gradient_operator_1D_test_t
   use divergence_operator_1D_test_m, only : divergence_operator_1D_test_t
   use laplacian_operator_1D_test_m, only : laplacian_operator_1D_test_t
   use integration_operators_1D_test_m, only : integration_operators_1D_test_t
+  use interpolator_1D_test_m, only : interpolator_1D_test_t
+  use scalar_1D_test_m, only : scalar_1D_test_t
   implicit none
 
   associate(test_harness => test_harness_t([ &
@@ -14,6 +17,8 @@ program test_suite_driver
     ,test_fixture_t(divergence_operator_1D_test_t()) &
     ,test_fixture_t(laplacian_operator_1D_test_t()) &
     ,test_fixture_t(integration_operators_1D_test_t()) &
+    ,test_fixture_t(interpolator_1D_test_t()) &
+    ,test_fixture_t(scalar_1D_test_t()) &
   ]))
     call test_harness%report_results
   end associate

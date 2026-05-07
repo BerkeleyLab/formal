@@ -8,7 +8,7 @@ module tensors_1D_m
   !! divergence, and Laplacian operators as detailed by Corbino & Castillo (2020)
   !! https://doi.org/10.1016/j.cam.2019.06.042.
   use julienne_m, only : file_t
-  use mimetic_operators_1D_m, only : divergence_operator_1D_t, gradient_operator_1D_t
+  use differential_operators_1D_m, only : divergence_operator_1D_t, gradient_operator_1D_t
     
   implicit none
 
@@ -21,6 +21,8 @@ module tensors_1D_m
   public :: divergence_1D_t
   public :: scalar_1D_initializer_i
   public :: vector_1D_initializer_i
+  public :: d_dx
+  public :: d2_dx2
 
   abstract interface
 
@@ -51,6 +53,9 @@ module tensors_1D_m
     integer order_          !! order of accuracy of mimetic discretization
     double precision, allocatable :: values_(:) !! tensor components at spatial locations
   contains
+    procedure, non_overridable, private :: is_cell_centered
+    procedure, non_overridable, private :: is_face_centered
+    procedure, non_overridable, private :: is_cell_centers_extended
     procedure, non_overridable, private :: gradient_1D_weights
     procedure, non_overridable, private :: divergence_1D_weights
     generic :: dV => dx
@@ -77,14 +82,25 @@ module tensors_1D_m
     private
     type(gradient_operator_1D_t) gradient_operator_1D_
   contains
-    generic :: operator(.grad.) => grad
-    generic :: operator(.laplacian.) => laplacian
     generic :: grid   => scalar_1D_grid
     generic :: values => scalar_1D_values
-    procedure, non_overridable, private :: grad
-    procedure, non_overridable, private :: laplacian
+    generic :: operator(-) => subtract_scalar_1D
+    generic :: operator(+) => add_scalar_1D
+    generic :: operator(/) => divide_by_integer
+    generic :: operator(*) => premultiply_double, postmultiply_double
+    generic :: operator(**) => exponentiate
+    generic :: operator(.grad.) => grad
+    generic :: operator(.laplacian.) => laplacian
+    procedure, non_overridable, private :: add_scalar_1D
+    procedure, non_overridable, private :: subtract_scalar_1D
     procedure, non_overridable, private :: scalar_1D_values
     procedure, non_overridable, private :: scalar_1D_grid
+    procedure, non_overridable, private :: divide_by_integer 
+    procedure, non_overridable, private, pass(rhs) :: premultiply_double
+    procedure, non_overridable, private :: postmultiply_double
+    procedure, non_overridable, private :: exponentiate
+    procedure, non_overridable, private :: grad
+    procedure, non_overridable, private :: laplacian
   end type
 
   interface scalar_1D_t
@@ -97,6 +113,12 @@ module tensors_1D_m
       integer, intent(in) :: cells !! number of grid cells spanning the domain
       double precision, intent(in) :: x_min !! grid location minimum
       double precision, intent(in) :: x_max !! grid location maximum
+      type(scalar_1D_t) scalar_1D
+    end function
+
+    pure module function construct_1D_scalar_from_parent(tensor_1D) result(scalar_1D)
+      !! Result is a 1D vector with the provided parent component tensor_1D and the provided divergence operatror
+      type(tensor_1D_t), intent(in) :: tensor_1D
       type(scalar_1D_t) scalar_1D
     end function
 
@@ -116,7 +138,7 @@ module tensors_1D_m
     generic :: weights => gradient_1D_weights
 #endif
     procedure, non_overridable :: dA
-    procedure, non_overridable, pass(vector_1D) :: weighted_premultiply
+    procedure, non_overridable, private, pass(vector_1D) :: weighted_premultiply
     procedure, non_overridable, private :: div
     procedure, non_overridable, private :: dot_surface_normal
     procedure, non_overridable, private :: vector_1D_grid
@@ -202,6 +224,24 @@ module tensors_1D_m
 
   interface
 
+    pure logical module function is_face_centered(self)
+      !! Result is .true. if the values are face-centered and .false. otherwise
+      implicit none
+      class(tensor_1D_t), intent(in) :: self
+    end function
+
+    pure logical module function is_cell_centered(self)
+      !! Result is .true. if the values are cell-centered and .false. otherwise
+      implicit none
+      class(tensor_1D_t), intent(in) :: self
+    end function
+
+    pure logical module function is_cell_centers_extended(self)
+      !! Result is .true. if the values are at cell centers + boundaries and .false. otherwise
+      implicit none
+      class(tensor_1D_t), intent(in) :: self
+    end function
+
     pure module function dA(self)
       !! Result is the grid's discrete surface-area differential for use in surface integrals of the form
       !! .SS. (f .x. (v .dot. dA))
@@ -259,11 +299,73 @@ module tensors_1D_m
       double precision, allocatable :: cell_centered_values(:)
     end function
 
+    pure module function d_dx(self) result(dself_dx)
+      !! Result is a scalar_1D_t approximating the spatial derivative of "self"
+      implicit none
+      class(scalar_1D_t), intent(in) :: self
+      type(scalar_1D_t) dself_dx
+    end function
+
+    pure module function d2_dx2(self) result(d2_self_dx2)
+      !! Result is a scalar_1D_t approximating the spatial second derivative of "self"
+      implicit none
+      class(scalar_1D_t), intent(in) :: self
+      type(scalar_1D_t) d2_self_dx2
+    end function
+
     pure module function grad(self) result(gradient_1D)
       !! Result is mimetic gradient of the scalar_1D_t "self"
       implicit none
       class(scalar_1D_t), intent(in) :: self
       type(gradient_1D_t) gradient_1D
+    end function
+
+    pure module function premultiply_double(lhs, rhs) result(lhs_x_rhs)
+      !! Result is the product of lhs and rhs
+      implicit none
+      double precision, intent(in) :: lhs 
+      class(scalar_1D_t), intent(in) :: rhs
+      type(scalar_1D_t) lhs_x_rhs
+    end function
+
+    pure module function postmultiply_double(lhs, rhs) result(lhs_x_rhs)
+      !! Result is the product of lhs and rhs
+      implicit none
+      class(scalar_1D_t), intent(in) :: lhs
+      double precision, intent(in) :: rhs 
+      type(scalar_1D_t) lhs_x_rhs
+    end function
+
+    pure module function add_scalar_1D(lhs, rhs) result(total)
+      !! Result is the sum of scalar_1D_t lhs and rhs
+      implicit none
+      class(scalar_1D_t), intent(in) :: lhs
+      type(scalar_1D_t), intent(in) :: rhs
+      type(scalar_1D_t) total
+    end function
+
+    pure module function subtract_scalar_1D(lhs, rhs) result(difference)
+      !! Result is the difference between scalar_1D_t lhs and rhs
+      implicit none
+      class(scalar_1D_t), intent(in) :: lhs
+      type(scalar_1D_t), intent(in) :: rhs
+      type(scalar_1D_t) difference
+    end function
+
+    pure module function exponentiate(self, exponent) result(power)
+      !! Result is mimetic Laplacian of the scalar_1D_t "self"
+      implicit none
+      class(scalar_1D_t), intent(in) :: self
+      integer, intent(in) :: exponent
+      type(scalar_1D_t) power
+    end function
+
+    pure module function divide_by_integer(self, denominator) result(ratio)
+      !! Result is scalar_1D_t "self" divided by the integer denominator
+      implicit none
+      class(scalar_1D_t), intent(in) :: self
+      integer, intent(in) :: denominator
+      type(scalar_1D_t) ratio
     end function
 
     pure module function laplacian(self) result(laplacian_1D)

@@ -84,11 +84,11 @@ Building and testing
 ### `fpm` versions before 0.13.0
 With LLVM 20-22, replace the above `flang` command with
 ```
-  fpm test --compiler flang-new --flag "-O3"
+  fpm test --compiler flang --flag "-O3"
 ```
 With LLVM 19, replace the above `flang` command with
 ```
- fpm test --compiler flang-new --flag "-O3 -mmlir -allow-assumed-rank"
+ fpm test --compiler flang --flag "-O3 -mmlir -allow-assumed-rank"
 ```
 
 Documentation

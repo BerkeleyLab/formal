@@ -4,7 +4,7 @@
 #include "formal-language-support.F90"
 #include "julienne-assert-macros.h"
 
-submodule(mimetic_operators_1D_m) divergence_operator_1D_s
+submodule(differential_operators_1D_m) divergence_operator_1D_s
   use julienne_m, only : call_julienne_assert_, string_t
 #if ASSERTIONS
   use julienne_m, only : operator(.isAtLeast.), operator(.equalsExpected.)
@@ -48,7 +48,7 @@ contains
       else
         allocate(Ap, mold = A)
       end if
-      divergence_operator_1D%mimetic_matrix_1D_t = mimetic_matrix_1D_t(A, M(k, dx), Ap)
+      divergence_operator_1D%differential_operator_matrix_1D_t = differential_operator_matrix_1D_t(A, M(k, dx), Ap)
       divergence_operator_1D%k_  = k
       divergence_operator_1D%dx_ = dx
       divergence_operator_1D%m_  = cells

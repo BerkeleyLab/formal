@@ -76,6 +76,7 @@ contains
 #endif
       associate(Dv => D .x. self%values_)
         divergence_1D%tensor_1D_t = tensor_1D_t(Dv(2:size(Dv)-1), self%x_min_, self%x_max_, self%cells_, self%order_)
+#if ASSERTIONS
         associate( &
            q  => divergence_1D%weights() &
           ,dx => (self%x_max_ - self%x_min_)/self%cells_ &
@@ -85,6 +86,7 @@ contains
           call_julienne_assert((.all. (matmul(transpose(D%assemble()), q) .approximates. b/dx .within. double_equivalence)))
             ! Check D^T * a = b_{m+1},  Eq. (19), Corbino & Castillo (2020)
         end associate
+#endif
       end associate
     end associate
 
