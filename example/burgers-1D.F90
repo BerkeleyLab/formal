@@ -18,7 +18,13 @@ contains
 end module
 
 program burgers_1D
-  !! Advance the 1D Burgers partial differential equation over time.
+  !! This program demonstrates the use of Formal to solve the partial differential equation of
+  !! Burgers (1948) in conservative form using the 2nd- or 4th-order mimetic discretizations of
+  !! Corbino & Castillo (2020) and Dumett & Castillo (2022).
+  !!
+  !! * Burgers, J.M.      (1948) https://doi.org/10.1016/S0065-2156(08)70100-5
+  !! * Corbino & Castillo (2020) https://doi.org/10.1016/j.cam.2019.06.042.
+  !! * Dumett & Castillo  (2022) https://doi.org/10.13140/RG.2.2.26630.14400
   use initial_condition_m, only : initial_condition
   use julienne_m, only :  command_line_t
   use formal_m, only : scalar_1D_t, scalar_1D_initializer_i, d_dx, d2_dx2
@@ -67,14 +73,11 @@ program burgers_1D
 
     scalar_1D_initializer => initial_condition
     u = scalar_1D_t(scalar_1D_initializer, order, x_min=0D0, x_max=2*pi, cells=20)
-    !dt = u%runge_kutta_2nd_step(nu ,grid_resolution)
 
-    !do while (t<=t_final) ! 2nd-order Runge-Kutta:
-      associate(u_half => u + d_dt(u)*dt/2) ! first substep
-        u = u + d_dt(u_half)*dt ! second substep
-      end associate
-     !t = t + dt
-    !end do
+    runge_kutta_2nd_order: &
+    associate(u_half => u + d_dt(u)*dt/2) ! first substep
+      u = u + d_dt(u_half)*dt ! second substep
+    end associate runge_kutta_2nd_order
 
   end block
 
