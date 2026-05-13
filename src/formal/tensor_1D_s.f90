@@ -32,5 +32,8 @@ contains
     dx = (self%x_max_ - self%x_min_)/self%cells_
   end procedure
 
+  module procedure cells
+    cells = self%cells_
+  end procedure
 
 end submodule tensor_1D_s

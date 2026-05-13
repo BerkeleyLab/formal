@@ -99,7 +99,19 @@ contains
       tensor_1D_t(values = lhs*rhs%values_, x_min = rhs%x_min_, x_max = rhs%x_max_, cells = rhs%cells_, order = rhs%order_)
   end procedure
 
+  module procedure premultiply_integer
+    lhs_x_rhs%gradient_operator_1D_ = rhs%gradient_operator_1D_
+    lhs_x_rhs%tensor_1D_t = &
+      tensor_1D_t(values = lhs*rhs%values_, x_min = rhs%x_min_, x_max = rhs%x_max_, cells = rhs%cells_, order = rhs%order_)
+  end procedure
+
   module procedure postmultiply_double
+    lhs_x_rhs%gradient_operator_1D_ = lhs%gradient_operator_1D_
+    lhs_x_rhs%tensor_1D_t = &
+      tensor_1D_t(values = rhs*lhs%values_, x_min = lhs%x_min_, x_max = lhs%x_max_, cells = lhs%cells_, order = lhs%order_)
+  end procedure
+
+  module procedure postmultiply_integer
     lhs_x_rhs%gradient_operator_1D_ = lhs%gradient_operator_1D_
     lhs_x_rhs%tensor_1D_t = &
       tensor_1D_t(values = rhs*lhs%values_, x_min = lhs%x_min_, x_max = lhs%x_max_, cells = lhs%cells_, order = lhs%order_)
