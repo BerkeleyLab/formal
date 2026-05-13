@@ -60,6 +60,7 @@ module tensors_1D_m
     procedure, non_overridable, private :: divergence_1D_weights
     generic :: dV => dx
     procedure, non_overridable :: dx
+    procedure, non_overridable :: cells
   end type
 
   interface tensor_1D_t
@@ -87,7 +88,7 @@ module tensors_1D_m
     generic :: operator(-) => subtract_scalar_1D
     generic :: operator(+) => add_scalar_1D
     generic :: operator(/) => divide_by_integer
-    generic :: operator(*) => premultiply_double, postmultiply_double
+    generic :: operator(*) => premultiply_double, postmultiply_double, premultiply_integer, postmultiply_integer
     generic :: operator(**) => exponentiate
     generic :: operator(.grad.) => grad
     generic :: operator(.laplacian.) => laplacian
@@ -98,6 +99,8 @@ module tensors_1D_m
     procedure, non_overridable, private :: divide_by_integer 
     procedure, non_overridable, private, pass(rhs) :: premultiply_double
     procedure, non_overridable, private :: postmultiply_double
+    procedure, non_overridable, private, pass(rhs) :: premultiply_integer
+    procedure, non_overridable, private :: postmultiply_integer
     procedure, non_overridable, private :: exponentiate
     procedure, non_overridable, private :: grad
     procedure, non_overridable, private :: laplacian
@@ -250,6 +253,13 @@ module tensors_1D_m
       double precision dA
     end function
 
+    pure module function cells(self)
+      !! Result is the number of cells
+      implicit none
+      class(tensor_1D_t), intent(in) :: self
+      integer cells
+    end function
+
     pure module function dx(self)
       !! Result is the uniform cell width
       implicit none
@@ -328,11 +338,27 @@ module tensors_1D_m
       type(scalar_1D_t) lhs_x_rhs
     end function
 
+    pure module function premultiply_integer(lhs, rhs) result(lhs_x_rhs)
+      !! Result is the product of lhs and rhs
+      implicit none
+      integer, intent(in) :: lhs 
+      class(scalar_1D_t), intent(in) :: rhs
+      type(scalar_1D_t) lhs_x_rhs
+    end function
+
     pure module function postmultiply_double(lhs, rhs) result(lhs_x_rhs)
       !! Result is the product of lhs and rhs
       implicit none
       class(scalar_1D_t), intent(in) :: lhs
       double precision, intent(in) :: rhs 
+      type(scalar_1D_t) lhs_x_rhs
+    end function
+
+    pure module function postmultiply_integer(lhs, rhs) result(lhs_x_rhs)
+      !! Result is the product of lhs and rhs
+      implicit none
+      class(scalar_1D_t), intent(in) :: lhs
+      integer, intent(in) :: rhs 
       type(scalar_1D_t) lhs_x_rhs
     end function
 
