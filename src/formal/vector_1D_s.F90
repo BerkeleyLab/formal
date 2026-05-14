@@ -69,25 +69,19 @@ contains
 
     integer center
 
-#ifdef NAGFOR
-    associate(D => self%divergence_operator_1D_)
-#else
-    associate(D => (self%divergence_operator_1D_))
-#endif
-      associate(Dv => D .x. self%values_)
-        divergence_1D%tensor_1D_t = tensor_1D_t(Dv(2:size(Dv)-1), self%x_min_, self%x_max_, self%cells_, self%order_)
+    associate(Dv => self%divergence_operator_1D_ .x. self%values_)
+      divergence_1D%tensor_1D_t = tensor_1D_t(Dv(2:size(Dv)-1), self%x_min_, self%x_max_, self%cells_, self%order_)
 #if ASSERTIONS
-        associate( &
-           q  => divergence_1D%weights() &
-          ,dx => (self%x_max_ - self%x_min_)/self%cells_ &
-          ,b => [-1D0, [(0D0, center = 1, self%cells_-1)], 1D0] &
-        )
-          call_julienne_assert(.all. ([size(Dv), size(q)] .equalsExpected. self%cells_+2))
-          call_julienne_assert((.all. (matmul(transpose(D%assemble()), q) .approximates. b/dx .within. double_equivalence)))
-            ! Check D^T * a = b_{m+1},  Eq. (19), Corbino & Castillo (2020)
-        end associate
-#endif
+      associate( &
+         q  => divergence_1D%weights() &
+        ,dx => (self%x_max_ - self%x_min_)/self%cells_ &
+        ,b => [-1D0, [(0D0, center = 1, self%cells_-1)], 1D0] &
+      )
+        call_julienne_assert(.all. ([size(Dv), size(q)] .equalsExpected. self%cells_+2))
+        call_julienne_assert((.all. (matmul(transpose(self%divergence_operator_1D_%assemble()), q) .approximates. b/dx .within. double_equivalence)))
+          ! Check D^T * a = b_{m+1},  Eq. (19), Corbino & Castillo (2020)
       end associate
+#endif
     end associate
 
   end procedure
