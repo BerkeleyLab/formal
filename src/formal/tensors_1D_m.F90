@@ -22,6 +22,7 @@ module tensors_1D_m
   public :: vector_1D_initializer_i
   public :: d_dx
   public :: d2_dx2
+  public :: cell_centers_extended_1D
 
   abstract interface
 
@@ -495,9 +496,20 @@ module tensors_1D_m
 
   end interface
 
-#ifndef __GFORTRAN__
-
 contains
+
+  pure function cell_centers_extended_1D(x_min, x_max, cells) result(x)
+    double precision, intent(in) :: x_min, x_max
+    integer, intent(in) :: cells
+    double precision, allocatable:: x(:)
+    integer cell
+
+    associate(dx => (x_max - x_min)/cells)
+      x = [x_min, cell_center_locations(x_min, x_max, cells), x_max]
+    end associate
+  end function
+
+#ifndef __GFORTRAN__
 
   pure function cell_center_locations(x_min, x_max, cells) result(x)
     double precision, intent(in) :: x_min, x_max
