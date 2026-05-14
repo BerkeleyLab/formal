@@ -143,14 +143,12 @@ contains
     integer c
 
     associate(dx => (self%x_max_ - self%x_min_)/self%cells_)
-      associate(G => gradient_operator_1D_t(self%order_, dx, self%cells_))
-        gradient_1D%tensor_1D_t = tensor_1D_t(G .x. self%values_, self%x_min_, self%x_max_, cells=self%cells_, order=self%order_)
-        gradient_1D%divergence_operator_1D_ = divergence_operator_1D_t(self%order_, dx, self%cells_)
-        check_corbino_castillo_eq_17: &
-        associate(p => gradient_1D%weights(), b => [-1D0, [(0D0, c = 1, self%cells_)], 1D0])
-          call_julienne_assert((.all. (matmul(transpose(G%assemble()), p) .approximates. b/dx .within. 2D-3)))
-        end associate check_corbino_castillo_eq_17
-      end associate
+      gradient_1D%tensor_1D_t = tensor_1D_t(self%gradient_operator_1D_ .x. self%values_, self%x_min_, self%x_max_, cells=self%cells_, order=self%order_)
+      gradient_1D%divergence_operator_1D_ = divergence_operator_1D_t(self%order_, dx, self%cells_)
+      check_corbino_castillo_eq_17: &
+      associate(p => gradient_1D%weights(), b => [-1D0, [(0D0, c = 1, self%cells_)], 1D0])
+        call_julienne_assert((.all. (matmul(transpose(self%gradient_operator_1D_%assemble()), p) .approximates. b/dx .within. 2D-3)))
+      end associate check_corbino_castillo_eq_17
     end associate
 
   end procedure
