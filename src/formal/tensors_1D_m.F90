@@ -23,6 +23,7 @@ module tensors_1D_m
   public :: d_dx
   public :: d2_dx2
   public :: cell_centers_extended_1D
+  public :: faces_1D
 
   abstract interface
 
@@ -506,6 +507,17 @@ contains
 
     associate(dx => (x_max - x_min)/cells)
       x = [x_min, cell_center_locations(x_min, x_max, cells), x_max]
+    end associate
+  end function
+
+  pure function faces_1D(x_min, x_max, cells) result(x)
+    double precision, intent(in) :: x_min, x_max
+    integer, intent(in) :: cells
+    double precision, allocatable:: x(:)
+    integer cell
+
+    associate(dx => (x_max - x_min)/cells)
+      x = [x_min, x_min + [(cell*dx, cell = 1, cells-1)], x_max]
     end associate
   end function
 
