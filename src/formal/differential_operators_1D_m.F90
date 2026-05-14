@@ -51,7 +51,7 @@ module differential_operators_1D_m
 
   interface gradient_operator_1D_t
 
-    pure module function construct_1D_gradient_operator(k, dx, cells) result(gradient_operator_1D)
+    elemental module function construct_1D_gradient_operator(k, dx, cells) result(gradient_operator_1D)
       !! Construct a mimetic gradient operator
       implicit none
       integer, intent(in) :: k !! order of accuracy
@@ -77,7 +77,7 @@ module differential_operators_1D_m
 
   interface divergence_operator_1D_t
 
-    pure module function construct_1D_divergence_operator(k, dx, cells) result(divergence_operator_1D)
+    elemental module function construct_1D_divergence_operator(k, dx, cells) result(divergence_operator_1D)
       !! Construct a mimetic gradient operator
       implicit none
       integer, intent(in) :: k !! order of accuracy
