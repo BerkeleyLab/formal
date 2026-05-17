@@ -120,6 +120,17 @@ module tensors_1D_m
       type(scalar_1D_t) scalar_1D
     end function
 
+    pure module function construct_1D_scalar_constant(constant, order, cells, x_min, x_max) result(scalar_1D)
+      !! Result is a collection of cell-centered-extended values with a corresponding mimetic gradient operator
+      implicit none
+      double precision, intent(in) :: constant !! scalar value
+      integer, intent(in) :: order !! order of accuracy
+      integer, intent(in) :: cells !! number of grid cells spanning the domain
+      double precision, intent(in) :: x_min !! grid location minimum
+      double precision, intent(in) :: x_max !! grid location maximum
+      type(scalar_1D_t) scalar_1D
+    end function
+
     pure module function construct_1D_scalar_from_parent(tensor_1D) result(scalar_1D)
       !! Result is a 1D vector with the provided parent component tensor_1D and the provided divergence operatror
       type(tensor_1D_t), intent(in) :: tensor_1D

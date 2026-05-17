@@ -1,8 +1,6 @@
 ! Copyright (c) 2026, The Regents of the University of California
 ! Terms of use are as specified in LICENSE.txt
 
-#include "formal-language-support.F90"
-
 module tensors_2D_m
   !! Define public 2D scalar and vector abstractions and associated mimetic gradient,
   !! divergence, and Laplacian operators as detailed by Corbino & Castillo (2020)
@@ -23,19 +21,19 @@ module tensors_2D_m
 
   abstract interface
 
-    pure function scalar_2D_initializer_i(x1, x2) result(f)
+    pure function scalar_2D_initializer_i(x,y) result(f)
       !! Sampling function for initializing a scalar_2D_t object
       implicit none
-      double precision, intent(in) :: x1, x2
-      double precision, allocatable :: f
+      double precision, intent(in) :: x(:), y(:)
+      double precision f(size(x),size(y))
     end function
 
-    pure function vector_2D_initializer_i(x1, x2 ) result(v)
+    pure function vector_2D_initializer_i(x,y) result(v)
       !! Sampling function for initializing a vector_2D_t object
       import space_dimension
       implicit none
-      double precision, intent(in) :: x1, x2
-      double precision v(space_dimension)
+      double precision, intent(in) :: x(:), y(:)
+      double precision v(size(x),size(y),space_dimension)
     end function
 
   end interface
@@ -45,12 +43,26 @@ module tensors_2D_m
     !! Child types define the operations supported by each child, including
     !! gradient (.grad.) for scalars and divergence (.div.) for vectors.
     private
+    double precision, allocatable :: values_(:,:,:) !! tensor components at 2D spatial locations
     double precision x_min_(space_dimension) !! domain lower boundary
     double precision x_max_(space_dimension) !! domain upper boundary
     integer cells_(space_dimension) !! number of grid cells spanning the domain
     integer order_ !! order of accuracy of mimetic discretization
-    double precision, allocatable :: values_(:,:,:) !! tensor components at spatial locations
   end type
+
+  interface tensor_2D_t
+
+    pure module function construct_2D_tensor_from_components(values, cells, x_min, x_max, order) result(tensor_2D)
+      implicit none
+      double precision, intent(in) :: values(:,:,:) !! tensor components at 2D spatial locations
+      double precision, intent(in) :: x_min(:) !! domain lower boundary
+      double precision, intent(in) :: x_max(:) !! domain upper boundary
+      integer, intent(in) :: cells(:) !! number of grid cells spanning the domain
+      integer, intent(in) :: order !! order of accuracy of mimetic discretization
+      type(tensor_2D_t) tensor_2D
+    end function
+
+  end interface
 
   type, extends(tensor_2D_t) :: scalar_2D_t
     !! Encapsulate scalar values at cell centers and boundaries
@@ -59,8 +71,10 @@ module tensors_2D_m
   contains
     generic :: operator(.grad.) => grad
     generic :: values => scalar_2D_values
+    generic :: grid => scalar_2D_grid
     procedure, non_overridable, private :: grad
     procedure, non_overridable, private :: scalar_2D_values
+    procedure, non_overridable, private :: scalar_2D_grid
   end type
 
   interface scalar_2D_t
@@ -76,11 +90,23 @@ module tensors_2D_m
       type(scalar_2D_t) scalar_2D
     end function
 
+    pure module function construct_2D_scalar_from_mold(initializer, mold) result(scalar_2D)
+      !! Result is a 2D scalar field using a mold for all components other than the field values
+      implicit none
+      procedure(scalar_2D_initializer_i), pointer :: initializer
+      type(scalar_2D_t), intent(in) :: mold
+      type(scalar_2D_t) scalar_2D
+    end function
+
   end interface
 
   type, extends(tensor_2D_t) :: vector_2D_t
     !! Encapsulate 2D vector values at cell faces (of unit area for 2D) and corresponding operators
     private
+    type(divergence_operator_1D_t) divergence_operator_1D_(space_dimension)
+  contains
+    generic :: values => vector_2D_values
+    procedure, non_overridable, private :: vector_2D_values
   end type
 
   interface vector_2D_t
@@ -96,12 +122,29 @@ module tensors_2D_m
       double precision, intent(in) :: x_max(:) !! grid location maxima
       type(vector_2D_t) vector_2D
     end function
+ 
+    pure module function construct_2D_vector_from_vector_mold(initializer, mold) result(vector_2D)
+      !! Result is a 2D vector with values initialized by the provided procedure pointer sampled on the 
+      !! same grid as the mold
+      implicit none
+      procedure(vector_2D_initializer_i), pointer :: initializer
+      type(vector_2D_t), intent(in) :: mold
+      type(vector_2D_t) vector_2D
+    end function
 
+    pure module function construct_2D_vector_from_scalar_mold(initializer, mold) result(vector_2D)
+      !! Result is a 2D vector with values initialized by the provided procedure pointer sampled on the 
+      !! face-centered grid corresponding to the cell-centered grid of the mold
+      implicit none
+      procedure(vector_2D_initializer_i), pointer :: initializer
+      type(scalar_2D_t), intent(in) :: mold
+      type(vector_2D_t) vector_2D
+    end function
+    
   end interface
 
   type, extends(vector_2D_t) :: gradient_2D_t
     !! A 2D mimetic gradient vector field abstraction with a public method that produces corresponding numerical quadrature weights
-    type(divergence_operator_1D_t) divergence_operator_1D_(space_dimension)
   end type
 
   interface
@@ -110,6 +153,19 @@ module tensors_2D_m
       !! Scalar values getter
       class(scalar_2D_t), intent(in) :: self
       double precision, allocatable :: scalar_values(:,:)
+    end function
+
+    pure module function scalar_2D_grid(self, direction) result(scalar_grid_1D)
+      !! Result array contains scalar grid locations along the requested spatial direction
+      class(scalar_2D_t), intent(in) :: self
+      integer, intent(in) :: direction
+      double precision, allocatable :: scalar_grid_1D(:)
+    end function
+
+    pure module function vector_2D_values(self) result(vector_values)
+      !! Vector values getter
+      class(vector_2D_t), intent(in) :: self
+      double precision, allocatable :: vector_values(:,:,:)
     end function
 
     pure module function grad(self) result(gradient_2D)
