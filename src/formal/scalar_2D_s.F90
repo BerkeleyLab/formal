@@ -16,7 +16,7 @@ submodule(tensors_2D_m) scalar_2D_s
 contains
 
   module procedure scalar_2D_values
-    scalar_values = self%values_(:,:,1)
+    scalar_values = self%values_(:,:,1,1,1,1)
   end procedure
 
   module procedure scalar_2D_grid
@@ -39,7 +39,7 @@ contains
 
     associate(x => cell_centers_extended_1D(x_min(1), x_max(1), cells(1)), y => cell_centers_extended_1D(x_min(2), x_max(2), cells(2)))
       scalar_2D%tensor_2D_t = tensor_2D_t( &
-         values = reshape(initializer(x,y), shape=[size(x),size(y),1]) &
+         values = reshape(initializer(x,y), shape=[size(x),size(y),1,1,1,1]) &
         ,cells = cells , x_min = x_min, x_max = x_max, order = order &
       )
       scalar_2D%gradient_operator_1D_ = gradient_operator_1D_t(k=order, dx=(x_max - x_min)/cells, cells=cells)
@@ -59,16 +59,16 @@ contains
     gradient_2D%cells_ = self%cells_
     gradient_2D%order_ = self%order_
 
-    allocate(gradient_2D%values_(self%cells_(1)+1, self%cells_(2)+1, space_dimension))
+    allocate(gradient_2D%values_(self%cells_(1)+1, self%cells_(2)+1, space_dimension, 1, 1, 1))
 
     gradient_x_component: &
     do concurrent(integer :: j=1:self%cells_(2)+2) default(none) shared(gradient_2D, self)
-      gradient_2D%values_(:,j,1) = self%gradient_operator_1D_(1) .x. self%values_(:,j,1)
+      gradient_2D%values_(:,j,1,1,1,1) = self%gradient_operator_1D_(1) .x. self%values_(:,j,1,1,1,1)
     end do gradient_x_component
 
     gradient_y_component: &
     do concurrent(integer :: i=1:self%cells_(1)+2) default(none) shared(gradient_2D, self)
-      gradient_2D%values_(i,:,2) = self%gradient_operator_1D_(2) .x. self%values_(i,:,1)
+      gradient_2D%values_(i,:,2,1,1,1) = self%gradient_operator_1D_(2) .x. self%values_(i,:,1,1,1,1)
     end do gradient_y_component
 
     associate(dx => (self%x_max_ - self%x_min_)/self%cells_)

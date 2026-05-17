@@ -43,7 +43,7 @@ module tensors_2D_m
     !! Child types define the operations supported by each child, including
     !! gradient (.grad.) for scalars and divergence (.div.) for vectors.
     private
-    double precision, allocatable :: values_(:,:,:) !! tensor components at 2D spatial locations
+    double precision, allocatable :: values_(:,:,:,:,:,:) !! tensor components for rank<=4 at 2D locations
     double precision x_min_(space_dimension) !! domain lower boundary
     double precision x_max_(space_dimension) !! domain upper boundary
     integer cells_(space_dimension) !! number of grid cells spanning the domain
@@ -54,7 +54,7 @@ module tensors_2D_m
 
     pure module function construct_2D_tensor_from_components(values, cells, x_min, x_max, order) result(tensor_2D)
       implicit none
-      double precision, intent(in) :: values(:,:,:) !! tensor components at 2D spatial locations
+      double precision, intent(in) :: values(:,:,:,:,:,:) !! tensor components at 2D spatial locations
       double precision, intent(in) :: x_min(:) !! domain lower boundary
       double precision, intent(in) :: x_max(:) !! domain upper boundary
       integer, intent(in) :: cells(:) !! number of grid cells spanning the domain
