@@ -11,6 +11,7 @@ submodule(tensors_2D_m) scalar_2D_s
     ,operator(.greaterThan.) &
     ,operator(.isAtLeast.)
   use tensors_1D_m, only : cell_centers_extended_1D, scalar_1D_t
+  use julienne_m, only : string_t, operator(.csv.)
   implicit none
 
 contains
@@ -50,7 +51,7 @@ contains
     scalar_2D = scalar_2D_t(initializer, cells = mold%cells_, x_min = mold%x_min_, x_max = mold%x_max_, order = mold%order_)
   end procedure
 
-  module procedure grad
+  module procedure scalar_2D_gradient
 
     integer c, i, j
 
@@ -79,6 +80,31 @@ contains
      !end associate check_corbino_castillo_eq_17
     end associate
 
+  end procedure
+
+  module procedure scalar_2D_to_file
+    type(string_t), allocatable :: lines(:)
+    integer i, j, l
+
+    associate(x => self%grid(1), y => self%grid(2), header => [string_t("x,y,scalar")])
+      associate(num_blank_lines => size(y)-1)
+        allocate(lines(size(header) + size(self%values_) + num_blank_lines))
+      end associate
+      lines(1:size(header)) = header
+      l = size(header)
+      do j = 1, size(y)
+        do i = 1, size(x)
+          l = l + 1
+          lines(l) = .csv. string_t([x(i), y(j), self%values_(i,j,1,1,1,1)])
+        end do
+        if (j/=size(y)) then
+          l = l + 1
+          lines(l) = ""
+        end if
+      end do
+    end associate
+
+    file = file_t(lines)
   end procedure
 
 end submodule scalar_2D_s

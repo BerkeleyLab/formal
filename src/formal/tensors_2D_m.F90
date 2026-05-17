@@ -6,6 +6,7 @@ module tensors_2D_m
   !! divergence, and Laplacian operators as detailed by Corbino & Castillo (2020)
   !! https://doi.org/10.1016/j.cam.2019.06.042.
   use differential_operators_1D_m, only : gradient_operator_1D_t, divergence_operator_1D_t
+  use julienne_m, only : file_t 
     
   implicit none
 
@@ -69,10 +70,12 @@ module tensors_2D_m
     private
     type(gradient_operator_1D_t) gradient_operator_1D_(space_dimension)
   contains
-    generic :: operator(.grad.) => grad
+    generic :: operator(.grad.) => scalar_2D_gradient
     generic :: values => scalar_2D_values
     generic :: grid => scalar_2D_grid
-    procedure, non_overridable, private :: grad
+    generic :: to_file => scalar_2D_to_file
+    procedure, non_overridable, private :: scalar_2D_to_file
+    procedure, non_overridable, private :: scalar_2D_gradient
     procedure, non_overridable, private :: scalar_2D_values
     procedure, non_overridable, private :: scalar_2D_grid
   end type
@@ -168,11 +171,18 @@ module tensors_2D_m
       double precision, allocatable :: vector_values(:,:,:)
     end function
 
-    pure module function grad(self) result(gradient_2D)
+    pure module function scalar_2D_gradient(self) result(gradient_2D)
       !! Result is mimetic gradient of the scalar_2D_t "self"
       implicit none
       class(scalar_2D_t), intent(in) :: self
       type(gradient_2D_t) gradient_2D
+    end function
+
+    pure module function scalar_2D_to_file(self) result(file)
+      !! Result is a file_t object containing the grid points and the corresponding scalar values
+      implicit none
+      class(scalar_2D_t), intent(in) :: self
+      type(file_t) file
     end function
 
   end interface

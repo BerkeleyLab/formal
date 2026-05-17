@@ -1,0 +1,33 @@
+# ============================================================
+#  surface.gnuplot  --  surface plot from a pre-gridded CSV
+#  Line 1: column labels
+#  Lines 2+: x, y, z data with blank lines between x-slices
+#  Usage:  gnuplot scalar-surface.gnuplot
+# ============================================================
+
+datafile = "scalar-surface.csv"
+set datafile separator ","
+
+# --- 1. Read column headers from line 1 ---
+xlabel = "" ; ylabel = "" ; zlabel = ""
+set table $Dummy
+    plot datafile every ::0::0 \
+        using (xlabel=strcol(1), ylabel=strcol(2), zlabel=strcol(3), 0):(0) \
+        with table
+unset table
+
+# --- 2. Plot ---
+set title  zlabel . "(" . xlabel . ", " . ylabel . ")"
+set xlabel xlabel ; set ylabel ylabel
+set zlabel zlabel offset 3,0 ; set cblabel zlabel
+set hidden3d
+set pm3d depthorder
+set palette rgbformulae 33,13,10
+set ticslevel 0 ; set key off
+
+set terminal gif size 800,600
+set output "scalar-surface.gif"
+
+splot datafile every ::1 using 1:2:3 with pm3d title ""
+
+set output    # flush and close the file

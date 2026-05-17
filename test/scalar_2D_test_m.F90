@@ -55,7 +55,7 @@ contains
   pure function biquadratic_gradient(x,y) result(gradient)
     double precision, intent(in) :: x(:), y(:)
     double precision gradient(size(x),size(y),space_dimension)
-    do concurrent(integer :: i=1:size(x), j=1:size(y))
+    do concurrent(integer :: i=1:size(x), j=1:size(y)) default(none) shared(gradient,x,y)
       gradient(i,j,:) = [-2 + 6*x(i) - y(j)/5, -x(i)/5 + 6*y(j) - 2]
     end do
   end function
