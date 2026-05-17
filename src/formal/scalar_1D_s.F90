@@ -66,6 +66,22 @@ contains
 
 #endif
 
+  module procedure construct_1D_scalar_constant
+
+    integer i
+
+    call_julienne_assert(x_max .greaterThan. x_min)
+    call_julienne_assert(cells .isAtLeast. 2*order)
+
+    scalar_1D = scalar_1D_t( tensor_1D_t( &
+         values = [(constant, i = 1, size(cell_centers_extended_1D(x_min, x_max, cells)))] &
+        ,x_min = x_min &
+        ,x_max = x_max &
+        ,cells = cells &
+        ,order = order &
+    )   )
+  end procedure
+
   module procedure divide_by_integer
     ratio%tensor_1D_t = tensor_1D_t( &
       values = self%values_/denominator, x_min = self%x_min_, x_max = self%x_max_, cells = self%cells_, order = self%order_ &
