@@ -180,10 +180,9 @@ module tensors_1D_m
       type(vector_1D_t) vector_1D
     end function
 
-    pure module function construct_from_components(tensor_1D, divergence_operator_1D) result(vector_1D)
+    pure module function construct_1D_vector_from_parent(tensor_1D) result(vector_1D)
       !! Result is a 1D vector with the provided parent component tensor_1D and the provided divergence operatror
       type(tensor_1D_t), intent(in) :: tensor_1D
-      type(divergence_operator_1D_t), intent(in) :: divergence_operator_1D
       type(vector_1D_t) vector_1D
     end function
 

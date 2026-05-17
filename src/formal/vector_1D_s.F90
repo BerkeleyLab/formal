@@ -60,9 +60,9 @@ contains
 
 #endif
 
-  module procedure construct_from_components
+  module procedure construct_1D_vector_from_parent
     vector_1D%tensor_1D_t = tensor_1D
-    vector_1D%divergence_operator_1D_ = divergence_operator_1D
+    vector_1D%divergence_operator_1D_ = divergence_operator_1D_t(k=tensor_1D%order_, dx=(tensor_1D%x_max_ - tensor_1D%x_min_)/tensor_1D%cells_, cells=tensor_1D%cells_)
   end procedure
 
   module procedure div
