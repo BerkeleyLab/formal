@@ -83,7 +83,7 @@ contains
 
     associate(x => self%grid(1), y => self%grid(2), header => [string_t("x,y,vector_x,vector_y")])
       associate(num_blank_lines => size(y)-1)
-        allocate(lines(size(header) + size(self%values_) + num_blank_lines))
+        allocate(lines(size(header) + size(self%values_)/space_dimension + num_blank_lines))
       end associate
       lines(1:size(header)) = header
       l = size(header)

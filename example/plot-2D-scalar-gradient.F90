@@ -41,8 +41,9 @@ program scalar_surface
 
   associate(scalar_2D => scalar_2D_t(scalar_2D_initializer, order=order, cells=[30,20], x_min=[-1D0,1D0], x_max=[9D0,4D0]))
     associate(grad_scalar => .grad. scalar_2D, expected_gradient => vector_2D_t(expected_gradient_initializer, mold=scalar_2D))
-      associate(scalar_2D_file => scalar_2D%to_file())
+      associate(scalar_2D_file => scalar_2D%to_file(), grad_scalar_file => grad_scalar%to_file())
         call scalar_2D_file%write_lines("example/scripts/scalar-surface.csv") 
+        call grad_scalar_file%write_lines("example/scripts/gradient-field.csv")
       end associate
     end associate
   end associate
