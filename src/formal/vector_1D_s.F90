@@ -65,6 +65,22 @@ contains
     vector_1D%divergence_operator_1D_ = divergence_operator_1D_t(k=tensor_1D%order_, dx=(tensor_1D%x_max_ - tensor_1D%x_min_)/tensor_1D%cells_, cells=tensor_1D%cells_)
   end procedure
 
+  module procedure construct_1D_vector_constant
+
+    integer i
+
+    call_julienne_assert(x_max .greaterThan. x_min)
+    call_julienne_assert(cells .isAtLeast. 2*order)
+
+    vector_1D = vector_1D_t( tensor_1D_t( &
+         values = [(constant, i = 1, size(faces_1D(x_min, x_max, cells)))] &
+        ,x_min = x_min &
+        ,x_max = x_max &
+        ,cells = cells &
+        ,order = order &
+    )   )
+  end procedure
+
   module procedure div
 
     integer center

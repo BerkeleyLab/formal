@@ -7,10 +7,12 @@ submodule(tensors_2D_m) vector_2D_s
   use julienne_m, only : &
      call_julienne_assert_ &
     ,operator(.all.) &
+    ,operator(.csv.) &
     ,operator(.equalsExpected.) &
     ,operator(.greaterThan.) &
-    ,operator(.isAtLeast.)
-  use tensors_1D_m, only : faces_1D
+    ,operator(.isAtLeast.) &
+    ,string_t
+  use tensors_1D_m, only : faces_1D, vector_1D_t
   use differential_operators_1D_m, only : divergence_operator_1D_t
   implicit none
 
@@ -73,6 +75,43 @@ contains
 
   module procedure vector_2D_values
     vector_values = self%values_(:,:,:,1,1,1)
+  end procedure
+
+  module procedure vector_2D_to_file
+    type(string_t), allocatable :: lines(:)
+    integer i, j, l
+
+    associate(x => self%grid(1), y => self%grid(2), header => [string_t("x,y,vector_x,vector_y")])
+      associate(num_blank_lines => size(y)-1)
+        allocate(lines(size(header) + size(self%values_) + num_blank_lines))
+      end associate
+      lines(1:size(header)) = header
+      l = size(header)
+      do j = 1, size(y)
+        do i = 1, size(x)
+          l = l + 1 
+          lines(l) = .csv. string_t([x(i), y(j), self%values_(i,j,1:space_dimension,1,1,1)])
+        end do
+        if (j/=size(y)) then
+          l = l + 1 
+          lines(l) = ""
+        end if
+      end do
+    end associate
+
+    file = file_t(lines)
+  end procedure
+
+  module procedure vector_2D_grid
+    associate(vector_1D => vector_1D_t( &
+       constant = 0D0 &
+      ,cells = self%cells_(direction) &
+      ,x_min = self%x_min_(direction) &
+      ,x_max = self%x_max_(direction) &
+      ,order = self%order_ &
+    ))
+      vector_grid_1D = vector_1D%grid()
+    end associate
   end procedure
 
 end submodule vector_2D_s

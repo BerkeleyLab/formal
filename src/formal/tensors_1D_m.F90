@@ -186,6 +186,17 @@ module tensors_1D_m
       type(vector_1D_t) vector_1D
     end function
 
+    pure module function construct_1D_vector_constant(constant, order, cells, x_min, x_max) result(vector_1D)
+      !! Result is a collection of cell-centered-extended values with a corresponding mimetic gradient operator
+      implicit none
+      double precision, intent(in) :: constant !! scalar value
+      integer, intent(in) :: order !! order of accuracy
+      integer, intent(in) :: cells !! number of grid cells spanning the domain
+      double precision, intent(in) :: x_min !! grid location minimum
+      double precision, intent(in) :: x_max !! grid location maximum
+      type(vector_1D_t) vector_1D
+    end function
+
   end interface
 
   type, extends(vector_1D_t) :: gradient_1D_t
