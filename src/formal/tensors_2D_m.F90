@@ -109,7 +109,11 @@ module tensors_2D_m
     type(divergence_operator_1D_t) divergence_operator_1D_(space_dimension)
   contains
     generic :: values => vector_2D_values
+    generic :: to_file => vector_2D_to_file
+    generic :: grid => vector_2D_grid
     procedure, non_overridable, private :: vector_2D_values
+    procedure, non_overridable, private :: vector_2D_to_file
+    procedure, non_overridable, private :: vector_2D_grid
   end type
 
   interface vector_2D_t
@@ -165,6 +169,13 @@ module tensors_2D_m
       double precision, allocatable :: scalar_grid_1D(:)
     end function
 
+    pure module function vector_2D_grid(self, direction) result(vector_grid_1D)
+      !! Result array contains scalar grid locations along the requested spatial direction
+      class(vector_2D_t), intent(in) :: self
+      integer, intent(in) :: direction
+      double precision, allocatable :: vector_grid_1D(:) !! grid points along one the requested coordinate direction
+    end function
+
     pure module function vector_2D_values(self) result(vector_values)
       !! Vector values getter
       class(vector_2D_t), intent(in) :: self
@@ -182,6 +193,13 @@ module tensors_2D_m
       !! Result is a file_t object containing the grid points and the corresponding scalar values
       implicit none
       class(scalar_2D_t), intent(in) :: self
+      type(file_t) file
+    end function
+
+    pure module function vector_2D_to_file(self) result(file)
+      !! Result is a file_t object containing the grid points and the corresponding vector components
+      implicit none
+      class(vector_2D_t), intent(in) :: self
       type(file_t) file
     end function
 
