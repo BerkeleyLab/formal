@@ -525,10 +525,7 @@ contains
     integer, intent(in) :: cells
     double precision, allocatable:: x(:)
     integer cell
-
-    associate(dx => (x_max - x_min)/cells)
-      x = [x_min, cell_center_locations(x_min, x_max, cells), x_max]
-    end associate
+    x = [x_min, cell_center_locations(x_min, x_max, cells), x_max]
   end function
 
   pure function faces_1D(x_min, x_max, cells) result(x)
