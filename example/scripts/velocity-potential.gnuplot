@@ -1,11 +1,12 @@
 # ============================================================
-#  surface.gnuplot  --  surface plot from a pre-gridded CSV
+#  velocity-potential.gnuplot  --  surface plot CSV
 #  Line 1: column labels
 #  Lines 2+: x, y, z data with blank lines between x-slices
-#  Usage:  gnuplot scalar-surface.gnuplot
+#  Usage:  gnuplot velocity-potential.gnuplot
 # ============================================================
 
-datafile = "scalar-surface.csv"
+base_name = "velocity-potential"
+datafile = base_name . ".csv"
 set datafile separator ","
 
 # --- 1. Read column headers from line 1 ---
@@ -26,7 +27,7 @@ set palette rgbformulae 33,13,10
 set ticslevel 0 ; set key off
 
 set terminal gif size 800,600
-set output "scalar-surface.gif"
+set output base_name . ".gif"
 
 splot datafile every ::1 using 1:2:3 with pm3d title ""
 
