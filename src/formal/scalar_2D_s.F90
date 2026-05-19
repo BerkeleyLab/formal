@@ -53,7 +53,7 @@ contains
 
   module procedure scalar_2D_gradient
 
-    integer c, i, j
+    integer c
 
     gradient_2D%x_min_ = self%x_min_
     gradient_2D%x_max_ = self%x_max_
@@ -62,6 +62,7 @@ contains
 
     allocate(gradient_2D%values_(self%cells_(1)+1, self%cells_(2)+1, space_dimension, 1, 1, 1))
 
+#if HAVE_DO_CONCURRENT_TYPE_SPEC_SUPPORT && HAVE_LOCALITY_SPECIFIER_SUPPORT
     gradient_x_component: &
     do concurrent(integer :: j=1:size(gradient_2D%values_,2)) default(none) shared(gradient_2D, self)
       gradient_2D%values_(:,j,1,1,1,1) = self%gradient_operator_1D_(1) .x. self%values_(:,j,1,1,1,1)
@@ -71,6 +72,20 @@ contains
     do concurrent(integer :: i=1:size(gradient_2D%values_,1)) default(none) shared(gradient_2D, self)
       gradient_2D%values_(i,:,2,1,1,1) = self%gradient_operator_1D_(2) .x. self%values_(i,:,1,1,1,1)
     end do gradient_y_component
+#else
+    block
+    integer i, j
+    gradient_x_component: &
+    do concurrent(j=1:size(gradient_2D%values_,2))
+      gradient_2D%values_(:,j,1,1,1,1) = self%gradient_operator_1D_(1) .x. self%values_(:,j,1,1,1,1)
+    end do gradient_x_component
+
+    gradient_y_component: &
+    do concurrent(i=1:size(gradient_2D%values_,1))
+      gradient_2D%values_(i,:,2,1,1,1) = self%gradient_operator_1D_(2) .x. self%values_(i,:,1,1,1,1)
+    end do gradient_y_component
+    end block
+#endif
 
     associate(dx => (self%x_max_ - self%x_min_)/self%cells_)
       gradient_2D%divergence_operator_1D_ = divergence_operator_1D_t(self%order_, dx, self%cells_)

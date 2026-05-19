@@ -66,6 +66,7 @@ contains
 
     allocate(gradient_3D%values_(self%cells_(1)+1, self%cells_(2)+1, self%cells_(3)+1, space_dimension, 1, 1, 1))
 
+#if HAVE_DO_CONCURRENT_TYPE_SPEC_SUPPORT && HAVE_LOCALITY_SPECIFIER_SUPPORT
     gradient_x_component: &
     do concurrent(integer :: j=1:size(gradient_3D%values_,2), k=1:size(gradient_3D%values_,3)) default(none) shared(gradient_3D, self)
       gradient_3D%values_(:,j,k,1,1,1,1) = self%gradient_operator_1D_(1) .x. self%values_(:,j,k,1,1,1,1)
@@ -80,6 +81,25 @@ contains
     do concurrent(integer :: i=1:size(gradient_3D%values_,1), j=1:size(gradient_3D%values_,2)) default(none) shared(gradient_3D, self)
       gradient_3D%values_(i,j,:,3,1,1,1) = self%gradient_operator_1D_(3) .x. self%values_(i,j,:,1,1,1,1)
     end do gradient_z_component
+#else
+    block
+    integer i,j,k
+    gradient_x_component: &
+    do concurrent(j=1:size(gradient_3D%values_,2), k=1:size(gradient_3D%values_,3))
+      gradient_3D%values_(:,j,k,1,1,1,1) = self%gradient_operator_1D_(1) .x. self%values_(:,j,k,1,1,1,1)
+    end do gradient_x_component
+
+    gradient_y_component: &
+    do concurrent(i=1:size(gradient_3D%values_,1), k=1:size(gradient_3D%values_,3))
+      gradient_3D%values_(i,:,k,2,1,1,1) = self%gradient_operator_1D_(2) .x. self%values_(i,:,k,1,1,1,1)
+    end do gradient_y_component
+
+    gradient_z_component: &
+    do concurrent(i=1:size(gradient_3D%values_,1), j=1:size(gradient_3D%values_,2))
+      gradient_3D%values_(i,j,:,3,1,1,1) = self%gradient_operator_1D_(3) .x. self%values_(i,j,:,1,1,1,1)
+    end do gradient_z_component
+    end block
+#endif
 
     associate(dx => (self%x_max_ - self%x_min_)/self%cells_)
       gradient_3D%divergence_operator_1D_ = divergence_operator_1D_t(self%order_, dx, self%cells_)
