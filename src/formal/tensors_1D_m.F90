@@ -89,7 +89,7 @@ module tensors_1D_m
     generic :: operator(-) => subtract_scalar_1D
     generic :: operator(+) => add_scalar_1D
     generic :: operator(/) => divide_by_integer
-    generic :: operator(*) => premultiply_double, postmultiply_double, premultiply_integer, postmultiply_integer
+    generic :: operator(*) => premultiply_double, postmultiply_double, premultiply_integer, postmultiply_integer, multiply_1D_scalars
     generic :: operator(**) => exponentiate
     generic :: operator(.grad.) => grad
     generic :: operator(.laplacian.) => laplacian
@@ -98,6 +98,7 @@ module tensors_1D_m
     procedure, non_overridable, private :: scalar_1D_values
     procedure, non_overridable, private :: scalar_1D_grid
     procedure, non_overridable, private :: divide_by_integer 
+    procedure, non_overridable, private :: multiply_1D_scalars
     procedure, non_overridable, private, pass(rhs) :: premultiply_double
     procedure, non_overridable, private :: postmultiply_double
     procedure, non_overridable, private, pass(rhs) :: premultiply_integer
@@ -390,6 +391,14 @@ module tensors_1D_m
       class(scalar_1D_t), intent(in) :: lhs
       type(scalar_1D_t), intent(in) :: rhs
       type(scalar_1D_t) total
+    end function
+
+    pure module function multiply_1D_scalars(lhs, rhs) result(lhs_x_rhs)
+      !! Result is the product of scalar_1D_t lhs and rhs
+      implicit none
+      class(scalar_1D_t), intent(in) :: lhs
+      type(scalar_1D_t), intent(in) :: rhs
+      type(scalar_1D_t) lhs_x_rhs
     end function
 
     pure module function subtract_scalar_1D(lhs, rhs) result(difference)
