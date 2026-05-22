@@ -91,19 +91,23 @@ contains
     )
   end procedure
 
-  module procedure subtract_scalar_1D
+  pure logical function conformable(lhs, rhs)
+    type(scalar_1D_t), intent(in) :: lhs, rhs
     call_julienne_assert(size(lhs%values_) .equalsExpected. size(rhs%values_))
     call_julienne_assert(.all.([lhs%cells_,lhs%order_] .equalsExpected. [rhs%cells_,rhs%order_]))
     call_julienne_assert(.all.([lhs%x_min_,lhs%x_max_] .approximates. [rhs%x_min_,rhs%x_max_] .within. 1D-08))
+    conformable = .true.
+  end function
+
+  module procedure subtract_scalar_1D
+    call_julienne_assert(conformable(lhs,rhs))
     difference%gradient_operator_1D_ = lhs%gradient_operator_1D_
     difference%tensor_1D_t = &
       tensor_1D_t(values =  lhs%values_ - rhs%values_, x_min = rhs%x_min_, x_max = rhs%x_max_, cells = rhs%cells_, order = rhs%order_)
   end procedure
 
   module procedure add_scalar_1D
-    call_julienne_assert(size(lhs%values_) .equalsExpected. size(rhs%values_))
-    call_julienne_assert(.all.([lhs%cells_,lhs%order_] .equalsExpected. [rhs%cells_,rhs%order_]))
-    call_julienne_assert(.all.([lhs%x_min_,lhs%x_max_] .approximates. [rhs%x_min_,rhs%x_max_] .within. 1D-08))
+    call_julienne_assert(conformable(lhs,rhs))
     total%gradient_operator_1D_ = lhs%gradient_operator_1D_
     total%tensor_1D_t = &
       tensor_1D_t(values =  lhs%values_ + rhs%values_, x_min = rhs%x_min_, x_max = rhs%x_max_, cells = rhs%cells_, order = rhs%order_)
