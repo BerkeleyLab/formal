@@ -93,7 +93,7 @@ contains
 
   module procedure subtract_scalar_1D
     call_julienne_assert(size(lhs%values_) .equalsExpected. size(rhs%values_))
-    call_julienne_assert(lhs%cells_ .equalsExpected. rhs%cells_)
+    call_julienne_assert(.all.([lhs%cells_,lhs%order_] .equalsExpected. [rhs%cells_,rhs%order_]))
     call_julienne_assert(.all.([lhs%x_min_,lhs%x_max_] .approximates. [rhs%x_min_,rhs%x_max_] .within. 1D-08))
     difference%gradient_operator_1D_ = lhs%gradient_operator_1D_
     difference%tensor_1D_t = &
@@ -102,7 +102,7 @@ contains
 
   module procedure add_scalar_1D
     call_julienne_assert(size(lhs%values_) .equalsExpected. size(rhs%values_))
-    call_julienne_assert(lhs%cells_ .equalsExpected. rhs%cells_)
+    call_julienne_assert(.all.([lhs%cells_,lhs%order_] .equalsExpected. [rhs%cells_,rhs%order_]))
     call_julienne_assert(.all.([lhs%x_min_,lhs%x_max_] .approximates. [rhs%x_min_,rhs%x_max_] .within. 1D-08))
     total%gradient_operator_1D_ = lhs%gradient_operator_1D_
     total%tensor_1D_t = &
