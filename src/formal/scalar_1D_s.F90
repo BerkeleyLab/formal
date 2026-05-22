@@ -106,6 +106,13 @@ contains
       tensor_1D_t(values =  lhs%values_ - rhs%values_, x_min = rhs%x_min_, x_max = rhs%x_max_, cells = rhs%cells_, order = rhs%order_)
   end procedure
 
+  module procedure multiply_1D_scalars
+    call_julienne_assert(conformable(lhs,rhs))
+    lhs_x_rhs%gradient_operator_1D_ = lhs%gradient_operator_1D_
+    lhs_x_rhs%tensor_1D_t = &
+      tensor_1D_t(values =  lhs%values_ * rhs%values_, x_min = rhs%x_min_, x_max = rhs%x_max_, cells = rhs%cells_, order = rhs%order_)
+  end procedure
+
   module procedure add_scalar_1D
     call_julienne_assert(conformable(lhs,rhs))
     total%gradient_operator_1D_ = lhs%gradient_operator_1D_
