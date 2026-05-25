@@ -63,21 +63,11 @@ contains
 
     do order = 2, 4, 2
       associate(scalar_1D => scalar_1D_t(scalar_1D_initializer, order=order, cells=10, x_min=0D0, x_max=10D0) )
-#ifndef __GFORTRAN__
         associate(cube => scalar_1D**3 )
           test_diagnosis = test_diagnosis .also. .all. &
             (cube%values() .approximates. scalar_1D%values()**3 .within. tolerance) &
             // string_t(" for order ") // string_t(order)
         end associate
-#else
-        block
-          type(scalar_1D_t) cube
-          cube = scalar_1D**3 
-          test_diagnosis = test_diagnosis .also. .all. &
-            (cube%values() .approximates. scalar_1D%values()**3 .within. tolerance) &
-            // string_t(" for order ") // string_t(order)
-        end block
-#endif
       end associate
     end do
 
@@ -93,19 +83,10 @@ contains
 
     do order = 2, 4, 2
       associate(scalar_1D => scalar_1D_t(scalar_1D_initializer, order=order, cells=10, x_min=0D0, x_max=10D0) )
-#ifndef __GFORTRAN__
         associate( half => scalar_1D/2 )
           test_diagnosis = test_diagnosis .also. .all. (half%values() .approximates. scalar_1D%values()/2 .within. tolerance) &
                            // string_t(" for order ") // string_t(order)
         end associate
-#else
-        block
-          type(scalar_1D_t) half
-          half = scalar_1D/2 
-          test_diagnosis = test_diagnosis .also. .all. (half%values() .approximates. scalar_1D%values()/2 .within. tolerance) &
-                           // string_t(" for order ") // string_t(order)
-        end block
-#endif
       end associate
     end do
 

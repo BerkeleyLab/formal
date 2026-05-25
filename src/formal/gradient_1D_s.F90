@@ -53,11 +53,7 @@ contains
       ,cells  = gradient_1D%cells_ &
       ,order  = gradient_1D%order_ &
     )
-#ifndef __GFORTRAN__
     vector_dot_gradient_1D%weights_ = gradient_1D%weights()
-#else
-    vector_dot_gradient_1D%weights_ = gradient_1D%gradient_1D_weights()
-#endif
   end procedure
 
 end submodule gradient_1D_s

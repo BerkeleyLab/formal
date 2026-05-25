@@ -61,15 +61,8 @@ program extended_gauss_divergence
   call execute_command_line("grep '<-- scalar' example/extended-gauss-divergence.F90 | grep -v execute_command", wait=.true.)
   call execute_command_line("grep '<-- vector' example/extended-gauss-divergence.F90 | grep -v execute_command", wait=.true.)
 
-#ifdef __GFORTRAN__
-  command_line_arguments: &
-  block
-    type(numerical_arguments_t) args
-    args  = get_numerical_arguments()
-#else
   command_line_arguments: &
   associate(args => get_numerical_arguments())
-#endif
     text_flags: &
     associate(flags => text_flags_t( &
        div_  = command_line%argument_present( [ character(len=len("--div" )) :: "--div" , "-d" ] ) &
@@ -114,39 +107,24 @@ program extended_gauss_divergence
         end associate integrand_factors
       end associate print_all
     end associate text_flags
-#ifndef __GFORTRAN__
   end associate command_line_arguments
-#else
-  end block command_line_arguments
-#endif
 
 contains
 
   function get_numerical_arguments() result(numerical_arguments)
     type(numerical_arguments_t) numerical_arguments
 
-#ifdef __GFORTRAN__
-    character(len=:), allocatable :: cells_string, order_string, x_min_string, x_max_string
-    cells_string = command_line%flag_value("--cells")
-    order_string = command_line%flag_value("--order")
-    x_min_string = command_line%flag_value("--x_min")
-    x_max_string = command_line%flag_value("--x_max")
-#else
     associate( &
        cells_string => command_line%flag_value("--cells") &
       ,order_string => command_line%flag_value("--order") &
       ,x_min_string => command_line%flag_value("--x_min") &
       ,x_max_string => command_line%flag_value("--x_max") &
     )
-#endif
       if (len(cells_string)/=0) read(cells_string,*) numerical_arguments%cells_
       if (len(order_string)/=0) read(order_string,*) numerical_arguments%order_
       if (len(x_min_string)/=0) read(x_min_string,*) numerical_arguments%x_min_
       if (len(x_max_string)/=0) read(x_max_string,*) numerical_arguments%x_max_
-#ifndef __GFORTRAN__
     end associate
-#endif
-
   end function
 
 end program

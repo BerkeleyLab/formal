@@ -40,9 +40,6 @@ program print_assembled_1D_operators
       if (print_all .or. (divergence .and. len(order)==0) .or. (divergence .and. order=="4")) call print_divergence_operator(k=4, dx=1D0, m=16)
 
     end associate default_usage
-#ifdef __GFORTRAN__
-    stop
-#endif
   end associate command_line_settings
 
 contains

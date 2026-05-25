@@ -33,9 +33,6 @@ program burgers_1D
   use iso_fortran_env, only : output_unit
   implicit none
 
-#ifdef __GFORTRAN__
-  procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer
-#endif
   character(len=:), allocatable :: order_string
   type(command_line_t) command_line
   integer order
@@ -68,9 +65,7 @@ program burgers_1D
 
 
   block
-#ifndef __GFORTRAN__
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer
-#endif
     double precision, parameter :: pi = acos(-1D0), nu=1D0, t_final=0.6D0
     double precision, allocatable :: u_surface(:,:), time(:)
     double precision dt
@@ -148,10 +143,6 @@ program burgers_1D
       end block
     end associate
   end block
-
-#ifdef __GFORTRAN__
-    stop
-#endif
 
 contains
 

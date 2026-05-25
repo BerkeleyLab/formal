@@ -20,9 +20,6 @@ module divergence_operator_1D_test_m
     ,test_result_t &
     ,usher
   use formal_m, only : vector_1D_t, vector_1D_initializer_i, scalar_1D_t, scalar_1D_initializer_i
-#ifdef __GFORTRAN__
-  use formal_m, only : divergence_1D_t
-#endif
   implicit none
 
   type, extends(test_t) :: divergence_operator_1D_test_t
@@ -70,40 +67,22 @@ contains
     type(test_diagnosis_t) test_diagnosis
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => parabola
     double precision, parameter :: expected_divergence = 1D0
-#ifdef __GFORTRAN__
-    type(divergence_1D_t) div_grad_scalar
-    div_grad_scalar = .div. (.grad. scalar_1D_t(scalar_1D_initializer, order=2, cells=16, x_min=0D0, x_max=5D0))
-#else
     associate(div_grad_scalar => .div. (.grad. scalar_1D_t(scalar_1D_initializer, order=2, cells=16, x_min=0D0, x_max=5D0)))
-#endif
- 
       test_diagnosis = passing_test()
       test_diagnosis = test_diagnosis .also. (.all. (div_grad_scalar%values() .approximates. expected_divergence .within. tight_tolerance)) &
                      // " (2nd-order .div. (.grad. (x**2)/2))"
-
-#ifndef __GFORTRAN__
     end associate
-#endif
   end function
 
   function check_4th_order_div_grad_parabola() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => parabola
     double precision, parameter :: expected_divergence = 1D0
-#ifdef __GFORTRAN__
-    type(divergence_1D_t) div_grad_scalar
-    div_grad_scalar = .div. (.grad. scalar_1D_t(scalar_1D_initializer, order=4, cells=16, x_min=0D0, x_max=9D0))
-#else
     associate(div_grad_scalar => .div. (.grad. scalar_1D_t(scalar_1D_initializer, order=4, cells=16, x_min=0D0, x_max=9D0)))
-#endif
-
       test_diagnosis = passing_test()
       test_diagnosis = test_diagnosis .also. (.all. (div_grad_scalar%values() .approximates. expected_divergence .within. tight_tolerance)) &
                      // " (4th-order .div. (.grad. (x**2)/2))"
-
-#ifndef __GFORTRAN__
     end associate
-#endif
   end function
 
   pure function sinusoid(x) result(y)
@@ -117,16 +96,10 @@ contains
     procedure(vector_1D_initializer_i), pointer :: vector_1D_initializer => sinusoid
     double precision, parameter :: pi = 3.141592653589793D0
     integer, parameter :: order_desired = 2, coarse_cells=100, fine_cells=coarse_cells+1
-#ifdef __GFORTRAN__
-    type(divergence_1D_t) div_coarse, div_fine
-    div_coarse = .div. vector_1D_t(vector_1D_initializer , order=order_desired, cells=coarse_cells, x_min=0D0, x_max=2*pi)
-    div_fine   = .div. vector_1D_t(vector_1D_initializer , order=order_desired, cells=fine_cells  , x_min=0D0, x_max=2*pi)
-#else
     associate( &
        div_coarse => .div. vector_1D_t(vector_1D_initializer , order=order_desired, cells=coarse_cells, x_min=0D0, x_max=2*pi) &
       ,div_fine   => .div. vector_1D_t(vector_1D_initializer , order=order_desired, cells=fine_cells  , x_min=0D0, x_max=2*pi) &
     )
-#endif
       test_diagnosis = passing_test()
       test_diagnosis = test_diagnosis .also. (size(div_coarse%values()) .equalsExpected. coarse_cells)
       test_diagnosis = test_diagnosis .also. (size(div_fine%values()) .equalsExpected. fine_cells)
@@ -154,9 +127,7 @@ contains
           end associate
         end associate
       end associate
-#ifndef __GFORTRAN__
     end associate
-#endif
   end function
 
   function check_4th_order_div_sinusoid_convergence() result(test_diagnosis)
@@ -164,16 +135,10 @@ contains
     procedure(vector_1D_initializer_i), pointer :: vector_1D_initializer => sinusoid
     double precision, parameter :: pi = 3.141592653589793D0
     integer, parameter :: order_desired = 4, coarse_cells=500, fine_cells=coarse_cells+1
-#ifdef __GFORTRAN__
-    type(divergence_1D_t) div_coarse, div_fine
-    div_coarse = .div. vector_1D_t(vector_1D_initializer , order=order_desired, cells=coarse_cells, x_min=0D0, x_max=2*pi)
-    div_fine   = .div. vector_1D_t(vector_1D_initializer , order=order_desired, cells=fine_cells  , x_min=0D0, x_max=2*pi)
-#else
     associate( &
        div_coarse => .div. vector_1D_t(vector_1D_initializer , order=order_desired, cells=coarse_cells, x_min=0D0, x_max=2*pi) &
       ,div_fine   => .div. vector_1D_t(vector_1D_initializer , order=order_desired, cells=fine_cells  , x_min=0D0, x_max=2*pi) &
     )
-#endif
       associate( &
          x_coarse => div_coarse%grid() &
         ,x_fine   => div_fine%grid()  &
@@ -204,9 +169,7 @@ contains
           end associate
         end associate
       end associate
-#ifndef __GFORTRAN__
     end associate
-#endif
   end function
 
 end module divergence_operator_1D_test_m
