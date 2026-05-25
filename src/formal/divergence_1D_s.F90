@@ -21,11 +21,7 @@ contains
     call_julienne_assert(size(scalar_1D%values_) .equalsExpected. size(divergence_1D%values_) + 2)
     scalar_x_divergence_1D%tensor_1D_t = &
        tensor_1D_t(scalar_1D%values_(2:size(scalar_1D%values_)-1) * divergence_1D%values_, scalar_1D%x_min_, scalar_1D%x_max_, scalar_1D%cells_, scalar_1D%order_)
-#ifndef __GFORTRAN__
     scalar_x_divergence_1D%weights_ = divergence_1D%weights() 
-#else
-    scalar_x_divergence_1D%weights_ = divergence_1D%divergence_1D_weights() 
-#endif
     call_julienne_assert(size(scalar_x_divergence_1D%weights_) .equalsExpected. size(divergence_1D%values_)+2)
   end procedure
 

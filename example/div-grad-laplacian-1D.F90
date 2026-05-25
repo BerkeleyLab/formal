@@ -42,9 +42,6 @@ program div_grad_laplacian_1D
   use functions_m, only : f, df_dx, d2f_dx2
   use julienne_m, only :  file_t, string_t, operator(.separatedBy.), command_line_t
   use formal_m, only : scalar_1D_t, scalar_1D_initializer_i
-#ifdef __GFORTRAN__
-  use formal_m, only : vector_1D_t, laplacian_1D_t, gradient_1D_t
-#endif
   implicit none
 
   procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => f
@@ -93,8 +90,6 @@ program div_grad_laplacian_1D
 
 contains
 
-#ifndef __GFORTRAN__
-
   subroutine output(order)
     integer, intent(in) :: order
   
@@ -124,44 +119,6 @@ contains
       end associate
     end associate
   end subroutine
-
-#else
-
-  subroutine output(order)
-    integer, intent(in) :: order
-  
-    type(scalar_1D_t) s
-    type(gradient_1D_t) grad_s
-    type(laplacian_1D_t) laplacian_s
-    type(file_t) s_table, grad_s_table, laplacian_s_table
-    double precision, allocatable,dimension(:) :: s_grid, grad_s_grid, laplacian_s_grid
-
-    s = scalar_1D_t(scalar_1D_initializer, order=order, cells=20, x_min=0D0, x_max=20D0)
-    grad_s = .grad. s
-    laplacian_s = .laplacian. s
-
-    s_grid = s%grid()
-    grad_s_grid = grad_s%grid()
-    laplacian_s_grid = laplacian_s%grid()
-
-    s_table           = tabulate( &
-       string_t([character(len=22)::"x", "f(x) expected"         , "f(x) actual"         ]) &
-      ,s_grid, f(s_grid), s%values() &
-    )
-    grad_s_table      = tabulate( &
-       string_t([character(len=22)::"x", ".grad. f expected"     , ".grad. f actual"     ]) &
-      ,grad_s_grid, df_dx(grad_s_grid), grad_s%values() &
-    )
-    laplacian_s_table = tabulate( &
-       string_t([character(len=22)::"x", ".laplacian. f expected", ".laplacian. f actual"]) &
-      ,laplacian_s_grid, d2f_dx2(laplacian_s_grid), laplacian_s%values() &
-    )
-    call s_table%write_lines()
-    call grad_s_table%write_lines()
-    call laplacian_s_table%write_lines()
-  end subroutine
-
-#endif
 
   pure function tabulate(headings, abscissa, expected, actual) result(file)
     double precision, intent(in), dimension(:) :: abscissa, expected, actual
