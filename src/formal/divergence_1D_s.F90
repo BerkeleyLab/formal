@@ -12,20 +12,10 @@ submodule(tensors_1D_m) divergence_1D_s
 
 contains
 
-#ifdef __GFORTRAN__
-
-  pure function cell_center_locations(x_min, x_max, cells) result(x)
-    double precision, intent(in) :: x_min, x_max
-    integer, intent(in) :: cells
-    double precision, allocatable:: x(:)
-    integer cell
-
-    associate(dx => (x_max - x_min)/cells)
-      x = x_min + dx/2. + [((cell-1)*dx, cell = 1, cells)]
-    end associate
-  end function
-
-#endif
+  module procedure construct_1D_divergence_constant
+    integer i
+    divergence_1D%tensor_1D_t = tensor_1D_t([(constant, i=1,cells)], x_min, x_max, cells, order)
+  end procedure
 
   module procedure premultiply_scalar_1D
     call_julienne_assert(size(scalar_1D%values_) .equalsExpected. size(divergence_1D%values_) + 2)
@@ -48,7 +38,7 @@ contains
   end procedure
 
   module procedure divergence_1D_grid
-    cell_centers = cell_center_locations(self%x_min_, self%x_max_, self%cells_)
+    cell_centers = cell_centers_1D(self%x_min_, self%x_max_, self%cells_)
   end procedure
 
   module procedure divergence_1D_weights

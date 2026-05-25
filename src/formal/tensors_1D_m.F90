@@ -232,6 +232,20 @@ module tensors_1D_m
     procedure, non_overridable, private :: divergence_1D_grid
   end type
 
+  interface divergence_1D_t
+
+    pure module function construct_1D_divergence_constant(constant, order, cells, x_min, x_max) result(divergence_1D)
+      implicit none
+      double precision, intent(in) :: constant !! scalar value
+      integer, intent(in) :: order !! order of accuracy
+      integer, intent(in) :: cells !! number of grid cells spanning the domain
+      double precision, intent(in) :: x_min !! grid location minimum
+      double precision, intent(in) :: x_max !! grid location maximum
+      type(divergence_1D_t) divergence_1D
+    end function
+
+  end interface
+
   type, extends(tensor_1D_t) :: scalar_x_divergence_1D_t
     !! product of a 1D scalar field and a 1D divergence field
     private
@@ -534,7 +548,7 @@ contains
     integer, intent(in) :: cells
     double precision, allocatable:: x(:)
     integer cell
-    x = [x_min, cell_center_locations(x_min, x_max, cells), x_max]
+    x = [x_min, cell_centers_1D(x_min, x_max, cells), x_max]
   end function
 
   pure function faces_1D(x_min, x_max, cells) result(x)
@@ -542,25 +556,19 @@ contains
     integer, intent(in) :: cells
     double precision, allocatable:: x(:)
     integer cell
-
     associate(dx => (x_max - x_min)/cells)
       x = [x_min, x_min + [(cell*dx, cell = 1, cells-1)], x_max]
     end associate
   end function
 
-#ifndef __GFORTRAN__
-
-  pure function cell_center_locations(x_min, x_max, cells) result(x)
+  pure function cell_centers_1D(x_min, x_max, cells) result(x)
     double precision, intent(in) :: x_min, x_max
     integer, intent(in) :: cells
     double precision, allocatable:: x(:)
     integer cell
-
     associate(dx => (x_max - x_min)/cells)
       x = x_min + dx/2. + [((cell-1)*dx, cell = 1, cells)]
     end associate
   end function
-
-#endif
 
 end module tensors_1D_m

@@ -13,7 +13,6 @@ submodule(tensors_2D_m) vector_2D_s
     ,operator(.isAtLeast.) &
     ,string_t
   use tensors_1D_m, only : faces_1D, vector_1D_t
-  use differential_operators_1D_m, only : divergence_operator_1D_t
   implicit none
 
 contains
@@ -112,6 +111,30 @@ contains
     ))
       vector_grid_1D = vector_1D%grid()
     end associate
+  end procedure
+
+  module procedure vector_2D_divergence
+
+    integer c, i, j
+
+    divergence_2D%x_min_ = self%x_min_
+    divergence_2D%x_max_ = self%x_max_
+    divergence_2D%cells_ = self%cells_
+    divergence_2D%order_ = self%order_
+
+    allocate(divergence_2D%values_(self%cells_(1)+2, self%cells_(2)+2, 1, 1, 1, 1))
+
+    divergence_x_term: &
+    do concurrent(integer :: j=1:size(divergence_2D%values_,2)) default(none) shared(divergence_2D, self)
+      divergence_2D%values_(:,j,1,1,1,1) = self%divergence_operator_1D_(1) .x. self%values_(:,j,1,1,1,1)
+    end do divergence_x_term
+
+    add_y_term: &
+    do concurrent(integer :: i=1:size(divergence_2D%values_,1)) default(none) shared(divergence_2D, self)
+      divergence_2D%values_(i,:,2,1,1,1) = divergence_2D%values_(i,:,1,1,1,1) + &
+        (self%divergence_operator_1D_(2) .x. self%values_(i,:,1,1,1,1))
+    end do add_y_term
+
   end procedure
 
 end submodule vector_2D_s

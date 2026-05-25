@@ -7,22 +7,29 @@ module tensors_2D_m
   !! https://doi.org/10.1016/j.cam.2019.06.042.
   use differential_operators_1D_m, only : gradient_operator_1D_t, divergence_operator_1D_t
   use julienne_m, only : file_t 
-    
   implicit none
 
   private
-
   public :: scalar_2D_t
   public :: vector_2D_t
   public :: gradient_2D_t
+  public :: divergence_2D_t
   public :: scalar_2D_initializer_i
   public :: vector_2D_initializer_i
+  public :: divergence_2D_initializer_i
 
   integer, parameter :: space_dimension = 2
 
   abstract interface
 
     pure function scalar_2D_initializer_i(x,y) result(f)
+      !! Sampling function for initializing a scalar_2D_t object
+      implicit none
+      double precision, intent(in) :: x(:), y(:)
+      double precision f(size(x),size(y))
+    end function
+
+    pure function divergence_2D_initializer_i(x,y) result(f)
       !! Sampling function for initializing a scalar_2D_t object
       implicit none
       double precision, intent(in) :: x(:), y(:)
@@ -111,9 +118,11 @@ module tensors_2D_m
     generic :: values => vector_2D_values
     generic :: to_file => vector_2D_to_file
     generic :: grid => vector_2D_grid
+    generic :: operator(.div.) => vector_2D_divergence
     procedure, non_overridable, private :: vector_2D_values
     procedure, non_overridable, private :: vector_2D_to_file
     procedure, non_overridable, private :: vector_2D_grid
+    procedure, non_overridable, private :: vector_2D_divergence
   end type
 
   interface vector_2D_t
@@ -129,7 +138,7 @@ module tensors_2D_m
       double precision, intent(in) :: x_max(:) !! grid location maxima
       type(vector_2D_t) vector_2D
     end function
- 
+
     pure module function construct_2D_vector_from_vector_mold(initializer, mold) result(vector_2D)
       !! Result is a 2D vector with values initialized by the provided procedure pointer sampled on the 
       !! same grid as the mold
@@ -154,6 +163,40 @@ module tensors_2D_m
     !! A 2D mimetic gradient vector field abstraction with a public method that produces corresponding numerical quadrature weights
   end type
 
+  type, extends(tensor_2D_t) :: divergence_2D_t
+    !! A 2D mimetic divergence field abstraction with a public method that produces corresponding numerical quadrature weights
+  contains
+    generic :: values => divergence_2D_values
+    generic :: grid => divergence_2D_grid
+    generic :: to_file => divergence_2D_to_file
+    procedure, private, non_overridable :: divergence_2D_values
+    procedure, private, non_overridable :: divergence_2D_grid
+    procedure, private, non_overridable :: divergence_2D_to_file
+  end type
+
+  interface divergence_2D_t
+
+    pure module function construct_2D_divergence_from_function(initializer, order, cells, x_min, x_max) result(divergence_2D)
+      !! Result is a 2D divergence initialized by sampling the initializer at cell centers defined by the other arguments
+      implicit none
+      procedure(scalar_2D_initializer_i), pointer, intent(in) :: initializer
+      integer, intent(in) :: order !! order of accuracy
+      integer, intent(in) :: cells(:) !! number of grid cells spanning each spatial direction
+      double precision, intent(in) :: x_min(:) !! grid location minima
+      double precision, intent(in) :: x_max(:) !! grid location maxima
+      type(divergence_2D_t) divergence_2D
+    end function
+
+    pure module function construct_2D_divergence_from_vector_mold(initializer, mold) result(divergence_2D)
+      !! Result is a 2D divergence initialized by sampling the initializer on cell centers defined by the mold
+      implicit none
+      procedure(divergence_2D_initializer_i), pointer, intent(in) :: initializer
+      type(vector_2D_t), intent(in) :: mold
+      type(divergence_2D_t) divergence_2D
+    end function
+
+  end interface
+
   interface
 
     pure module function scalar_2D_values(self) result(scalar_values)
@@ -173,13 +216,26 @@ module tensors_2D_m
       !! Result array contains scalar grid locations along the requested spatial direction
       class(vector_2D_t), intent(in) :: self
       integer, intent(in) :: direction
-      double precision, allocatable :: vector_grid_1D(:) !! grid points along one the requested coordinate direction
+      double precision, allocatable :: vector_grid_1D(:) !! grid points along the requested coordinate direction
+    end function
+
+    pure module function divergence_2D_grid(self, direction) result(divergence_grid_1D)
+      !! Result array contains divergence grid locations along the requested spatial direction
+      class(divergence_2D_t), intent(in) :: self
+      integer, intent(in) :: direction
+      double precision, allocatable :: divergence_grid_1D(:) !! grid points along the requested coordinate direction
     end function
 
     pure module function vector_2D_values(self) result(vector_values)
       !! Vector values getter
       class(vector_2D_t), intent(in) :: self
       double precision, allocatable :: vector_values(:,:,:)
+    end function
+
+    pure module function divergence_2D_values(self) result(divergence_values)
+      !! Vector values getter
+      class(divergence_2D_t), intent(in) :: self
+      double precision, allocatable :: divergence_values(:,:)
     end function
 
     pure module function scalar_2D_gradient(self) result(gradient_2D)
@@ -189,10 +245,24 @@ module tensors_2D_m
       type(gradient_2D_t) gradient_2D
     end function
 
+    pure module function vector_2D_divergence(self) result(divergence_2D)
+      !! Result is mimetic divergence of the scalar_2D_t "self"
+      implicit none
+      class(vector_2D_t), intent(in) :: self
+      type(divergence_2D_t) divergence_2D
+    end function
+
     pure module function scalar_2D_to_file(self) result(file)
       !! Result is a file_t object containing the grid points and the corresponding scalar values
       implicit none
       class(scalar_2D_t), intent(in) :: self
+      type(file_t) file
+    end function
+
+    pure module function divergence_2D_to_file(self) result(file)
+      !! Result is a file_t object containing the grid points and the corresponding divergence values
+      implicit none
+      class(divergence_2D_t), intent(in) :: self
       type(file_t) file
     end function
 

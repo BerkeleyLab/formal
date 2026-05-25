@@ -21,9 +21,11 @@ module formal_m
   use tensors_2D_m, only : &
      scalar_2D_t & ! discrete 2D scalar field derived type
     ,vector_2D_t & ! discrete 2D vector field derived type
+    ,divergence_2D_t & ! discrete 2D divergence field derived type
     ,gradient_2D_t & ! result of `.grad. s` for a scalar_2D_t s
     ,scalar_2D_initializer_i & ! scalar_2D_t initializer abstract interface
-    ,vector_2D_initializer_i   ! vector_2D_t initializar abstract interface
+    ,vector_2D_initializer_i & ! vector_2D_t initializar abstract interface
+    ,divergence_2D_initializer_i ! divergence_2D_t initializar abstract interface
 
   use tensors_3D_m, only : &
      scalar_3D_t & ! discrete 3D scalar field derived type

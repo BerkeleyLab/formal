@@ -10,6 +10,7 @@ module divergence_operator_1D_test_m
     ,operator(.all.) &
     ,operator(.also.) &
     ,operator(.approximates.) &
+    ,operator(.equalsExpected.) &
     ,operator(.within.) &
     ,passing_test &
     ,string_t &
@@ -126,6 +127,9 @@ contains
       ,div_fine   => .div. vector_1D_t(vector_1D_initializer , order=order_desired, cells=fine_cells  , x_min=0D0, x_max=2*pi) &
     )
 #endif
+      test_diagnosis = passing_test()
+      test_diagnosis = test_diagnosis .also. (size(div_coarse%values()) .equalsExpected. coarse_cells)
+      test_diagnosis = test_diagnosis .also. (size(div_fine%values()) .equalsExpected. fine_cells)
       associate( &
          x_coarse => div_coarse%grid() &
         ,x_fine   => div_fine%grid())
@@ -135,7 +139,6 @@ contains
           ,div_coarse_values => div_coarse%values() &
           ,div_fine_values   => div_fine%values() &
         )
-          test_diagnosis = passing_test()
           test_diagnosis = test_diagnosis .also. (.all. (div_coarse_values .approximates. grad_coarse .within. rough_tolerance)) &
             // " (coarse-grid 2nd-order .div. [sin(x) + cos(x)])"
           test_diagnosis = test_diagnosis .also. (.all. (div_fine_values .approximates. grad_fine .within. rough_tolerance)) &
@@ -183,6 +186,8 @@ contains
         )
 
           test_diagnosis = passing_test()
+          test_diagnosis = test_diagnosis .also. (size(div_coarse_values) .equalsExpected. coarse_cells)
+          test_diagnosis = test_diagnosis .also. (size(div_fine_values) .equalsExpected. fine_cells)
           test_diagnosis = test_diagnosis .also. (.all. (div_coarse_values .approximates. div_coarse_expected .within. loose_tolerance)) &
             // " (coarse-grid 4th-order .div. [sin(x) + cos(x)])"
           test_diagnosis = test_diagnosis .also. (.all. (div_fine_values .approximates. div_fine_expected .within. loose_tolerance)) &
