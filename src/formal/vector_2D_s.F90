@@ -15,6 +15,8 @@ submodule(tensors_2D_m) vector_2D_s
   use tensors_1D_m, only : faces_1D, vector_1D_t
   implicit none
 
+  integer, parameter :: x_dir=1, y_dir=2
+
 contains
 
   module procedure construct_2D_vector_from_function
@@ -73,6 +75,7 @@ contains
   end procedure
 
   module procedure vector_2D_values
+    call_julienne_assert(allocated(self%values_))
     vector_values = self%values_(:,:,:,1,1,1)
   end procedure
 
@@ -80,7 +83,9 @@ contains
     type(string_t), allocatable :: lines(:)
     integer i, j, l
 
-    associate(x => self%grid(1), y => self%grid(2), header => [string_t("x,y,vector_x,vector_y")])
+    call_julienne_assert(allocated(self%values_))
+
+    associate(x => self%grid(x_dir), y => self%grid(y_dir), header => [string_t("x,y,vector_x,vector_y")])
       associate(num_blank_lines => size(y)-1)
         allocate(lines(size(header) + size(self%values_)/space_dimension + num_blank_lines))
       end associate
@@ -115,24 +120,27 @@ contains
 
   module procedure vector_2D_divergence
 
-    integer c, i, j
+    call_julienne_assert(allocated(self%values_))
 
     divergence_2D%x_min_ = self%x_min_
     divergence_2D%x_max_ = self%x_max_
     divergence_2D%cells_ = self%cells_
     divergence_2D%order_ = self%order_
 
-    allocate(divergence_2D%values_(self%cells_(1)+2, self%cells_(2)+2, 1, 1, 1, 1))
+    allocate(divergence_2D%values_(self%cells_(x_dir), self%cells_(y_dir), 1, 1, 1, 1))
 
     divergence_x_term: &
-    do concurrent(integer :: j=1:size(divergence_2D%values_,2)) default(none) shared(divergence_2D, self)
-      divergence_2D%values_(:,j,1,1,1,1) = self%divergence_operator_1D_(1) .x. self%values_(:,j,1,1,1,1)
+    do concurrent(integer :: j=1:size(divergence_2D%values_,y_dir)) default(none) shared(divergence_2D, self)
+      associate(padded_divergence => self%divergence_operator_1D_(x_dir) .x. self%values_(:,j,x_dir,1,1,1))
+        divergence_2D%values_(:,j,1,1,1,1) = padded_divergence(2:size(padded_divergence)-1)
+      end associate
     end do divergence_x_term
 
     add_y_term: &
-    do concurrent(integer :: i=1:size(divergence_2D%values_,1)) default(none) shared(divergence_2D, self)
-      divergence_2D%values_(i,:,2,1,1,1) = divergence_2D%values_(i,:,1,1,1,1) + &
-        (self%divergence_operator_1D_(2) .x. self%values_(i,:,1,1,1,1))
+    do concurrent(integer :: i=1:size(divergence_2D%values_,x_dir)) default(none) shared(divergence_2D, self)
+      associate(padded_divergence => self%divergence_operator_1D_(y_dir) .x. self%values_(i,:,y_dir,1,1,1))
+        divergence_2D%values_(i,:,1,1,1,1) = divergence_2D%values_(i,:,1,1,1,1) + padded_divergence(2:size(padded_divergence)-1)
+      end associate
     end do add_y_term
 
   end procedure

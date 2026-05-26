@@ -8,6 +8,7 @@ module vector_2D_test_m
     ,operator(.also.) &
     ,operator(.approximates.) &
     ,operator(.within.) &
+    ,operator(.withinPercentage.) &
     ,passing_test &
     ,string_t &
     ,test_description_t &
@@ -29,8 +30,8 @@ module vector_2D_test_m
     procedure, nopass :: results
   end type
 
-  double precision, parameter :: tolerance = 5D-2
   integer, parameter :: space_dimension = 2
+  double precision, parameter :: tolerance = 1D-2
 
 contains
 
@@ -48,19 +49,41 @@ contains
    ])
   end function
 
-  pure function v(x,y) result(z)
+  pure function biquadratic(x,y) result(z)
     double precision, intent(in) :: x(:), y(:)
     double precision z(size(x),size(y),space_dimension)
     do concurrent(integer :: i=1:size(x), j=1:size(y)) default(none) shared(x,y,z)
-      z(i,j,:) = [0D0,0D0]
+      z(i,j,:) = [ &
+         1 - 2*x(i) + 3*x(i)**2 - x(i)*y(j)/5 + 3*y(j)**2 - 2*y(j) &
+        ,1 - 2*x(i) + 3*x(i)**2 - x(i)*y(j)/5 + 3*y(j)**2 - 2*y(j) &
+      ]
     end do
   end function
 
-  pure function div_v(x,y) result(divergence)
+  pure function biquadratic_divergence(x,y) result(divergence)
     double precision, intent(in) :: x(:), y(:)
     double precision divergence(size(x),size(y))
     do concurrent(integer :: i=1:size(x), j=1:size(y)) default(none) shared(divergence,x,y)
-      divergence(i,j) = 0D0
+      divergence(i,j) = (-2 + 6*x(i) - y(j)/5) + (-2 + 6*y(j) - x(i)/5)
+    end do
+  end function
+
+  pure function cubic(x,y) result(z)
+    double precision, intent(in) :: x(:), y(:)
+    double precision z(size(x),size(y),space_dimension)
+    do concurrent(integer :: i=1:size(x), j=1:size(y)) default(none) shared(x,y,z)
+      z(i,j,:) = [ &
+         1 - 2*x(i) + 3*x(i)**3 - x(i)*y(j)/5 + 3*y(j)**3 - 2*y(j) &
+        ,1 - 2*x(i) + 3*x(i)**3 - x(i)*y(j)/5 + 3*y(j)**3 - 2*y(j) &
+      ]
+    end do
+  end function
+
+  pure function cubic_divergence(x,y) result(divergence)
+    double precision, intent(in) :: x(:), y(:)
+    double precision divergence(size(x),size(y))
+    do concurrent(integer :: i=1:size(x), j=1:size(y)) default(none) shared(divergence,x,y)
+      divergence(i,j) = (-2 + 9*x(i)**2 - y(j)/5) + (-2 + 9*y(j)**2 - x(i)/5)
     end do
   end function
 
@@ -70,17 +93,25 @@ contains
     procedure(divergence_2D_initializer_i), pointer :: expected_divergence_initializer
     integer order
 
-    vector_2D_initializer => v
-    expected_divergence_initializer => div_v
     test_diagnosis = passing_test()
 
     do order = 2, 4, 2
-      associate(vector_2D => vector_2D_t(vector_2D_initializer, order=order, cells=[30,20], x_min=[-1D0,1D0], x_max=[9D0,4D0]))
+      select case(order)
+      case(2)
+        vector_2D_initializer => biquadratic
+        expected_divergence_initializer => biquadratic_divergence
+      case(4)
+        vector_2D_initializer => cubic
+        expected_divergence_initializer => cubic_divergence
+      case default
+        error stop "check_divergence(vector_2D_test_m): unsupported order"
+      end select
+      associate(vector_2D => vector_2D_t(vector_2D_initializer, order=order, cells=[40,30], x_min=[0D0,0D0], x_max=[2D0,1D0]))
         associate(div_vector => .div. vector_2D)
           associate(expected_divergence => divergence_2D_t(expected_divergence_initializer, mold=vector_2D))
-          test_diagnosis = test_diagnosis .also. &
-            (.all. (div_vector%values() .approximates. expected_divergence%values() .within. tolerance)) &
-            // string_t(" for order ") // string_t(order)
+            test_diagnosis = test_diagnosis .also. &
+              (.all. (div_vector%values() .approximates. expected_divergence%values() .within. tolerance)) &
+              // string_t(" for order ") // string_t(order)
           end associate
         end associate
       end associate
