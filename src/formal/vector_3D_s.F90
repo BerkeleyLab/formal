@@ -16,6 +16,8 @@ submodule(tensors_3D_m) vector_3D_s
   use differential_operators_1D_m, only : divergence_operator_1D_t
   implicit none
 
+  integer, parameter :: x_dir=1, y_dir=2, z_dir=3
+
 contains
 
   module procedure construct_3D_vector_from_function
@@ -129,6 +131,43 @@ contains
     ))
       vector_grid_1D = vector_1D%grid()
     end associate
+  end procedure
+
+  module procedure vector_3D_divergence
+
+    call_julienne_assert(allocated(self%values_))
+
+    divergence_3D%x_min_ = self%x_min_
+    divergence_3D%x_max_ = self%x_max_
+    divergence_3D%cells_ = self%cells_
+    divergence_3D%order_ = self%order_
+
+    allocate(divergence_3D%values_(self%cells_(x_dir), self%cells_(y_dir), self%cells_(z_dir), 1, 1, 1, 1))
+
+    divergence_x_term: &
+    do concurrent(integer :: j=1:size(divergence_3D%values_,y_dir),k=1:size(divergence_3D%values_,z_dir)) &
+      default(none) shared(divergence_3D, self)
+      associate(padded_divergence => self%divergence_operator_1D_(x_dir) .x. self%values_(:,j,k,x_dir,1,1,1))
+        divergence_3D%values_(:,j,k,1,1,1,1) = padded_divergence(2:size(padded_divergence)-1)
+      end associate
+    end do divergence_x_term
+
+    add_y_term: &
+    do concurrent(integer :: i=1:size(divergence_3D%values_,x_dir), k=1:size(divergence_3D%values_,z_dir)) &
+      default(none) shared(divergence_3D, self)
+      associate(padded_divergence => self%divergence_operator_1D_(y_dir) .x. self%values_(i,:,k,y_dir,1,1,1))
+        divergence_3D%values_(i,:,k,1,1,1,1) = divergence_3D%values_(i,:,k,1,1,1,1) + padded_divergence(2:size(padded_divergence)-1)
+      end associate
+    end do add_y_term
+
+    add_z_term: &
+    do concurrent(integer :: i=1:size(divergence_3D%values_,x_dir), j=1:size(divergence_3D%values_,y_dir)) &
+      default(none) shared(divergence_3D, self)
+      associate(padded_divergence => self%divergence_operator_1D_(z_dir) .x. self%values_(i,j,:,z_dir,1,1,1))
+        divergence_3D%values_(i,j,:,1,1,1,1) = divergence_3D%values_(i,j,:,1,1,1,1) + padded_divergence(2:size(padded_divergence)-1)
+      end associate
+    end do add_z_term
+
   end procedure
 
 end submodule vector_3D_s
