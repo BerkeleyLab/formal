@@ -1,12 +1,15 @@
-# ============================================================
-#  velocity-potential.gnuplot  --  surface plot CSV
+# ============================================================================
+#  2D-scalar-field.gnuplot  --  surface plot CSV
 #  Line 1: column labels
 #  Lines 2+: x, y, z data with blank lines between x-slices
-#  Usage:  gnuplot velocity-potential.gnuplot
-# ============================================================
+#  Usage:  gnuplot -d "base_name='velocity-potential'" 2D-scalar-field.gnuplot
+#  Default: base_name='velocity-potential'
+# ============================================================================
 
-base_name = "velocity-potential"
+if (!exists("base_name")) base_name = "velocity-potential"
+
 datafile = base_name . ".csv"
+
 set datafile separator ","
 
 # --- 1. Read column headers from line 1 ---
