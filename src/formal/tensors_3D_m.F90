@@ -15,8 +15,10 @@ module tensors_3D_m
   public :: scalar_3D_t
   public :: vector_3D_t
   public :: gradient_3D_t
+  public :: divergence_3D_t
   public :: scalar_3D_initializer_i
   public :: vector_3D_initializer_i
+  public :: divergence_3D_initializer_i
 
   integer, parameter :: space_dimension = 3
 
@@ -24,6 +26,13 @@ module tensors_3D_m
 
     pure function scalar_3D_initializer_i(x,y,z) result(f)
       !! Sampling function for initializing a scalar_3D_t object
+      implicit none
+      double precision, intent(in) :: x(:), y(:), z(:)
+      double precision f(size(x),size(y),size(z))
+    end function
+
+    pure function divergence_3D_initializer_i(x,y,z) result(f)
+      !! Sampling function for initializing a divergence_3D_t object
       implicit none
       double precision, intent(in) :: x(:), y(:), z(:)
       double precision f(size(x),size(y),size(z))
@@ -111,9 +120,11 @@ module tensors_3D_m
     generic :: values => vector_3D_values
     generic :: to_file => vector_3D_to_file
     generic :: grid => vector_3D_grid
+    generic :: operator(.div.) => vector_3D_divergence
     procedure, non_overridable, private :: vector_3D_values
     procedure, non_overridable, private :: vector_3D_to_file
     procedure, non_overridable, private :: vector_3D_grid
+    procedure, non_overridable, private :: vector_3D_divergence
   end type
 
   interface vector_3D_t
@@ -154,6 +165,40 @@ module tensors_3D_m
     !! A 3D mimetic gradient vector field abstraction with a public method that produces corresponding numerical quadrature weights
   end type
 
+  type, extends(tensor_3D_t) :: divergence_3D_t
+    !! A 3D mimetic divergence field abstraction with a public method that produces corresponding numerical quadrature weights
+  contains
+    generic :: values => divergence_3D_values
+    generic :: grid => divergence_3D_grid
+    generic :: to_file => divergence_3D_to_file
+    procedure, private, non_overridable :: divergence_3D_values
+    procedure, private, non_overridable :: divergence_3D_grid
+    procedure, private, non_overridable :: divergence_3D_to_file
+  end type
+
+  interface divergence_3D_t
+
+    pure module function construct_3D_divergence_from_function(initializer, order, cells, x_min, x_max) result(divergence_3D)
+      !! Result is a 3D divergence initialized by sampling the initializer at cell centers defined by the other arguments
+      implicit none
+      procedure(scalar_3D_initializer_i), pointer, intent(in) :: initializer
+      integer, intent(in) :: order !! order of accuracy
+      integer, intent(in) :: cells(:) !! number of grid cells spanning each spatial direction
+      double precision, intent(in) :: x_min(:) !! grid location minima
+      double precision, intent(in) :: x_max(:) !! grid location maxima
+      type(divergence_3D_t) divergence_3D
+    end function
+
+    pure module function construct_3D_divergence_from_vector_mold(initializer, mold) result(divergence_3D)
+      !! Result is a 3D divergence initialized by sampling the initializer on cell centers defined by the mold
+      implicit none
+      procedure(divergence_3D_initializer_i), pointer, intent(in) :: initializer
+      type(vector_3D_t), intent(in) :: mold
+      type(divergence_3D_t) divergence_3D
+    end function
+
+  end interface
+
   interface
 
     pure module function scalar_3D_values(self) result(scalar_values)
@@ -189,6 +234,13 @@ module tensors_3D_m
       type(gradient_3D_t) gradient_3D
     end function
 
+    pure module function vector_3D_divergence(self) result(divergence_3D)
+      !! Result is mimetic divergence of the scalar_3D_t "self"
+      implicit none
+      class(vector_3D_t), intent(in) :: self
+      type(divergence_3D_t) divergence_3D
+    end function
+
     pure module function scalar_3D_to_file(self) result(file)
       !! Result is a file_t object containing the grid points and the corresponding scalar values
       implicit none
@@ -200,6 +252,26 @@ module tensors_3D_m
       !! Result is a file_t object containing the grid points and the corresponding vector components
       implicit none
       class(vector_3D_t), intent(in) :: self
+      type(file_t) file
+    end function
+
+    pure module function divergence_3D_grid(self, direction) result(divergence_grid_1D)
+      !! Result array contains divergence grid locations along the requested spatial direction
+      class(divergence_3D_t), intent(in) :: self
+      integer, intent(in) :: direction
+      double precision, allocatable :: divergence_grid_1D(:) !! grid points along the requested coordinate direction
+    end function
+
+    pure module function divergence_3D_values(self) result(divergence_values)
+      !! Vector values getter
+      class(divergence_3D_t), intent(in) :: self
+      double precision, allocatable :: divergence_values(:,:,:)
+    end function
+
+    pure module function divergence_3D_to_file(self) result(file)
+      !! Result is a file_t object containing the grid points and the corresponding divergence values
+      implicit none
+      class(divergence_3D_t), intent(in) :: self
       type(file_t) file
     end function
 
