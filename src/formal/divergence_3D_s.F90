@@ -10,7 +10,7 @@ submodule(tensors_3D_m) divergence_3D_s
     ,operator(.equalsExpected.) &
     ,operator(.greaterThan.) &
     ,operator(.isAtLeast.)
-  use tensors_1D_m, only : cell_centers_extended_1D, divergence_1D_t, cell_centers_1D
+  use tensors_1D_m, only : divergence_1D_t, cell_centers_1D
   use julienne_m, only : string_t, operator(.csv.)
   implicit none
 
