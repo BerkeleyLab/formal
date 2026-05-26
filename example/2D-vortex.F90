@@ -40,7 +40,7 @@ program vortex_2D
   scalar_2D_initializer => potential
   vector_2D_initializer => velocity
 
-  associate(phi => scalar_2D_t(scalar_2D_initializer, order=order, cells=[15,20], x_min=[pi/2,-pi], x_max=[2*pi,pi]))
+  associate(phi => scalar_2D_t(scalar_2D_initializer, order=order, cells=[11,11], x_min=[-pi,-pi], x_max=[pi,pi]))
     associate(  velocity => .grad. phi & 
       ,expected_velocity => vector_2D_t(vector_2D_initializer, mold=phi) &
     ) 
