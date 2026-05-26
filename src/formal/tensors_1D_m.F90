@@ -23,6 +23,7 @@ module tensors_1D_m
   public :: d_dx
   public :: d2_dx2
   public :: cell_centers_extended_1D
+  public :: cell_centers_1D
   public :: faces_1D
 
   abstract interface
