@@ -74,7 +74,7 @@ Building and testing
  Vendor   | Compiler    | Version(s) Tested     | Build/Test Command
 ----------|-------------|-----------------------|-------------------
  LFortran | `lfortran`  | latest                | `fpm test --compiler lfortran --flag "--cpp --realloc-lhs-arrays"`
- LLVM     | `flang`     | 20-22                 | `fpm test --compiler flang --profile release
+ LLVM     | `flang`     | 20-22                 | `fpm test --compiler flang --profile release`
  LLVM     | `flang`     | 19                    | `fpm test --compiler flang --profile release --flag "-mmlir -allow-assumed-rank"`
 
 ### `fpm` versions before 0.13.0
