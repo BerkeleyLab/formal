@@ -73,13 +73,9 @@ Building and testing
 --------------------
  Vendor   | Compiler    | Version(s) Tested     | Build/Test Command
 ----------|-------------|-----------------------|-------------------
- GCC      | `gfortran`  | 14-15                 | `fpm test --compiler gfortran --profile release`
- GCC      | `gfortran`  | 13                    | `fpm test --compiler gfortran --profile release --flag "-ffree-line-length-none"`
- Intel    | `ifx`       | 2025.1.2              | `FOR_COARRAY_NUM_IMAGES=1 fpm test --compiler ifx --flag "-fpp -O3 -coarray" --profile release`
- LFortran | `lfortran`  | 0.60.0-421-ge2c448c79 | `fpm test --compiler lfortran --flag "--cpp --realloc-lhs-arrays"`
- LLVM     | `flang`     | 20-21                 | `fpm test --compiler flang --profile release
+ LFortran | `lfortran`  | latest                | `fpm test --compiler lfortran --flag "--cpp --realloc-lhs-arrays"`
+ LLVM     | `flang`     | 20-22                 | `fpm test --compiler flang --profile release
  LLVM     | `flang`     | 19                    | `fpm test --compiler flang --profile release --flag "-mmlir -allow-assumed-rank"`
- NAG      | `nagfor`    | 7.2 Build 7242        | `fpm test --compiler nagfor --flag "-O3 -fpp"`
 
 ### `fpm` versions before 0.13.0
 With LLVM 20-22, replace the above `flang` command with
@@ -90,6 +86,18 @@ With LLVM 19, replace the above `flang` command with
 ```
  fpm test --compiler flang --flag "-O3 -mmlir -allow-assumed-rank"
 ```
+
+Unsupported Compilers
+---------------------
+Recent commits broke support for these compilers due primarily to compiler bugs.
+Once appropriately patched versions of these compilers have been released, this section's content will be moved back up to the previous section of this README.md.
+
+ Vendor   | Compiler    | Version(s) Tested     | Build/Test Command
+----------|-------------|-----------------------|-------------------
+ GCC      | `gfortran`  | 14-15                 | `fpm test --compiler gfortran --profile release`
+ GCC      | `gfortran`  | 13                    | `fpm test --compiler gfortran --profile release --flag "-ffree-line-length-none"`
+ Intel    | `ifx`       | 2025.2.0              | `FOR_COARRAY_NUM_IMAGES=1 fpm test --compiler ifx --flag "-fpp -O3 -coarray" --profile release`
+ NAG      | `nagfor`    | 7.2                   | `fpm test --compiler nagfor --flag "-O3 -fpp"`
 
 Documentation
 -------------
