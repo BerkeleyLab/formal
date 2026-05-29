@@ -71,11 +71,11 @@ compiling [fpm-0.12.0.F90] and placing the resulting executable file in your
 
 Building and testing
 --------------------
- Vendor   | Compiler    | Version(s) Tested     | Build/Test Command
-----------|-------------|-----------------------|-------------------
- LFortran | `lfortran`  | latest                | `fpm test --compiler lfortran --flag "--cpp --realloc-lhs-arrays"`
- LLVM     | `flang`     | 20-22                 | `fpm test --compiler flang --profile release`
- LLVM     | `flang`     | 19                    | `fpm test --compiler flang --profile release --flag "-mmlir -allow-assumed-rank"`
+ Vendor   | Compiler    | Version(s) Tested | Build/Test Command
+----------|-------------|-------------------|-------------------
+ LFortran | `lfortran`  | latest            | `fpm test --compiler lfortran --flag "--cpp --realloc-lhs-arrays"`
+ LLVM     | `flang`     | 20-22             | `fpm test --compiler flang --profile release`
+ LLVM     | `flang`     | 19                | `fpm test --compiler flang --profile release --flag "-mmlir -allow-assumed-rank"`
 
 ### `fpm` versions before 0.13.0
 With LLVM, replace the `flang` with `flang-new` and delete `--profile release` from the above commands. 
