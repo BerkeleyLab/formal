@@ -16,11 +16,27 @@ submodule(tensors_2D_m) scalar_2D_s
 
 contains
 
+  module procedure scalar_2D_consistent
+    call_julienne_assert(self%tensor_2D_consistent())
+    call_julienne_assert(.all. (self%cells_ .isAtLeast. 2*self%order_))
+    call_julienne_assert(size(self%gradient_operator_1D_) .equalsExpected. space_dimension)
+    self_consistent = .true.
+  end procedure
+
+  module procedure scalar_2D_conformable_scalar
+    call_julienne_assert(scalar_2D_consistent(self))
+    call_julienne_assert(scalar_2D_consistent(scalar_2D))
+    call_julienne_assert(self%tensor_2D_conformable(scalar_2D))
+    conformable = .true.
+  end procedure
+
   module procedure scalar_2D_values
+    call_julienne_assert(self%consistent())
     scalar_values = self%values_(:,:,1,1,1,1)
   end procedure
 
   module procedure scalar_2D_grid
+    call_julienne_assert(self%consistent())
     associate(scalar_1D => scalar_1D_t( &
        constant = 0D0 &
       ,cells = self%cells_(direction) &
@@ -34,26 +50,34 @@ contains
 
   module procedure construct_2D_scalar_from_function
 
-    call_julienne_assert(.all. ([size(cells), size(x_min), size(x_max)] .equalsExpected. space_dimension))
-    call_julienne_assert(.all. (x_max .greaterThan. x_min))
-    call_julienne_assert(.all. (cells .isAtLeast. 2*order))
-
-    associate(x => cell_centers_extended_1D(x_min(1), x_max(1), cells(1)), y => cell_centers_extended_1D(x_min(2), x_max(2), cells(2)))
+    define_grid: &
+    associate( &
+       x => cell_centers_extended_1D(x_min(1), x_max(1), cells(1)) &
+      ,y => cell_centers_extended_1D(x_min(2), x_max(2), cells(2)) &
+    )
       scalar_2D%tensor_2D_t = tensor_2D_t( &
          values = reshape(initializer(x,y), shape=[size(x),size(y),1,1,1,1]) &
         ,cells = cells , x_min = x_min, x_max = x_max, order = order &
       )
       scalar_2D%gradient_operator_1D_ = gradient_operator_1D_t(k=order, dx=(x_max - x_min)/cells, cells=cells)
-    end associate
+
+    end associate define_grid
+
+    call_julienne_assert(scalar_2D%consistent())
+
   end procedure
 
   module procedure construct_2D_scalar_from_mold
+    call_julienne_assert(mold%consistent())
     scalar_2D = scalar_2D_t(initializer, cells = mold%cells_, x_min = mold%x_min_, x_max = mold%x_max_, order = mold%order_)
+    call_julienne_assert(scalar_2D%consistent())
   end procedure
 
   module procedure scalar_2D_gradient
 
     integer c, i, j
+
+    call_julienne_assert(self%consistent())
 
     gradient_2D%x_min_ = self%x_min_
     gradient_2D%x_max_ = self%x_max_
@@ -80,11 +104,15 @@ contains
      !end associate check_corbino_castillo_eq_17
     end associate
 
+    call_julienne_assert(gradient_2D%consistent())
+
   end procedure
 
   module procedure scalar_2D_to_file
     type(string_t), allocatable :: lines(:)
     integer i, j, l
+
+    call_julienne_assert(self%consistent())
 
     associate(x => self%grid(1), y => self%grid(2), header => [string_t("x,y,scalar")])
       associate(num_blank_lines => size(y)-1)

@@ -56,6 +56,9 @@ module tensors_2D_m
     double precision x_max_(space_dimension) !! domain upper boundary
     integer cells_(space_dimension) !! number of grid cells spanning the domain
     integer order_ !! order of accuracy of mimetic discretization
+  contains
+    procedure, non_overridable, private :: tensor_2D_consistent
+    procedure, non_overridable, private :: tensor_2D_conformable
   end type
 
   interface tensor_2D_t
@@ -81,10 +84,14 @@ module tensors_2D_m
     generic :: values => scalar_2D_values
     generic :: grid => scalar_2D_grid
     generic :: to_file => scalar_2D_to_file
+    generic :: consistent => scalar_2D_consistent
+    generic :: conformable => scalar_2D_conformable_scalar
     procedure, non_overridable, private :: scalar_2D_to_file
     procedure, non_overridable, private :: scalar_2D_gradient
     procedure, non_overridable, private :: scalar_2D_values
     procedure, non_overridable, private :: scalar_2D_grid
+    procedure, non_overridable, private :: scalar_2D_consistent
+    procedure, non_overridable, private :: scalar_2D_conformable_scalar
   end type
 
   interface scalar_2D_t
@@ -118,11 +125,16 @@ module tensors_2D_m
     generic :: values => vector_2D_values
     generic :: to_file => vector_2D_to_file
     generic :: grid => vector_2D_grid
+    generic :: consistent => vector_2D_consistent
+    generic :: conformable => vector_2D_conformable_vector, vector_2D_conformable_scalar
     generic :: operator(.div.) => vector_2D_divergence
     procedure, non_overridable, private :: vector_2D_values
     procedure, non_overridable, private :: vector_2D_to_file
     procedure, non_overridable, private :: vector_2D_grid
     procedure, non_overridable, private :: vector_2D_divergence
+    procedure, non_overridable, private :: vector_2D_consistent
+    procedure, non_overridable, private :: vector_2D_conformable_vector
+    procedure, non_overridable, private :: vector_2D_conformable_scalar
   end type
 
   interface vector_2D_t
@@ -169,6 +181,8 @@ module tensors_2D_m
     generic :: values => divergence_2D_values
     generic :: grid => divergence_2D_grid
     generic :: to_file => divergence_2D_to_file
+    generic :: consistent => tensor_2D_consistent
+    generic :: conformable => tensor_2D_conformable
     procedure, private, non_overridable :: divergence_2D_values
     procedure, private, non_overridable :: divergence_2D_grid
     procedure, private, non_overridable :: divergence_2D_to_file
@@ -199,14 +213,66 @@ module tensors_2D_m
 
   interface
 
+    pure module function tensor_2D_consistent(self) result(self_consistent)
+      !! Assert self-consistent tensor component shapes and values except for the value of the values_ component
+      implicit none
+      class(tensor_2D_t), intent(in) :: self
+      logical self_consistent
+    end function
+
+    pure module function tensor_2D_conformable(self, tensor_2D) result(conformable)
+      !! Assert same-shaped self & vector_2D components
+      implicit none
+      class(tensor_2D_t), intent(in) :: self, tensor_2D
+      logical conformable
+    end function
+
+    pure module function scalar_2D_consistent(self) result(self_consistent)
+      !! Assert components allocated and self-consistent, including sufficient accuracy for gradient operator
+      implicit none
+      class(scalar_2D_t), intent(in) :: self
+      logical self_consistent
+    end function
+
+    pure module function scalar_2D_conformable_scalar(self, scalar_2D) result(conformable)
+      !! Assert the arguments' components are conformable, self-consistent, and consistent with each other
+      implicit none
+      class(scalar_2D_t), intent(in) :: self, scalar_2D
+      logical conformable
+    end function
+
+    pure module function vector_2D_consistent(self) result(self_consistent)
+      !! Assert components allocated and self-consistent, including sufficient accuracy for divergence operator
+      implicit none
+      class(vector_2D_t), intent(in) :: self
+      logical self_consistent
+    end function
+
+    pure module function vector_2D_conformable_vector(self, vector_2D) result(conformable)
+      !! Assert the arguments' components are conformable, self-consistent, and consistent with each other
+      implicit none
+      class(vector_2D_t), intent(in) :: self, vector_2D
+      logical conformable
+    end function
+
+    pure module function vector_2D_conformable_scalar(self, scalar_2D) result(conformable)
+      !! Assert components allocated and self-consistent
+      implicit none
+      class(vector_2D_t), intent(in) :: self
+      class(scalar_2D_t), intent(in) :: scalar_2D
+      logical conformable
+    end function
+
     pure module function scalar_2D_values(self) result(scalar_values)
       !! Scalar values getter
+      implicit none
       class(scalar_2D_t), intent(in) :: self
       double precision, allocatable :: scalar_values(:,:)
     end function
 
     pure module function scalar_2D_grid(self, direction) result(scalar_grid_1D)
       !! Result array contains scalar grid locations along the requested spatial direction
+      implicit none
       class(scalar_2D_t), intent(in) :: self
       integer, intent(in) :: direction
       double precision, allocatable :: scalar_grid_1D(:)
@@ -214,6 +280,7 @@ module tensors_2D_m
 
     pure module function vector_2D_grid(self, direction) result(vector_grid_1D)
       !! Result array contains scalar grid locations along the requested spatial direction
+      implicit none
       class(vector_2D_t), intent(in) :: self
       integer, intent(in) :: direction
       double precision, allocatable :: vector_grid_1D(:) !! grid points along the requested coordinate direction
@@ -221,6 +288,7 @@ module tensors_2D_m
 
     pure module function divergence_2D_grid(self, direction) result(divergence_grid_1D)
       !! Result array contains divergence grid locations along the requested spatial direction
+      implicit none
       class(divergence_2D_t), intent(in) :: self
       integer, intent(in) :: direction
       double precision, allocatable :: divergence_grid_1D(:) !! grid points along the requested coordinate direction
@@ -228,12 +296,14 @@ module tensors_2D_m
 
     pure module function vector_2D_values(self) result(vector_values)
       !! Vector values getter
+      implicit none
       class(vector_2D_t), intent(in) :: self
       double precision, allocatable :: vector_values(:,:,:)
     end function
 
     pure module function divergence_2D_values(self) result(divergence_values)
       !! Vector values getter
+      implicit none
       class(divergence_2D_t), intent(in) :: self
       double precision, allocatable :: divergence_values(:,:)
     end function

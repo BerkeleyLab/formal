@@ -72,7 +72,10 @@ contains
 
     do order = 2, 4, 2
       associate(scalar_2D => scalar_2D_t(scalar_2D_initializer, order=order, cells=[30,20], x_min=[-1D0,1D0], x_max=[9D0,4D0]))
-        associate(grad_scalar => .grad. scalar_2D, expected_gradient => vector_2D_t(expected_gradient_initializer, mold=scalar_2D))
+        associate( &
+          grad_scalar => .grad. scalar_2D &
+         ,expected_gradient => vector_2D_t(expected_gradient_initializer, mold=scalar_2D) &
+        )
           test_diagnosis = test_diagnosis .also. &
             .all. (grad_scalar%values() .approximates. expected_gradient%values() .within. tolerance) &
             // string_t(" for order ") // string_t(order)
