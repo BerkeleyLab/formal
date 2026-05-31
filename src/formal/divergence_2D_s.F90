@@ -95,4 +95,20 @@ contains
     file = file_t(lines)
   end procedure
 
+  module procedure divergence_2D_postmultiply_constant
+
+     call_julienne_assert(lhs%consistent())
+
+     product%tensor_2D_t = &
+       tensor_2D_t(values = lhs%values_ * rhs, cells = lhs%cells_, x_min = lhs%x_min_, x_max = lhs%x_max_, order = lhs%order_)
+
+     call_julienne_assert(product%consistent())
+
+  end procedure
+
+  module procedure divergence_2D_premultiply_constant
+    product = rhs * lhs
+  end procedure
+
+
 end submodule divergence_2D_s

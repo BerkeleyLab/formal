@@ -183,9 +183,12 @@ module tensors_2D_m
     generic :: to_file => divergence_2D_to_file
     generic :: consistent => tensor_2D_consistent
     generic :: conformable => tensor_2D_conformable
+    generic :: operator(*) => divergence_2D_premultiply_constant, divergence_2D_postmultiply_constant
     procedure, private, non_overridable :: divergence_2D_values
     procedure, private, non_overridable :: divergence_2D_grid
     procedure, private, non_overridable :: divergence_2D_to_file
+    procedure, private, non_overridable, private :: divergence_2D_postmultiply_constant
+    procedure, private, non_overridable, pass(rhs) :: divergence_2D_premultiply_constant
   end type
 
   interface divergence_2D_t
@@ -316,10 +319,26 @@ module tensors_2D_m
     end function
 
     pure module function vector_2D_divergence(self) result(divergence_2D)
-      !! Result is mimetic divergence of the scalar_2D_t "self"
+      !! Result is mimetic divergence of the vector_2D_t "self"
       implicit none
       class(vector_2D_t), intent(in) :: self
       type(divergence_2D_t) divergence_2D
+    end function
+
+    pure module function divergence_2D_postmultiply_constant(lhs, rhs) result(product)
+      !! Result is product of the divergence_2D_t lhs and the constant rhs
+      implicit none
+      class(divergence_2D_t), intent(in) :: lhs
+      double precision, intent(in) :: rhs
+      type(divergence_2D_t) product
+    end function
+
+    pure module function divergence_2D_premultiply_constant(lhs, rhs) result(product)
+      !! Result is product of the divergence_2D_t rhs and the constant lhs
+      implicit none
+      class(divergence_2D_t), intent(in) :: rhs
+      double precision, intent(in) :: lhs
+      type(divergence_2D_t) product
     end function
 
     pure module function scalar_2D_to_file(self) result(file)

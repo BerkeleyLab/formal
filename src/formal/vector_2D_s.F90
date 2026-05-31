@@ -120,10 +120,15 @@ contains
         )
       end associate define_parent_tensor
 
-      vector_2D%divergence_operator_1D_ = [( &
-        divergence_operator_1D_t(k=mold%order_, dx=((mold%x_max_(dir)-mold%x_min_(dir))/mold%cells_(dir)), cells=mold%cells_(dir)) &
-        ,dir = 1, space_dimension &
-      )]
+      define_divergence_operators: &
+      block
+        integer dir
+        vector_2D%divergence_operator_1D_ = [( &
+          divergence_operator_1D_t(k=mold%order_, dx=((mold%x_max_(dir)-mold%x_min_(dir))/mold%cells_(dir)), cells=mold%cells_(dir)) &
+          ,dir = 1, space_dimension &
+        )]
+      end block define_divergence_operators
+
     end associate define_grid
 
     call_julienne_assert( vector_2D%conformable(mold) )
@@ -131,8 +136,11 @@ contains
   end procedure
 
   module procedure vector_2D_values
+
     call_julienne_assert(self%consistent())
+
     vector_values = self%values_(:,:,:,1,1,1)
+
   end procedure
 
   module procedure vector_2D_to_file
