@@ -156,7 +156,7 @@ contains
         tensor_1D_t(dself_dx%gradient_operator_1D_ .x. self%values_, self%x_min_, self%x_max_, cells=self%cells_, order=self%order_) &
       ) 
         dself_dx%tensor_1D_t = &
-          tensor_1D_t(interpolator%center_values(tensor_1D%values_), self%x_min_, self%x_max_, cells=self%cells_, order=self%order_)
+          tensor_1D_t(interpolator%center_values_extended(tensor_1D%values_), self%x_min_, self%x_max_, cells=self%cells_, order=self%order_)
       end associate
     end associate
 

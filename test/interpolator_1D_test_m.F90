@@ -122,7 +122,7 @@ contains
         ,scalar_1D => scalar_1D_t(scalar_1D_initializer, order=order, cells=cells, x_min=x_min, x_max=x_max) &
         ,interpolator => faces_to_centers_1D_t(order=order, cells=cells, dx=(x_max - x_min)/cells) &
       )
-        associate(vector_at_centers_extended => interpolator%center_values(vector_1D%values()))
+        associate(vector_at_centers_extended => interpolator%center_values_extended(vector_1D%values()))
           associate( centers_extended => scalar_1D%grid() )
             test_diagnosis = test_diagnosis .also. &
               .all. (vector_at_centers_extended .approximates. vector_1D_initializer(centers_extended) .within. tolerance) &

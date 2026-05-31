@@ -128,6 +128,7 @@ module tensors_2D_m
     generic :: consistent => vector_2D_consistent
     generic :: conformable => vector_2D_conformable_vector, vector_2D_conformable_scalar
     generic :: operator(.div.) => vector_2D_divergence
+    generic :: operator(.dot.) => vector_2D_dot_vector
     procedure, non_overridable, private :: vector_2D_values
     procedure, non_overridable, private :: vector_2D_to_file
     procedure, non_overridable, private :: vector_2D_grid
@@ -135,6 +136,7 @@ module tensors_2D_m
     procedure, non_overridable, private :: vector_2D_consistent
     procedure, non_overridable, private :: vector_2D_conformable_vector
     procedure, non_overridable, private :: vector_2D_conformable_scalar
+    procedure, non_overridable, private :: vector_2D_dot_vector
   end type
 
   interface vector_2D_t
@@ -319,10 +321,17 @@ module tensors_2D_m
     end function
 
     pure module function vector_2D_divergence(self) result(divergence_2D)
-      !! Result is mimetic divergence of the vector_2D_t "self"
+      !! Result is mimetic divergence of the 2D vector self
       implicit none
       class(vector_2D_t), intent(in) :: self
       type(divergence_2D_t) divergence_2D
+    end function
+
+    pure module function vector_2D_dot_vector(lhs, rhs) result(product)
+      !! Result is scalar product of the 2D-vector arguments
+      implicit none
+      class(vector_2D_t), intent(in) :: lhs, rhs
+      type(scalar_2D_t) product
     end function
 
     pure module function divergence_2D_postmultiply_constant(lhs, rhs) result(product)

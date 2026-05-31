@@ -83,7 +83,7 @@ contains
     end associate
   end procedure
 
-  module procedure center_values
+  module procedure center_values_extended
     integer row
     integer, parameter :: end_point = 1
     associate( &

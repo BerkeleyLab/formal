@@ -28,12 +28,12 @@ module interpolator_1D_m
 
   type, extends(interpolator_1D_t) :: faces_to_centers_1D_t
   contains
-    procedure, non_overridable :: center_values
+    procedure, non_overridable :: center_values_extended
   end type
 
   interface centers_to_faces_1D_t
 
-    pure module function c2f_constructor(order, cells, dx) result(centers_to_faces_1D)
+    elemental module function c2f_constructor(order, cells, dx) result(centers_to_faces_1D)
       !! Construct centers-to-faces interpolation operator
       implicit none
       integer, intent(in) :: order, cells
@@ -45,7 +45,7 @@ module interpolator_1D_m
 
   interface faces_to_centers_1D_t
 
-    pure module function f2c_constructor(order, cells, dx) result(faces_to_centers_1D)
+    elemental module function f2c_constructor(order, cells, dx) result(faces_to_centers_1D)
       !! Construct centers-to-faces interpolation operator
       implicit none
       integer, intent(in) :: order, cells
@@ -65,7 +65,7 @@ module interpolator_1D_m
       double precision, allocatable :: faces(:)
     end function
 
-    pure module function center_values(self, faces) result(centers_extended)
+    pure module function center_values_extended(self, faces) result(centers_extended)
       !! Interpolate face-centered values to cell-centered values
       implicit none
       class(faces_to_centers_1D_t), intent(in) :: self

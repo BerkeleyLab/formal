@@ -14,7 +14,9 @@ submodule(tensors_2D_m) vector_2D_s
     ,operator(.isAtLeast.) &
     ,operator(.within.) &
     ,string_t
-  use tensors_1D_m, only : faces_1D, vector_1D_t
+  use tensors_1D_m, only : faces_1D, vector_1D_t, gradient_operator_1D_t
+  use interpolator_1D_m, only : centers_to_faces_1D_t, faces_to_centers_1D_t
+
   implicit none
 
   integer, parameter :: x_dir=1, y_dir=2
@@ -208,6 +210,40 @@ contains
     end do add_y_term
 
     call_julienne_assert(divergence_2D%conformable(self))
+
+  end procedure
+
+  module procedure vector_2D_dot_vector
+
+    call_julienne_assert(lhs%conformable(rhs))
+
+    allocate(product%values_(lhs%cells_(x_dir)+2,lhs%cells_(y_dir)+2,1,1,1,1))
+      ! allocate space for 2D cell centers extended to include boundaries
+
+    construct_interpolator: &
+    associate(interpolator => faces_to_centers_1D_t(order=lhs%order_, cells=lhs%cells_, dx=(lhs%x_max_ - lhs%x_min_)/lhs%cells_))
+
+      call_julienne_assert(size(lhs%values_,y_dir) .equalsExpected. size(product%values_,y_dir))
+
+      interpolate_x_faces_to_centers_extended: &
+      do concurrent(integer :: j=1:size(product%values_,y_dir))
+        product%values_(:,j,1,1,1,1) = &
+            interpolator(x_dir)%center_values_extended(lhs%values_(:,j,x_dir,1,1,1)) &
+          * interpolator(x_dir)%center_values_extended(rhs%values_(:,j,x_dir,1,1,1))
+      end do interpolate_x_faces_to_centers_extended
+
+      call_julienne_assert(size(lhs%values_,x_dir) .equalsExpected. size(product%values_,x_dir))
+
+      add_interpolated_y_faces: &
+      do concurrent(integer :: i=1:size(product%values_,x_dir))
+        product%values_(i,:,1,1,1,1) = product%values_(i,:,1,1,1,1) &
+          + interpolator(y_dir)%center_values_extended(lhs%values_(i,:,y_dir,1,1,1)) &
+          * interpolator(y_dir)%center_values_extended(rhs%values_(i,:,y_dir,1,1,1))
+      end do add_interpolated_y_faces
+
+    end associate construct_interpolator
+
+    product%gradient_operator_1D_ = gradient_operator_1D_t(k = lhs%order_, dx = (lhs%x_max_ - lhs%x_min_)/lhs%cells_, cells = lhs%cells_)
 
   end procedure
 
