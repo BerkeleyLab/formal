@@ -45,8 +45,8 @@ produces output that includes actual program syntax:
 ```
 where the small residual of approximately $-.222 \times 10^{-15}$ evidences a highly accurate approximation.
 
-**Future work:** Formal lays a foundation for defining a DSL embedded in Fortran via template requirements,
-a feature of the forthcoming standard known informally as Fortran 202Y.
+**Future work:** Formal lays a foundation for defining DSL embedded in Fortran via template requirements,
+a feature of the forthcoming Fortran 2028 standard.
 
 Examples
 --------
