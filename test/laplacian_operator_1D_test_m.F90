@@ -18,9 +18,6 @@ module laplacian_operator_1D_test_m
     ,test_result_t &
     ,usher
   use formal_m, only : scalar_1D_t, scalar_1D_initializer_i
-#ifdef __GFORTRAN__
-  use formal_m, only : laplacian_1D_t
-#endif
   implicit none
 
   type, extends(test_t) :: laplacian_operator_1D_test_t
@@ -68,20 +65,12 @@ contains
     type(test_diagnosis_t) test_diagnosis
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => parabola
     double precision, parameter :: expected_laplacian = 1D0
-#ifdef __GFORTRAN__
-    type(laplacian_1D_t) laplacian_scalar
-    laplacian_scalar = .laplacian. scalar_1D_t(scalar_1D_initializer, order=2, cells=16, x_min=0D0, x_max=5D0)
-#else
-    associate(laplacian_scalar => .laplacian. scalar_1D_t(scalar_1D_initializer, order=2, cells=16, x_min=0D0, x_max=5D0))
-#endif
 
+    associate(laplacian_scalar => .laplacian. scalar_1D_t(scalar_1D_initializer, order=2, cells=16, x_min=0D0, x_max=5D0))
       test_diagnosis = passing_test()
       test_diagnosis = test_diagnosis .also. (.all. (laplacian_scalar%values() .approximates. expected_laplacian .within. tight_tolerance)) &
         // " (2nd-order .laplacian. [(x**2)/2]"
-
-#ifndef __GFORTRAN__
     end associate
-#endif
   end function
 
   pure function quartic(x) result(y)
@@ -94,12 +83,7 @@ contains
     type(test_diagnosis_t) test_diagnosis
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => quartic
 
-#ifndef __GFORTRAN__
     associate(laplacian_quartic => .laplacian. scalar_1D_t(scalar_1D_initializer, order=4, cells=16, x_min=0D0, x_max=40D0))
-#else
-    type(laplacian_1D_t) laplacian_quartic
-    laplacian_quartic = .laplacian. scalar_1D_t(scalar_1D_initializer, order=4, cells=16, x_min=0D0, x_max=40D0)
-#endif
       associate(x => laplacian_quartic%grid())
         associate(expected_laplacian => x**2, actual_laplacian => laplacian_quartic%values())
           test_diagnosis = passing_test()
@@ -107,9 +91,7 @@ contains
             // " (4th-order .laplacian. [(x**4)/24]"
         end associate
       end associate
-#ifndef __GFORTRAN__
     end associate
-#endif
   end function
 
   pure function f(x)
@@ -140,16 +122,10 @@ contains
     double precision, parameter :: pi = 3.141592653589793D0
     integer, intent(in) :: order_desired, coarse_cells, fine_cells
 
-#ifndef __GFORTRAN__
     associate( &
        laplacian_coarse => .laplacian. scalar_1D_t(scalar_1D_initializer , order=order_desired, cells=coarse_cells, x_min=0D0, x_max=2*pi) &
       ,laplacian_fine   => .laplacian. scalar_1D_t(scalar_1D_initializer , order=order_desired, cells=fine_cells  , x_min=0D0, x_max=2*pi) &
     )
-#else
-       type(laplacian_1D_t) laplacian_coarse, laplacian_fine
-       laplacian_coarse = .laplacian. scalar_1D_t(scalar_1D_initializer , order=order_desired, cells=coarse_cells, x_min=0D0, x_max=2*pi)
-       laplacian_fine   = .laplacian. scalar_1D_t(scalar_1D_initializer , order=order_desired, cells=fine_cells  , x_min=0D0, x_max=2*pi)
-#endif
       grids: &
       associate( &
          x_coarse => laplacian_coarse%grid() &
@@ -204,9 +180,7 @@ contains
 
         end associate laplacian_values
       end associate grids
-#ifndef __GFORTRAN__
     end associate
-#endif
   end function
 
 end module

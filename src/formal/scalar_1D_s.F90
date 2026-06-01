@@ -21,50 +21,31 @@ submodule(tensors_1D_m) scalar_1D_s
 
 contains
 
-
-#ifndef __GFORTRAN__
-
   module procedure construct_1D_scalar_from_function
     call_julienne_assert(x_max .greaterThan. x_min)
     call_julienne_assert(cells .isAtLeast. 2*order)
 
-    associate(values => initializer(scalar_1D_grid_locations(x_min, x_max, cells)))
+    associate(values => initializer(cell_centers_extended_1D(x_min, x_max, cells)))
       scalar_1D%tensor_1D_t = tensor_1D_t(values, x_min, x_max, cells, order)
     end associate
     scalar_1D%gradient_operator_1D_ = gradient_operator_1D_t(k=order, dx=(x_max - x_min)/cells, cells=cells)
   end procedure
 
-#else
+  module procedure construct_1D_scalar_constant
 
-  pure module function construct_1D_scalar_from_function(initializer, order, cells, x_min, x_max) result(scalar_1D)
-    procedure(scalar_1D_initializer_i), pointer :: initializer
-    integer, intent(in) :: order !! order of accuracy
-    integer, intent(in) :: cells !! number of grid cells spanning the domain
-    double precision, intent(in) :: x_min !! grid location minimum
-    double precision, intent(in) :: x_max !! grid location maximum
-    type(scalar_1D_t) scalar_1D
+    integer i
 
     call_julienne_assert(x_max .greaterThan. x_min)
     call_julienne_assert(cells .isAtLeast. 2*order)
 
-    associate(values => initializer(scalar_1D_grid_locations(x_min, x_max, cells)))
-      scalar_1D%tensor_1D_t = tensor_1D_t(values, x_min, x_max, cells, order)
-    end associate
-    scalar_1D%gradient_operator_1D_ = gradient_operator_1D_t(k=order, dx=(x_max - x_min)/cells, cells=cells)
-  end function
-
-  pure function cell_center_locations(x_min, x_max, cells) result(x)
-    double precision, intent(in) :: x_min, x_max
-    integer, intent(in) :: cells
-    double precision, allocatable:: x(:)
-    integer cell
-
-    associate(dx => (x_max - x_min)/cells)
-      x = x_min + dx/2. + [((cell-1)*dx, cell = 1, cells)]
-    end associate
-  end function
-
-#endif
+    scalar_1D = scalar_1D_t( tensor_1D_t( &
+         values = [(constant, i = 1, size(cell_centers_extended_1D(x_min, x_max, cells)))] &
+        ,x_min = x_min &
+        ,x_max = x_max &
+        ,cells = cells &
+        ,order = order &
+    )   )
+  end procedure
 
   module procedure divide_by_integer
     ratio%tensor_1D_t = tensor_1D_t( &
@@ -75,19 +56,30 @@ contains
     )
   end procedure
 
-  module procedure subtract_scalar_1D
+  pure logical function conformable(lhs, rhs)
+    type(scalar_1D_t), intent(in) :: lhs, rhs
     call_julienne_assert(size(lhs%values_) .equalsExpected. size(rhs%values_))
-    call_julienne_assert(lhs%cells_ .equalsExpected. rhs%cells_)
+    call_julienne_assert(.all.([lhs%cells_,lhs%order_] .equalsExpected. [rhs%cells_,rhs%order_]))
     call_julienne_assert(.all.([lhs%x_min_,lhs%x_max_] .approximates. [rhs%x_min_,rhs%x_max_] .within. 1D-08))
+    conformable = .true.
+  end function
+
+  module procedure subtract_scalar_1D
+    call_julienne_assert(conformable(lhs,rhs))
     difference%gradient_operator_1D_ = lhs%gradient_operator_1D_
     difference%tensor_1D_t = &
       tensor_1D_t(values =  lhs%values_ - rhs%values_, x_min = rhs%x_min_, x_max = rhs%x_max_, cells = rhs%cells_, order = rhs%order_)
   end procedure
 
+  module procedure multiply_1D_scalars
+    call_julienne_assert(conformable(lhs,rhs))
+    lhs_x_rhs%gradient_operator_1D_ = lhs%gradient_operator_1D_
+    lhs_x_rhs%tensor_1D_t = &
+      tensor_1D_t(values =  lhs%values_ * rhs%values_, x_min = rhs%x_min_, x_max = rhs%x_max_, cells = rhs%cells_, order = rhs%order_)
+  end procedure
+
   module procedure add_scalar_1D
-    call_julienne_assert(size(lhs%values_) .equalsExpected. size(rhs%values_))
-    call_julienne_assert(lhs%cells_ .equalsExpected. rhs%cells_)
-    call_julienne_assert(.all.([lhs%x_min_,lhs%x_max_] .approximates. [rhs%x_min_,rhs%x_max_] .within. 1D-08))
+    call_julienne_assert(conformable(lhs,rhs))
     total%gradient_operator_1D_ = lhs%gradient_operator_1D_
     total%tensor_1D_t = &
       tensor_1D_t(values =  lhs%values_ + rhs%values_, x_min = rhs%x_min_, x_max = rhs%x_max_, cells = rhs%cells_, order = rhs%order_)
@@ -143,14 +135,12 @@ contains
     integer c
 
     associate(dx => (self%x_max_ - self%x_min_)/self%cells_)
-      associate(G => gradient_operator_1D_t(self%order_, dx, self%cells_))
-        gradient_1D%tensor_1D_t = tensor_1D_t(G .x. self%values_, self%x_min_, self%x_max_, cells=self%cells_, order=self%order_)
-        gradient_1D%divergence_operator_1D_ = divergence_operator_1D_t(self%order_, dx, self%cells_)
-        check_corbino_castillo_eq_17: &
-        associate(p => gradient_1D%weights(), b => [-1D0, [(0D0, c = 1, self%cells_)], 1D0])
-          call_julienne_assert((.all. (matmul(transpose(G%assemble()), p) .approximates. b/dx .within. 2D-3)))
-        end associate check_corbino_castillo_eq_17
-      end associate
+      gradient_1D%tensor_1D_t = tensor_1D_t(self%gradient_operator_1D_ .x. self%values_, self%x_min_, self%x_max_, cells=self%cells_, order=self%order_)
+      gradient_1D%divergence_operator_1D_ = divergence_operator_1D_t(self%order_, dx, self%cells_)
+      check_corbino_castillo_eq_17: &
+      associate(p => gradient_1D%weights(), b => [-1D0, [(0D0, c = 1, self%cells_)], 1D0])
+        call_julienne_assert((.all. (matmul(transpose(self%gradient_operator_1D_%assemble()), p) .approximates. b/dx .within. 2D-3)))
+      end associate check_corbino_castillo_eq_17
     end associate
 
   end procedure
@@ -180,11 +170,7 @@ contains
 
   module procedure laplacian
 
-#ifndef __GFORTRAN__
     laplacian_1D%divergence_1D_t = .div. (.grad. self)
-#else
-    laplacian_1D%divergence_1D_t = div(grad(self))
-#endif
 
     associate(divergence_operator_1D => divergence_operator_1D_t(self%order_, (self%x_max_ - self%x_min_)/self%cells_, self%cells_))
       laplacian_1D%boundary_depth_ = divergence_operator_1D%submatrix_A_rows() + 1
@@ -196,19 +182,8 @@ contains
     cell_centers_extended_values = self%values_
   end procedure
 
-  pure function scalar_1D_grid_locations(x_min, x_max, cells) result(x)
-    double precision, intent(in) :: x_min, x_max
-    integer, intent(in) :: cells
-    double precision, allocatable:: x(:)
-    integer cell
-
-    associate(dx => (x_max - x_min)/cells)
-      x = [x_min, cell_center_locations(x_min, x_max, cells), x_max]
-    end associate
-  end function
-
   module procedure scalar_1D_grid
-    cell_centers_extended  = scalar_1D_grid_locations(self%x_min_, self%x_max_, self%cells_)
+    cell_centers_extended  = cell_centers_extended_1D(self%x_min_, self%x_max_, self%cells_)
   end procedure
 
 end submodule scalar_1D_s

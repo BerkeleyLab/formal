@@ -27,67 +27,54 @@ contains
      v_dot_dS%divergence_operator_1D_ = vector_1D%divergence_operator_1D_
   end procedure
 
-#ifndef __GFORTRAN__
-
   module procedure construct_1D_vector_from_function
     call_julienne_assert(x_max .greaterThan. x_min)
     call_julienne_assert(cells .isAtLeast. 2*order+1)
 
-    associate(values => initializer(faces(x_min, x_max, cells)))
+    associate(values => initializer(faces_1D(x_min, x_max, cells)))
       vector_1D%tensor_1D_t = tensor_1D_t(values, x_min, x_max, cells, order)
     end associate
     vector_1D%divergence_operator_1D_ = divergence_operator_1D_t(k=order, dx=(x_max - x_min)/cells, cells=cells)
   end procedure
 
-#else
+  module procedure construct_1D_vector_from_parent
+    vector_1D%tensor_1D_t = tensor_1D
+    vector_1D%divergence_operator_1D_ = divergence_operator_1D_t(k=tensor_1D%order_, dx=(tensor_1D%x_max_ - tensor_1D%x_min_)/tensor_1D%cells_, cells=tensor_1D%cells_)
+  end procedure
 
-  pure module function construct_1D_vector_from_function(initializer, order, cells, x_min, x_max) result(vector_1D)
-    procedure(vector_1D_initializer_i), pointer :: initializer
-    integer, intent(in) :: order !! order of accuracy
-    integer, intent(in) :: cells !! number of grid cells spanning the domain
-    double precision, intent(in) :: x_min !! grid location minimum
-    double precision, intent(in) :: x_max !! grid location maximum
-    type(vector_1D_t) vector_1D
+  module procedure construct_1D_vector_constant
+
+    integer i
 
     call_julienne_assert(x_max .greaterThan. x_min)
-    call_julienne_assert(cells .isAtLeast. 2*order+1)
+    call_julienne_assert(cells .isAtLeast. 2*order)
 
-    associate(values => initializer(faces(x_min, x_max, cells)))
-      vector_1D%tensor_1D_t = tensor_1D_t(values, x_min, x_max, cells, order)
-    end associate
-    vector_1D%divergence_operator_1D_ = divergence_operator_1D_t(k=order, dx=(x_max - x_min)/cells, cells=cells)
-  end function
-
-#endif
-
-  module procedure construct_from_components
-    vector_1D%tensor_1D_t = tensor_1D
-    vector_1D%divergence_operator_1D_ = divergence_operator_1D
+    vector_1D = vector_1D_t( tensor_1D_t( &
+         values = [(constant, i = 1, size(faces_1D(x_min, x_max, cells)))] &
+        ,x_min = x_min &
+        ,x_max = x_max &
+        ,cells = cells &
+        ,order = order &
+    )   )
   end procedure
 
   module procedure div
 
     integer center
 
-#ifdef NAGFOR
-    associate(D => self%divergence_operator_1D_)
-#else
-    associate(D => (self%divergence_operator_1D_))
-#endif
-      associate(Dv => D .x. self%values_)
-        divergence_1D%tensor_1D_t = tensor_1D_t(Dv(2:size(Dv)-1), self%x_min_, self%x_max_, self%cells_, self%order_)
+    associate(Dv => self%divergence_operator_1D_ .x. self%values_)
+      divergence_1D%tensor_1D_t = tensor_1D_t(Dv(2:size(Dv)-1), self%x_min_, self%x_max_, self%cells_, self%order_)
 #if ASSERTIONS
-        associate( &
-           q  => divergence_1D%weights() &
-          ,dx => (self%x_max_ - self%x_min_)/self%cells_ &
-          ,b => [-1D0, [(0D0, center = 1, self%cells_-1)], 1D0] &
-        )
-          call_julienne_assert(.all. ([size(Dv), size(q)] .equalsExpected. self%cells_+2))
-          call_julienne_assert((.all. (matmul(transpose(D%assemble()), q) .approximates. b/dx .within. double_equivalence)))
-            ! Check D^T * a = b_{m+1},  Eq. (19), Corbino & Castillo (2020)
-        end associate
-#endif
+      associate( &
+         q  => divergence_1D%weights() &
+        ,dx => (self%x_max_ - self%x_min_)/self%cells_ &
+        ,b => [-1D0, [(0D0, center = 1, self%cells_-1)], 1D0] &
+      )
+        call_julienne_assert(.all. ([size(Dv), size(q)] .equalsExpected. self%cells_+2))
+        call_julienne_assert((.all. (matmul(transpose(self%divergence_operator_1D_%assemble()), q) .approximates. b/dx .within. double_equivalence)))
+          ! Check D^T * a = b_{m+1},  Eq. (19), Corbino & Castillo (2020)
       end associate
+#endif
     end associate
 
   end procedure
@@ -96,19 +83,8 @@ contains
     face_centered_values = self%values_
   end procedure
 
-  pure function faces(x_min, x_max, cells) result(x)
-    double precision, intent(in) :: x_min, x_max
-    integer, intent(in) :: cells
-    double precision, allocatable:: x(:)
-    integer cell
-
-    associate(dx => (x_max - x_min)/cells)
-      x = [x_min, x_min + [(cell*dx, cell = 1, cells-1)], x_max]
-    end associate
-  end function
-
   module procedure vector_1D_grid
-    cell_faces  = faces(self%x_min_, self%x_max_, self%cells_)
+    cell_faces  = faces_1D(self%x_min_, self%x_max_, self%cells_)
   end procedure
 
   module procedure weighted_premultiply

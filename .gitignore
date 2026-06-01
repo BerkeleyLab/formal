@@ -1,3 +1,9 @@
+# Scratch directory
+scratch
+
+# macOS folder display format
+.DS_Store
+
 # Prerequisites
 *.d
 

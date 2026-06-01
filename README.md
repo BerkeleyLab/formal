@@ -78,14 +78,7 @@ Building and testing
  LLVM     | `flang`     | 19                    | `fpm test --compiler flang --profile release --flag "-mmlir -allow-assumed-rank"`
 
 ### `fpm` versions before 0.13.0
-With LLVM 20-22, replace the above `flang` command with
-```
-  fpm test --compiler flang --flag "-O3"
-```
-With LLVM 19, replace the above `flang` command with
-```
- fpm test --compiler flang --flag "-O3 -mmlir -allow-assumed-rank"
-```
+With LLVM, replace the `flang` with `flang-new` and delete `--profile release` from the above commands. 
 
 Unsupported Compilers
 ---------------------

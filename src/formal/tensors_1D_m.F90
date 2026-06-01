@@ -7,7 +7,6 @@ module tensors_1D_m
   !! Define public 1D scalar and vector abstractions and associated mimetic gradient,
   !! divergence, and Laplacian operators as detailed by Corbino & Castillo (2020)
   !! https://doi.org/10.1016/j.cam.2019.06.042.
-  use julienne_m, only : file_t
   use differential_operators_1D_m, only : divergence_operator_1D_t, gradient_operator_1D_t
     
   implicit none
@@ -23,6 +22,9 @@ module tensors_1D_m
   public :: vector_1D_initializer_i
   public :: d_dx
   public :: d2_dx2
+  public :: cell_centers_extended_1D
+  public :: cell_centers_1D
+  public :: faces_1D
 
   abstract interface
 
@@ -88,7 +90,7 @@ module tensors_1D_m
     generic :: operator(-) => subtract_scalar_1D
     generic :: operator(+) => add_scalar_1D
     generic :: operator(/) => divide_by_integer
-    generic :: operator(*) => premultiply_double, postmultiply_double, premultiply_integer, postmultiply_integer
+    generic :: operator(*) => premultiply_double, postmultiply_double, premultiply_integer, postmultiply_integer, multiply_1D_scalars
     generic :: operator(**) => exponentiate
     generic :: operator(.grad.) => grad
     generic :: operator(.laplacian.) => laplacian
@@ -97,6 +99,7 @@ module tensors_1D_m
     procedure, non_overridable, private :: scalar_1D_values
     procedure, non_overridable, private :: scalar_1D_grid
     procedure, non_overridable, private :: divide_by_integer 
+    procedure, non_overridable, private :: multiply_1D_scalars
     procedure, non_overridable, private, pass(rhs) :: premultiply_double
     procedure, non_overridable, private :: postmultiply_double
     procedure, non_overridable, private, pass(rhs) :: premultiply_integer
@@ -112,6 +115,17 @@ module tensors_1D_m
       !! Result is a collection of cell-centered-extended values with a corresponding mimetic gradient operator
       implicit none
       procedure(scalar_1D_initializer_i), pointer :: initializer
+      integer, intent(in) :: order !! order of accuracy
+      integer, intent(in) :: cells !! number of grid cells spanning the domain
+      double precision, intent(in) :: x_min !! grid location minimum
+      double precision, intent(in) :: x_max !! grid location maximum
+      type(scalar_1D_t) scalar_1D
+    end function
+
+    pure module function construct_1D_scalar_constant(constant, order, cells, x_min, x_max) result(scalar_1D)
+      !! Result is a collection of cell-centered-extended values with a corresponding mimetic gradient operator
+      implicit none
+      double precision, intent(in) :: constant !! scalar value
       integer, intent(in) :: order !! order of accuracy
       integer, intent(in) :: cells !! number of grid cells spanning the domain
       double precision, intent(in) :: x_min !! grid location minimum
@@ -168,10 +182,20 @@ module tensors_1D_m
       type(vector_1D_t) vector_1D
     end function
 
-    pure module function construct_from_components(tensor_1D, divergence_operator_1D) result(vector_1D)
+    pure module function construct_1D_vector_from_parent(tensor_1D) result(vector_1D)
       !! Result is a 1D vector with the provided parent component tensor_1D and the provided divergence operatror
       type(tensor_1D_t), intent(in) :: tensor_1D
-      type(divergence_operator_1D_t), intent(in) :: divergence_operator_1D
+      type(vector_1D_t) vector_1D
+    end function
+
+    pure module function construct_1D_vector_constant(constant, order, cells, x_min, x_max) result(vector_1D)
+      !! Result is a collection of cell-centered-extended values with a corresponding mimetic gradient operator
+      implicit none
+      double precision, intent(in) :: constant !! scalar value
+      integer, intent(in) :: order !! order of accuracy
+      integer, intent(in) :: cells !! number of grid cells spanning the domain
+      double precision, intent(in) :: x_min !! grid location minimum
+      double precision, intent(in) :: x_max !! grid location maximum
       type(vector_1D_t) vector_1D
     end function
 
@@ -208,6 +232,20 @@ module tensors_1D_m
     procedure, non_overridable, private :: divergence_1D_values
     procedure, non_overridable, private :: divergence_1D_grid
   end type
+
+  interface divergence_1D_t
+
+    pure module function construct_1D_divergence_constant(constant, order, cells, x_min, x_max) result(divergence_1D)
+      implicit none
+      double precision, intent(in) :: constant !! scalar value
+      integer, intent(in) :: order !! order of accuracy
+      integer, intent(in) :: cells !! number of grid cells spanning the domain
+      double precision, intent(in) :: x_min !! grid location minimum
+      double precision, intent(in) :: x_max !! grid location maximum
+      type(divergence_1D_t) divergence_1D
+    end function
+
+  end interface
 
   type, extends(tensor_1D_t) :: scalar_x_divergence_1D_t
     !! product of a 1D scalar field and a 1D divergence field
@@ -370,6 +408,14 @@ module tensors_1D_m
       type(scalar_1D_t) total
     end function
 
+    pure module function multiply_1D_scalars(lhs, rhs) result(lhs_x_rhs)
+      !! Result is the product of scalar_1D_t lhs and rhs
+      implicit none
+      class(scalar_1D_t), intent(in) :: lhs
+      type(scalar_1D_t), intent(in) :: rhs
+      type(scalar_1D_t) lhs_x_rhs
+    end function
+
     pure module function subtract_scalar_1D(lhs, rhs) result(difference)
       !! Result is the difference between scalar_1D_t lhs and rhs
       implicit none
@@ -496,21 +542,34 @@ module tensors_1D_m
 
   end interface
 
-#ifndef __GFORTRAN__
-
 contains
 
-  pure function cell_center_locations(x_min, x_max, cells) result(x)
+  pure function cell_centers_extended_1D(x_min, x_max, cells) result(x)
     double precision, intent(in) :: x_min, x_max
     integer, intent(in) :: cells
     double precision, allocatable:: x(:)
     integer cell
+    x = [x_min, cell_centers_1D(x_min, x_max, cells), x_max]
+  end function
 
+  pure function faces_1D(x_min, x_max, cells) result(x)
+    double precision, intent(in) :: x_min, x_max
+    integer, intent(in) :: cells
+    double precision, allocatable:: x(:)
+    integer cell
+    associate(dx => (x_max - x_min)/cells)
+      x = [x_min, x_min + [(cell*dx, cell = 1, cells-1)], x_max]
+    end associate
+  end function
+
+  pure function cell_centers_1D(x_min, x_max, cells) result(x)
+    double precision, intent(in) :: x_min, x_max
+    integer, intent(in) :: cells
+    double precision, allocatable:: x(:)
+    integer cell
     associate(dx => (x_max - x_min)/cells)
       x = x_min + dx/2. + [((cell-1)*dx, cell = 1, cells)]
     end associate
   end function
-
-#endif
 
 end module tensors_1D_m
