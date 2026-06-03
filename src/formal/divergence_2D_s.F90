@@ -110,5 +110,4 @@ contains
     product = rhs * lhs
   end procedure
 
-
 end submodule divergence_2D_s

@@ -30,6 +30,13 @@ contains
     conformable = .true.
   end procedure
 
+  module procedure construct_2D_scalar_from_components
+    call_julienne_assert(size(gradient_operator_1D) .equalsExpected. space_dimension)
+    scalar_2D%gradient_operator_1D_ = gradient_operator_1D
+    scalar_2D%tensor_2D_t = tensor_2D_t(values=tensor_2D%values_, x_min=tensor_2D%x_min_, x_max=tensor_2D%x_max_, cells=tensor_2D%cells_, order=tensor_2D%order_)
+    call_julienne_assert(scalar_2D%consistent())
+  end procedure
+
   module procedure scalar_2D_values
     call_julienne_assert(self%consistent())
     scalar_values = self%values_(:,:,1,1,1,1)

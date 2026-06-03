@@ -59,6 +59,9 @@ module tensors_2D_m
   contains
     procedure, non_overridable, private :: tensor_2D_consistent
     procedure, non_overridable, private :: tensor_2D_conformable
+    procedure, non_overridable, private :: is_face_centered
+    procedure, non_overridable, private :: is_cell_centered
+    procedure, non_overridable, private :: is_cell_centers_extended
   end type
 
   interface tensor_2D_t
@@ -115,6 +118,14 @@ module tensors_2D_m
       type(scalar_2D_t) scalar_2D
     end function
 
+    pure module function construct_2D_scalar_from_components(tensor_2D, gradient_operator_1D) result(scalar_2D)
+      !! Result is a 2D scalar field using a mold for all components other than the field values
+      implicit none
+      type(tensor_2D_t), intent(in) :: tensor_2D
+      type(gradient_operator_1D_t), intent(in) :: gradient_operator_1D(:)
+      type(scalar_2D_t) scalar_2D
+    end function
+
   end interface
 
   type, extends(tensor_2D_t) :: vector_2D_t
@@ -140,6 +151,15 @@ module tensors_2D_m
   end type
 
   interface vector_2D_t
+
+    pure module function construct_2D_vector_from_components(tensor_2D, divergence_operator_1D) result(vector_2D)
+      !! Result is a 2D vector with values initialized by the provided procedure pointer sampled on the specified
+      !! number of evenly spaced cells covering [x_min, x_max]
+      implicit none
+      type(tensor_2D_t), intent(in) :: tensor_2D
+      type(divergence_operator_1D_t), intent(in) :: divergence_operator_1D(:)
+      type(vector_2D_t) vector_2D
+    end function
 
     pure module function construct_2D_vector_from_function(initializer, order, cells, x_min, x_max) result(vector_2D)
       !! Result is a 2D vector with values initialized by the provided procedure pointer sampled on the specified
@@ -175,6 +195,10 @@ module tensors_2D_m
 
   type, extends(vector_2D_t) :: gradient_2D_t
     !! A 2D mimetic gradient vector field abstraction with a public method that produces corresponding numerical quadrature weights
+  contains
+    generic :: operator(*) => gradient_2D_premultiply_constant, gradient_2D_postmultiply_constant
+    procedure, private, non_overridable :: gradient_2D_postmultiply_constant
+    procedure, private, non_overridable, pass(rhs) :: gradient_2D_premultiply_constant
   end type
 
   type, extends(tensor_2D_t) :: divergence_2D_t
@@ -334,6 +358,22 @@ module tensors_2D_m
       type(scalar_2D_t) product
     end function
 
+    pure module function gradient_2D_postmultiply_constant(lhs, rhs) result(product)
+      !! Result is product of the gradient_2D_t lhs and the constant rhs
+      implicit none
+      class(gradient_2D_t), intent(in) :: lhs
+      double precision, intent(in) :: rhs
+      type(gradient_2D_t) product
+    end function
+
+    pure module function gradient_2D_premultiply_constant(lhs, rhs) result(product)
+      !! Result is product of the gradient_2D_t rhs and the constant lhs
+      implicit none
+      class(gradient_2D_t), intent(in) :: rhs
+      double precision, intent(in) :: lhs
+      type(gradient_2D_t) product
+    end function
+
     pure module function divergence_2D_postmultiply_constant(lhs, rhs) result(product)
       !! Result is product of the divergence_2D_t lhs and the constant rhs
       implicit none
@@ -369,6 +409,27 @@ module tensors_2D_m
       implicit none
       class(vector_2D_t), intent(in) :: self
       type(file_t) file
+    end function
+
+    pure module function is_face_centered(self) result(face_centered)
+      !! Result is .true. if the values are face-centered and .false. otherwise
+      implicit none
+      class(tensor_2D_t), intent(in) :: self
+      logical face_centered
+    end function
+
+    pure module function is_cell_centered(self) result(cell_centered)
+      !! Result is .true. if the values are cell-centered and .false. otherwise
+      implicit none
+      class(tensor_2D_t), intent(in) :: self
+      logical cell_centered
+    end function
+
+    pure module function is_cell_centers_extended(self) result(cell_centers_extended)
+      !! Result is .true. if the values are at cell centers + boundaries and .false. otherwise
+      implicit none
+      class(tensor_2D_t), intent(in) :: self
+      logical cell_centers_extended
     end function
 
   end interface

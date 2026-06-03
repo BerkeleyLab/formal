@@ -6,10 +6,12 @@
 submodule(tensors_2D_m) vector_2D_s
   use julienne_m, only : &
      call_julienne_assert_ &
+    ,operator(//) &
     ,operator(.all.) &
     ,operator(.approximates.) &
     ,operator(.csv.) &
     ,operator(.equalsExpected.) &
+    ,operator(.expect.) &
     ,operator(.greaterThan.) &
     ,operator(.isAtLeast.) &
     ,operator(.within.) &
@@ -22,6 +24,17 @@ submodule(tensors_2D_m) vector_2D_s
   integer, parameter :: x_dir=1, y_dir=2
 
 contains
+
+  module procedure construct_2D_vector_from_components
+
+    call_julienne_assert(size(divergence_operator_1D) .equalsExpected. space_dimension)
+    call_julienne_assert(tensor_2D%tensor_2D_consistent())
+
+    vector_2D%tensor_2D_t = tensor_2D
+    vector_2D%divergence_operator_1D_ = divergence_operator_1D
+
+    call_julienne_assert(vector_2D%consistent())
+  end procedure
 
   module procedure vector_2D_consistent
     call_julienne_assert(self%tensor_2D_consistent())
@@ -216,6 +229,7 @@ contains
   module procedure vector_2D_dot_vector
 
     call_julienne_assert(lhs%conformable(rhs))
+    call_julienne_assert((.expect. lhs%is_face_centered()) // " lhs%cells_ = " // (.csv. string_t(lhs%cells_)) // ", shape(lhs%values) = " // (.csv. string_t(shape(lhs%values_))))
 
     allocate(product%values_(lhs%cells_(x_dir)+2,lhs%cells_(y_dir)+2,1,1,1,1))
       ! allocate space for 2D cell centers extended to include boundaries
@@ -223,19 +237,15 @@ contains
     construct_interpolator: &
     associate(interpolator => faces_to_centers_1D_t(order=lhs%order_, cells=lhs%cells_, dx=(lhs%x_max_ - lhs%x_min_)/lhs%cells_))
 
-      call_julienne_assert(size(lhs%values_,y_dir) .equalsExpected. size(product%values_,y_dir))
-
       interpolate_x_faces_to_centers_extended: &
-      do concurrent(integer :: j=1:size(product%values_,y_dir))
+      do concurrent(integer :: j=1:size(lhs%values_,y_dir))
         product%values_(:,j,1,1,1,1) = &
             interpolator(x_dir)%center_values_extended(lhs%values_(:,j,x_dir,1,1,1)) &
           * interpolator(x_dir)%center_values_extended(rhs%values_(:,j,x_dir,1,1,1))
       end do interpolate_x_faces_to_centers_extended
 
-      call_julienne_assert(size(lhs%values_,x_dir) .equalsExpected. size(product%values_,x_dir))
-
       add_interpolated_y_faces: &
-      do concurrent(integer :: i=1:size(product%values_,x_dir))
+      do concurrent(integer :: i=1:size(lhs%values_,x_dir))
         product%values_(i,:,1,1,1,1) = product%values_(i,:,1,1,1,1) &
           + interpolator(y_dir)%center_values_extended(lhs%values_(i,:,y_dir,1,1,1)) &
           * interpolator(y_dir)%center_values_extended(rhs%values_(i,:,y_dir,1,1,1))
@@ -243,8 +253,12 @@ contains
 
     end associate construct_interpolator
 
-    product%gradient_operator_1D_ = gradient_operator_1D_t(k = lhs%order_, dx = (lhs%x_max_ - lhs%x_min_)/lhs%cells_, cells = lhs%cells_)
+    product = scalar_2D_t( &
+       tensor_2D_t(values=product%values_, cells=lhs%cells_, x_min=lhs%x_min_, x_max=lhs%x_max_, order=lhs%order_) &
+      ,gradient_operator_1D_t(k = lhs%order_, dx = (lhs%x_max_ - lhs%x_min_)/lhs%cells_, cells = lhs%cells_) &
+    )
 
+    call_julienne_assert((.expect. product%is_cell_centers_extended()) // " product%cells_ = " // (.csv. string_t(product%cells_)) // ", shape(product%values) = " // (.csv. string_t(shape(product%values_))))
   end procedure
 
 end submodule vector_2D_s

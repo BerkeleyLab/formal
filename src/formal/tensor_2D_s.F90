@@ -44,4 +44,16 @@ contains
     conformable = .true.
   end procedure
 
+  module procedure is_cell_centered
+    cell_centered = all([size(self%values_,1), size(self%values_,2)]== self%cells_)
+  end procedure
+
+  module procedure is_face_centered
+    face_centered = all([size(self%values_,1), size(self%values_,2)] == self%cells_ + 1)
+  end procedure
+
+  module procedure is_cell_centers_extended
+    cell_centers_extended = all([size(self%values_,1), size(self%values_,2)] == self%cells_ + 2)
+  end procedure
+
 end submodule
