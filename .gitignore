@@ -1,3 +1,9 @@
+# Imagery
+*.gif
+*.mp4
+*.png
+*.pdf
+
 # Data files
 *.csv
 
