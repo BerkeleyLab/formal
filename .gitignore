@@ -6,6 +6,7 @@
 
 # Data files
 *.csv
+*.dat
 
 # Scratch directory
 scratch
