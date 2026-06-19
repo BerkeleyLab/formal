@@ -187,7 +187,7 @@ module tensors_2D_m
     procedure, private, non_overridable :: divergence_2D_values
     procedure, private, non_overridable :: divergence_2D_grid
     procedure, private, non_overridable :: divergence_2D_to_file
-    procedure, private, non_overridable, private :: divergence_2D_postmultiply_constant
+    procedure, private, non_overridable :: divergence_2D_postmultiply_constant
     procedure, private, non_overridable, pass(rhs) :: divergence_2D_premultiply_constant
   end type
 
