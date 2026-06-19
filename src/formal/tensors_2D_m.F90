@@ -10,15 +10,17 @@ module tensors_2D_m
   implicit none
 
   private
+  public :: points_2D_t
   public :: scalar_2D_t
   public :: vector_2D_t
   public :: gradient_2D_t
   public :: divergence_2D_t
+  public :: scalar_product_2D_t
   public :: scalar_2D_initializer_i
   public :: vector_2D_initializer_i
   public :: divergence_2D_initializer_i
 
-  integer, parameter :: space_dimension = 2
+  integer, parameter :: space_dimension = 2, max_tensor_rank = 4, x_dir = 1, y_dir = 2, z_dir = 3
 
   abstract interface
 
@@ -46,29 +48,31 @@ module tensors_2D_m
 
   end interface
 
+  type points_2D_t
+    double precision, allocatable :: values_(:,:) !! tensor component values at 2D locations
+  end type
+
   type tensor_2D_t
     !! Encapsulate the components that are common to all 2D tensors.
     !! Child types define the operations supported by each child, including
     !! gradient (.grad.) for scalars and divergence (.div.) for vectors.
     private
-    double precision, allocatable :: values_(:,:, :,:,:,:) !! tensor components for rank<=4 at 2D locations
+    type(points_2D_t), allocatable :: points_(:,:,:,:) !! tensor values indexable up to rank 4
     double precision x_min_(space_dimension) !! domain lower boundary
     double precision x_max_(space_dimension) !! domain upper boundary
     integer cells_(space_dimension) !! number of grid cells spanning the domain
     integer order_ !! order of accuracy of mimetic discretization
   contains
+    procedure, non_overridable, private :: tensor_rank
     procedure, non_overridable, private :: tensor_2D_consistent
     procedure, non_overridable, private :: tensor_2D_conformable
-    procedure, non_overridable, private :: is_face_centered
-    procedure, non_overridable, private :: is_cell_centered
-    procedure, non_overridable, private :: is_cell_centers_extended
   end type
 
   interface tensor_2D_t
 
-    pure module function construct_2D_tensor_from_components(values, cells, x_min, x_max, order) result(tensor_2D)
+    pure module function construct_2D_tensor_from_components(points, cells, x_min, x_max, order) result(tensor_2D)
       implicit none
-      double precision, intent(in) :: values(:,:, :,:,:,:) !! tensor components at 2D spatial locations
+      type(points_2D_t), intent(in) :: points(:,:,:,:) !! tensor values at 2D spatial locations
       double precision, intent(in) :: x_min(:) !! domain lower boundary
       double precision, intent(in) :: x_max(:) !! domain upper boundary
       integer, intent(in) :: cells(:) !! number of grid cells spanning the domain
@@ -84,7 +88,7 @@ module tensors_2D_m
     type(gradient_operator_1D_t) gradient_operator_1D_(space_dimension)
   contains
     generic :: operator(.grad.) => scalar_2D_gradient
-    generic :: values => scalar_2D_values
+    generic :: points => scalar_2D_values
     generic :: grid => scalar_2D_grid
     generic :: to_file => scalar_2D_to_file
     generic :: consistent => scalar_2D_consistent
@@ -133,28 +137,27 @@ module tensors_2D_m
     private
     type(divergence_operator_1D_t) divergence_operator_1D_(space_dimension)
   contains
-    generic :: values => vector_2D_values
     generic :: to_file => vector_2D_to_file
     generic :: grid => vector_2D_grid
     generic :: consistent => vector_2D_consistent
     generic :: conformable => vector_2D_conformable_vector, vector_2D_conformable_scalar
+    generic :: at_cell_centers => vector_2D_at_cell_centers
     generic :: operator(.div.) => vector_2D_divergence
     generic :: operator(.dot.) => vector_2D_dot_vector
-    procedure, non_overridable, private :: vector_2D_values
     procedure, non_overridable, private :: vector_2D_to_file
     procedure, non_overridable, private :: vector_2D_grid
     procedure, non_overridable, private :: vector_2D_divergence
     procedure, non_overridable, private :: vector_2D_consistent
     procedure, non_overridable, private :: vector_2D_conformable_vector
     procedure, non_overridable, private :: vector_2D_conformable_scalar
+    procedure, non_overridable, private :: vector_2D_at_cell_centers
     procedure, non_overridable, private :: vector_2D_dot_vector
   end type
 
   interface vector_2D_t
 
     pure module function construct_2D_vector_from_components(tensor_2D, divergence_operator_1D) result(vector_2D)
-      !! Result is a 2D vector with values initialized by the provided procedure pointer sampled on the specified
-      !! number of evenly spaced cells covering [x_min, x_max]
+      !! Result is a 2D gradient with values initialized by the provided 2D tensor grandparent
       implicit none
       type(tensor_2D_t), intent(in) :: tensor_2D
       type(divergence_operator_1D_t), intent(in) :: divergence_operator_1D(:)
@@ -201,7 +204,23 @@ module tensors_2D_m
     procedure, private, non_overridable, pass(rhs) :: gradient_2D_premultiply_constant
   end type
 
-  type, extends(tensor_2D_t) :: divergence_2D_t
+  interface gradient_2D_t
+
+    pure module function construct_2D_gradient_from_components(tensor_2D, divergence_operator_1D) result(gradient_2D)
+      !! Result is a 2D gradient with values initialized by the provided 2D tensor (grand)parent
+      implicit none
+      type(tensor_2D_t), intent(in) :: tensor_2D
+      type(divergence_operator_1D_t), intent(in) :: divergence_operator_1D(:)
+      type(gradient_2D_t) gradient_2D
+    end function
+
+  end interface
+
+  type, extends(tensor_2D_t) :: scalar_product_2D_t
+    !! cell-centered dot product
+  end type
+
+  type, extends(scalar_product_2D_t) :: divergence_2D_t
     !! A 2D mimetic divergence field abstraction with a public method that produces corresponding numerical quadrature weights
   contains
     generic :: values => divergence_2D_values
@@ -292,11 +311,11 @@ module tensors_2D_m
       logical conformable
     end function
 
-    pure module function scalar_2D_values(self) result(scalar_values)
+    pure module function scalar_2D_values(self) result(values)
       !! Scalar values getter
       implicit none
       class(scalar_2D_t), intent(in) :: self
-      double precision, allocatable :: scalar_values(:,:)
+      double precision, allocatable :: values(:,:)
     end function
 
     pure module function scalar_2D_grid(self, direction) result(scalar_grid_1D)
@@ -307,11 +326,11 @@ module tensors_2D_m
       double precision, allocatable :: scalar_grid_1D(:)
     end function
 
-    pure module function vector_2D_grid(self, direction) result(vector_grid_1D)
-      !! Result array contains scalar grid locations along the requested spatial direction
+    pure module function vector_2D_grid(self, component, coordinate) result(vector_grid_1D)
+      !! Result contains the grid locations along the requested coordinate for the requested vector component
       implicit none
       class(vector_2D_t), intent(in) :: self
-      integer, intent(in) :: direction
+      integer, intent(in) :: component, coordinate
       double precision, allocatable :: vector_grid_1D(:) !! grid points along the requested coordinate direction
     end function
 
@@ -323,18 +342,18 @@ module tensors_2D_m
       double precision, allocatable :: divergence_grid_1D(:) !! grid points along the requested coordinate direction
     end function
 
-    pure module function vector_2D_values(self) result(vector_values)
+    pure module function vector_2D_at_cell_centers(self) result(vectors)
       !! Vector values getter
       implicit none
       class(vector_2D_t), intent(in) :: self
-      double precision, allocatable :: vector_values(:,:,:)
+      double precision, allocatable :: vectors(:,:,:)
     end function
 
-    pure module function divergence_2D_values(self) result(divergence_values)
+    pure module function divergence_2D_values(self) result(divergences)
       !! Vector values getter
       implicit none
       class(divergence_2D_t), intent(in) :: self
-      double precision, allocatable :: divergence_values(:,:)
+      double precision, allocatable :: divergences(:,:)
     end function
 
     pure module function scalar_2D_gradient(self) result(gradient_2D)
@@ -355,7 +374,7 @@ module tensors_2D_m
       !! Result is scalar product of the 2D-vector arguments
       implicit none
       class(vector_2D_t), intent(in) :: lhs, rhs
-      type(scalar_2D_t) product
+      type(scalar_product_2D_t) product
     end function
 
     pure module function gradient_2D_postmultiply_constant(lhs, rhs) result(product)
@@ -411,25 +430,11 @@ module tensors_2D_m
       type(file_t) file
     end function
 
-    pure module function is_face_centered(self) result(face_centered)
-      !! Result is .true. if the values are face-centered and .false. otherwise
+    pure module function tensor_rank(self) result(my_rank)
+      !! Result is number of spatial dimensions of non-unit size
       implicit none
       class(tensor_2D_t), intent(in) :: self
-      logical face_centered
-    end function
-
-    pure module function is_cell_centered(self) result(cell_centered)
-      !! Result is .true. if the values are cell-centered and .false. otherwise
-      implicit none
-      class(tensor_2D_t), intent(in) :: self
-      logical cell_centered
-    end function
-
-    pure module function is_cell_centers_extended(self) result(cell_centers_extended)
-      !! Result is .true. if the values are at cell centers + boundaries and .false. otherwise
-      implicit none
-      class(tensor_2D_t), intent(in) :: self
-      logical cell_centers_extended
+      logical my_rank
     end function
 
   end interface

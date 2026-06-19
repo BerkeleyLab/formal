@@ -20,7 +20,7 @@ contains
 
     call_julienne_assert(self%consistent())
 
-    divergence_values = self%values_(:,:,1,1,1,1)
+    divergences = self%points_(1,1,1,1)%values_(:,:)
 
   end procedure
 
@@ -47,10 +47,12 @@ contains
        x => cell_centers_1D(x_min(1), x_max(1), cells(1)) &
       ,y => cell_centers_1D(x_min(2), x_max(2), cells(2)) &
     )
-      divergence_2D%tensor_2D_t = tensor_2D_t( &
-         values = reshape(initializer(x,y), shape=[size(x),size(y),1,1,1,1]) &
-        ,cells = cells , x_min = x_min, x_max = x_max, order = order &
-      )
+      allocate(divergence_2D%tensor_2D_t%points_(1,1,1,1))
+      divergence_2D%tensor_2D_t%points_(1,1,1,1)%values_ = initializer(x,y)
+      divergence_2D%tensor_2D_t%cells_ = cells
+      divergence_2D%tensor_2D_t%x_min_ = x_min
+      divergence_2D%tensor_2D_t%x_max_ = x_max
+      divergence_2D%tensor_2D_t%order_ = order
     end associate define_grid
 
     call_julienne_assert(divergence_2D%consistent())
@@ -76,14 +78,14 @@ contains
 
     associate(x => self%grid(1), y => self%grid(2), header => [string_t("x,y,divergence")])
       associate(num_blank_lines => size(y)-1)
-        allocate(lines(size(header) + size(self%values_) + num_blank_lines))
+        allocate(lines(size(header) + size(self%points_(1,1,1,1)%values_) + num_blank_lines))
       end associate
       lines(1:size(header)) = header
       l = size(header)
       do j = 1, size(y)
         do i = 1, size(x)
           l = l + 1
-          lines(l) = .csv. string_t([x(i), y(j), self%values_(i,j,1,1,1,1)])
+          lines(l) = .csv. string_t([x(i), y(j), self%points_(1,1,1,1)%values_(i,j)])
         end do
         if (j/=size(y)) then
           l = l + 1
@@ -99,8 +101,12 @@ contains
 
      call_julienne_assert(lhs%consistent())
 
-     product%tensor_2D_t = &
-       tensor_2D_t(values = lhs%values_ * rhs, cells = lhs%cells_, x_min = lhs%x_min_, x_max = lhs%x_max_, order = lhs%order_)
+     allocate(product%tensor_2D_t%points_(1,1,1,1))
+     product%points_(1,1,1,1)%values_ = lhs%points_(1,1,1,1)%values_ * rhs
+     product%cells_ = lhs%cells_
+     product%x_min_ = lhs%x_min_
+     product%x_max_ = lhs%x_max_
+     product%order_ = lhs%order_
 
      call_julienne_assert(product%consistent())
 

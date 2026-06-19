@@ -16,12 +16,10 @@ submodule(tensors_2D_m) vector_2D_s
     ,operator(.isAtLeast.) &
     ,operator(.within.) &
     ,string_t
-  use tensors_1D_m, only : faces_1D, vector_1D_t, gradient_operator_1D_t
+  use tensors_1D_m, only : cell_centers_1D, faces_1D, vector_1D_t, gradient_operator_1D_t
   use interpolator_1D_m, only : centers_to_faces_1D_t, faces_to_centers_1D_t
 
   implicit none
-
-  integer, parameter :: x_dir=1, y_dir=2
 
 contains
 
@@ -59,103 +57,44 @@ contains
 
   module procedure construct_2D_vector_from_function
 
-   define_grid: &
-    associate( &
-       x => faces_1D(x_min(1), x_max(1), cells(1)) &
-      ,y => faces_1D(x_min(2), x_max(2), cells(2)) &
+   associate( &
+       x_centers => cell_centers_1D(x_min(x_dir), x_max(x_dir), cells(x_dir)) &
+      ,y_centers => cell_centers_1D(x_min(y_dir), x_max(y_dir), cells(y_dir)) &
+      ,x_faces   =>        faces_1D(x_min(x_dir), x_max(x_dir), cells(x_dir)) &
+      ,y_faces   =>        faces_1D(x_min(y_dir), x_max(y_dir), cells(y_dir)) &
     )
-      define_parent_tensor: &
-      associate(vector_values => initializer(x,y))
+      associate(vectors_x => initializer(x_faces,y_centers), vectors_y => initializer(x_faces,y_centers))
         vector_2D%tensor_2D_t = tensor_2D_t( &
-           values = reshape(vector_values, shape=[shape(vector_values),1,1,1]) &
-          ,cells = cells, x_min = x_min, x_max = x_max, order = order &
+          points = reshape(  &
+            source = [points_2D_t(vectors_x(:,:,x_dir)), points_2D_t(vectors_x(:,:,y_dir))] &
+           ,shape  = [space_dimension,1,1,1] &
+          ) &
+          ,cells = cells , x_min = x_min, x_max = x_max, order = order &
         )
-      end associate define_parent_tensor
-
-      define_divergence_operators: &
-      block
-        integer dir
-        vector_2D%divergence_operator_1D_ = &
-          [(divergence_operator_1D_t(k=order, dx=((x_max(dir)-x_min(dir))/cells(dir)), cells=cells(dir)), dir=1,space_dimension)]
-      end block define_divergence_operators
-
-    end associate define_grid
+        block
+          integer dir
+            vector_2D%divergence_operator_1D_ = [( &
+               divergence_operator_1D_t(k = order, dx = ((x_max(dir)-x_min(dir))/cells(dir)), cells = cells(dir)) &
+              ,dir = 1, space_dimension &
+            )]
+        end block
+      end associate
+    end associate
 
     call_julienne_assert( vector_2D%consistent() )
 
   end procedure
 
   module procedure construct_2D_vector_from_vector_mold
-
     call_julienne_assert( mold%consistent() )
-
-    define_grid: &
-    associate( &
-      x => faces_1D(mold%x_min_(1), mold%x_max_(1), mold%cells_(1)) &
-     ,y => faces_1D(mold%x_min_(2), mold%x_max_(2), mold%cells_(2)) &
-    )
-      define_parent_tensor: &
-      associate(vector_values => initializer(x,y))
-        vector_2D%tensor_2D_t = tensor_2D_t( &
-           values = reshape(vector_values, shape=[shape(vector_values),1,1,1]) &
-          ,cells = mold%cells_, x_min = mold%x_min_, x_max = mold%x_max_, order = mold%order_ &
-        )
-      end associate define_parent_tensor
-
-      define_divergence_operators: &
-      block
-        integer dir
-        vector_2D%divergence_operator_1D_ = [( &
-           divergence_operator_1D_t(k=mold%order_, dx=((mold%x_max_(dir)-mold%x_min_(dir))/mold%cells_(dir)), cells=mold%cells_(dir)) &
-          ,dir = 1, space_dimension &
-        )]
-      end block define_divergence_operators
-
-    end associate define_grid
-
+    vector_2D = vector_2D_t(initializer, cells = mold%cells_, x_min = mold%x_min_, x_max = mold%x_max_, order = mold%order_)
     call_julienne_assert( vector_2D%conformable(mold) )
-
   end procedure
 
   module procedure construct_2D_vector_from_scalar_mold
-    integer dir
-
     call_julienne_assert( mold%consistent() )
-
-    define_grid: &
-    associate( &
-       x => faces_1D(mold%x_min_(1), mold%x_max_(1), mold%cells_(1)) &
-      ,y => faces_1D(mold%x_min_(2), mold%x_max_(2), mold%cells_(2)) &
-    )
-      define_parent_tensor: &
-      associate(vector_values => initializer(x,y))
-        vector_2D%tensor_2D_t = tensor_2D_t( &
-           values = reshape(vector_values, shape=[shape(vector_values),1,1,1]) &
-          ,cells = mold%cells_, x_min = mold%x_min_, x_max = mold%x_max_, order = mold%order_ &
-        )
-      end associate define_parent_tensor
-
-      define_divergence_operators: &
-      block
-        integer dir
-        vector_2D%divergence_operator_1D_ = [( &
-          divergence_operator_1D_t(k=mold%order_, dx=((mold%x_max_(dir)-mold%x_min_(dir))/mold%cells_(dir)), cells=mold%cells_(dir)) &
-          ,dir = 1, space_dimension &
-        )]
-      end block define_divergence_operators
-
-    end associate define_grid
-
+    vector_2D = vector_2D_t(initializer, cells = mold%cells_, x_min = mold%x_min_, x_max = mold%x_max_, order = mold%order_)
     call_julienne_assert( vector_2D%conformable(mold) )
-
-  end procedure
-
-  module procedure vector_2D_values
-
-    call_julienne_assert(self%consistent())
-
-    vector_values = self%values_(:,:,:,1,1,1)
-
   end procedure
 
   module procedure vector_2D_to_file
@@ -164,16 +103,21 @@ contains
 
     call_julienne_assert(self%consistent())
 
-    associate(x => self%grid(x_dir), y => self%grid(y_dir), header => [string_t("x,y,vector_x,vector_y")])
+    associate( &
+       header => [string_t("x,y,vector_x,vector_y")] &
+      ,x => cell_centers_1D(self%x_min_(x_dir), self%x_max_(x_dir), self%cells_(x_dir)) &
+      ,y => cell_centers_1D(self%x_min_(y_dir), self%x_max_(y_dir), self%cells_(y_dir)) &
+      ,vectors => self%at_cell_centers() &
+    )
       associate(num_blank_lines => size(y)-1)
-        allocate(lines(size(header) + size(self%values_)/space_dimension + num_blank_lines))
+        allocate(lines(size(header) + size(vectors)/space_dimension + num_blank_lines))
       end associate
       lines(1:size(header)) = header
       l = size(header)
       do j = 1, size(y)
         do i = 1, size(x)
           l = l + 1 
-          lines(l) = .csv. string_t([x(i), y(j), self%values_(i,j,1:space_dimension,1,1,1)])
+          lines(l) = .csv. string_t([x(i), y(j), vectors(i,j,:)])
         end do
         if (j/=size(y)) then
           l = l + 1 
@@ -186,17 +130,31 @@ contains
   end procedure
 
   module procedure vector_2D_grid
-    associate(vector_1D => vector_1D_t( &
-       constant = 0D0 &
-      ,cells = self%cells_(direction) &
-      ,x_min = self%x_min_(direction) &
-      ,x_max = self%x_max_(direction) &
-      ,order = self%order_ &
-    ))
-      vector_grid_1D = vector_1D%grid()
-    end associate
-  end procedure
 
+    select case(description(coordinate, component))
+    case("x coordinate of x components")
+      vector_grid_1D =        faces_1D(x_min = self%x_min_(x_dir), x_max = self%x_max_(x_dir), cells = self%cells_(x_dir))
+    case("y coordinate of x components")
+      vector_grid_1D = cell_centers_1D(x_min = self%x_min_(y_dir), x_max = self%x_max_(y_dir), cells = self%cells_(x_dir))
+    case("x coordinate of y components")
+      vector_grid_1D = cell_centers_1D(x_min = self%x_min_(x_dir), x_max = self%x_max_(x_dir), cells = self%cells_(x_dir))
+    case("y coordinate of y components")
+      vector_grid_1D =        faces_1D(x_min = self%x_min_(y_dir), x_max = self%x_max_(y_dir), cells = self%cells_(x_dir))
+    case default
+      error stop "vector_2D_grid: invalid coordinate or component"
+    end select
+
+  contains   
+
+    pure function description(coordinate, component) result(point_cloud)
+      integer, intent(in) :: component, coordinate
+      character(len=:), allocatable :: point_cloud
+      !point_cloud = merge("x" // ,"y", coordinate==x_dir) // " coordinate of " // merge("x" // ,"y", component==y_dir) // " components"
+      point_cloud = "x"
+    end function
+
+  end procedure
+     
   module procedure vector_2D_divergence
 
     call_julienne_assert(self%consistent())
@@ -206,59 +164,83 @@ contains
     divergence_2D%cells_ = self%cells_
     divergence_2D%order_ = self%order_
 
-    allocate(divergence_2D%values_(self%cells_(x_dir), self%cells_(y_dir), 1, 1, 1, 1))
+    allocate(divergence_2D%points_(1, 1, 1, 1))
+    allocate(divergence_2D%points_(1, 1, 1, 1)%values_(self%cells_(x_dir), self%cells_(y_dir)))
 
-    divergence_x_term: &
-    do concurrent(integer :: j=1:size(divergence_2D%values_,y_dir)) default(none) shared(divergence_2D, self)
-      associate(padded_divergence => self%divergence_operator_1D_(x_dir) .x. self%values_(:,j,x_dir,1,1,1))
-        divergence_2D%values_(:,j,1,1,1,1) = padded_divergence(2:size(padded_divergence)-1)
-      end associate
-    end do divergence_x_term
+    associate(v_x => divergence_2D%points_(x_dir,1,1,1)%values_, v_y => divergence_2D%points_(y_dir,1,1,1)%values_)
 
-    add_y_term: &
-    do concurrent(integer :: i=1:size(divergence_2D%values_,x_dir)) default(none) shared(divergence_2D, self)
-      associate(padded_divergence => self%divergence_operator_1D_(y_dir) .x. self%values_(i,:,y_dir,1,1,1))
-        divergence_2D%values_(i,:,1,1,1,1) = divergence_2D%values_(i,:,1,1,1,1) + padded_divergence(2:size(padded_divergence)-1)
-      end associate
-    end do add_y_term
+      divergence_x_term: &
+      do concurrent(integer :: j = 1:size(v_x,y_dir)) default(none) shared(divergence_2D, self, v_x)
+        associate(padded_divergence => self%divergence_operator_1D_(x_dir) .x. v_x(:,j))
+          divergence_2D%points_(1,1,1,1)%values_(:,j) = padded_divergence(2:size(padded_divergence)-1)
+        end associate
+      end do divergence_x_term
+
+      add_y_term: &
+      do concurrent(integer :: i = 1:size(v_y,x_dir)) default(none) shared(divergence_2D, self, v_y)
+        associate(padded_divergence => self%divergence_operator_1D_(y_dir) .x. v_y(i,:))
+          divergence_2D%points_(1,1,1,1)%values_(i,:) = &
+            divergence_2D%points_(1,1,1,1)%values_(i,:) + padded_divergence(2:size(padded_divergence)-1)
+        end associate
+      end do add_y_term
+
+    end associate
 
     call_julienne_assert(divergence_2D%conformable(self))
+
+  end procedure
+
+  module procedure vector_2D_at_cell_centers
+
+    double precision, allocatable :: x_components(:,:), y_components(:,:)
+
+    call_julienne_assert(self%consistent())
+
+    ! values at cell centers extended to include boundaries only along the direction/component to be interpolated
+    allocate(x_components(self%cells_(x_dir)+2, self%cells_(y_dir)  ))
+    allocate(y_components(self%cells_(x_dir)  , self%cells_(y_dir)+2))
+
+    construct_interpolator_array: &
+    associate(interpolator => faces_to_centers_1D_t(order=self%order_, cells=self%cells_, dx=(self%x_max_ - self%x_min_)/self%cells_))
+
+      interpolate_x_faces_to_centers_extended: &
+      do concurrent(integer :: j = 1:size(self%points_(x_dir,1,1,1)%values_,y_dir))
+        x_components(:,j) = interpolator(x_dir)%center_values_extended(self%points_(x_dir,1,1,1)%values_(:,j))
+      end do interpolate_x_faces_to_centers_extended
+
+      interpolate_y_faces_to_centers_extended: &
+      do concurrent(integer :: i = 1:size(self%points_(y_dir,1,1,1)%values_,x_dir))
+        y_components(i,:) = interpolator(y_dir)%center_values_extended(self%points_(y_dir,1,1,1)%values_(i,:))
+      end do interpolate_y_faces_to_centers_extended
+
+    end associate construct_interpolator_array
+
+    ! trim boundaries because edges lack tangential components and corners lack all commponents:
+    allocate(vectors(self%cells_(x_dir), self%cells_(y_dir), space_dimension))
+    vectors(:,:,x_dir) = x_components(2:self%cells_(x_dir)+1,  :                    )
+    vectors(:,:,y_dir) = y_components( :                    , 2:self%cells_(y_dir)+1)
 
   end procedure
 
   module procedure vector_2D_dot_vector
 
     call_julienne_assert(lhs%conformable(rhs))
-    call_julienne_assert((.expect. lhs%is_face_centered()) // " lhs%cells_ = " // (.csv. string_t(lhs%cells_)) // ", shape(lhs%values) = " // (.csv. string_t(shape(lhs%values_))))
 
-    allocate(product%values_(lhs%cells_(x_dir)+2,lhs%cells_(y_dir)+2,1,1,1,1))
-      ! allocate space for 2D cell centers extended to include boundaries
-
-    construct_interpolator: &
-    associate(interpolator => faces_to_centers_1D_t(order=lhs%order_, cells=lhs%cells_, dx=(lhs%x_max_ - lhs%x_min_)/lhs%cells_))
-
-      interpolate_x_faces_to_centers_extended: &
-      do concurrent(integer :: j=1:size(lhs%values_,y_dir))
-        product%values_(:,j,1,1,1,1) = &
-            interpolator(x_dir)%center_values_extended(lhs%values_(:,j,x_dir,1,1,1)) &
-          * interpolator(x_dir)%center_values_extended(rhs%values_(:,j,x_dir,1,1,1))
-      end do interpolate_x_faces_to_centers_extended
-
-      add_interpolated_y_faces: &
-      do concurrent(integer :: i=1:size(lhs%values_,x_dir))
-        product%values_(i,:,1,1,1,1) = product%values_(i,:,1,1,1,1) &
-          + interpolator(y_dir)%center_values_extended(lhs%values_(i,:,y_dir,1,1,1)) &
-          * interpolator(y_dir)%center_values_extended(rhs%values_(i,:,y_dir,1,1,1))
-      end do add_interpolated_y_faces
-
-    end associate construct_interpolator
-
-    product = scalar_2D_t( &
-       tensor_2D_t(values=product%values_, cells=lhs%cells_, x_min=lhs%x_min_, x_max=lhs%x_max_, order=lhs%order_) &
-      ,gradient_operator_1D_t(k = lhs%order_, dx = (lhs%x_max_ - lhs%x_min_)/lhs%cells_, cells = lhs%cells_) &
+    associate( &
+      lhs_centers => lhs%at_cell_centers() &
+     ,rhs_centers => rhs%at_cell_centers() &
     )
+      call_julienne_assert(.all. (shape(lhs_centers) .equalsExpected. shape(rhs_centers)))
 
-    call_julienne_assert((.expect. product%is_cell_centers_extended()) // " product%cells_ = " // (.csv. string_t(product%cells_)) // ", shape(product%values) = " // (.csv. string_t(shape(product%values_))))
+      product%tensor_2D_t = tensor_2D_t( &
+         points = reshape([points_2D_t(lhs_centers(:,:,x_dir) * rhs_centers(:,:,x_dir) + lhs_centers(:,:,y_dir) * rhs_centers(:,:,y_dir))], [1,1,1,1]) &
+        ,cells = lhs%cells_ &
+        ,x_min = lhs%x_min_ &
+        ,x_max = lhs%x_max_ &
+        ,order = lhs%order_ &
+      )
+    end associate
+
   end procedure
 
 end submodule vector_2D_s

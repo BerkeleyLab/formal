@@ -31,15 +31,19 @@ contains
   end procedure
 
   module procedure construct_2D_scalar_from_components
+
     call_julienne_assert(size(gradient_operator_1D) .equalsExpected. space_dimension)
+
+    scalar_2D%tensor_2D_t = tensor_2D
     scalar_2D%gradient_operator_1D_ = gradient_operator_1D
-    scalar_2D%tensor_2D_t = tensor_2D_t(values=tensor_2D%values_, x_min=tensor_2D%x_min_, x_max=tensor_2D%x_max_, cells=tensor_2D%cells_, order=tensor_2D%order_)
+
     call_julienne_assert(scalar_2D%consistent())
+
   end procedure
 
   module procedure scalar_2D_values
     call_julienne_assert(self%consistent())
-    scalar_values = self%values_(:,:,1,1,1,1)
+    values = self%points_(1,1,1,1)%values_(:,:)
   end procedure
 
   module procedure scalar_2D_grid
@@ -57,18 +61,15 @@ contains
 
   module procedure construct_2D_scalar_from_function
 
-    define_grid: &
     associate( &
-       x => cell_centers_extended_1D(x_min(1), x_max(1), cells(1)) &
-      ,y => cell_centers_extended_1D(x_min(2), x_max(2), cells(2)) &
+       x => cell_centers_extended_1D(x_min(x_dir), x_max(x_dir), cells(x_dir)) &
+      ,y => cell_centers_extended_1D(x_min(y_dir), x_max(y_dir), cells(y_dir)) &
     )
       scalar_2D%tensor_2D_t = tensor_2D_t( &
-         values = reshape(initializer(x,y), shape=[size(x),size(y),1,1,1,1]) &
-        ,cells = cells , x_min = x_min, x_max = x_max, order = order &
+         points = reshape([points_2D_t(initializer(x,y))], shape=[1,1,1,1]), cells = cells , x_min = x_min, x_max = x_max, order = order &
       )
       scalar_2D%gradient_operator_1D_ = gradient_operator_1D_t(k=order, dx=(x_max - x_min)/cells, cells=cells)
-
-    end associate define_grid
+    end associate
 
     call_julienne_assert(scalar_2D%consistent())
 
@@ -91,16 +92,18 @@ contains
     gradient_2D%cells_ = self%cells_
     gradient_2D%order_ = self%order_
 
-    allocate(gradient_2D%values_(self%cells_(1)+1, self%cells_(2)+1, space_dimension, 1, 1, 1))
+    allocate(gradient_2D%points_(space_dimension,1,1,1))
+    allocate(gradient_2D%points_(x_dir,1,1,1)%values_(self%cells_(x_dir)+1, self%cells_(y_dir)  ))
+    allocate(gradient_2D%points_(y_dir,1,1,1)%values_(self%cells_(x_dir)  , self%cells_(y_dir)+1))
 
     gradient_x_component: &
-    do concurrent(integer :: j=1:size(gradient_2D%values_,2)) default(none) shared(gradient_2D, self)
-      gradient_2D%values_(:,j,1,1,1,1) = self%gradient_operator_1D_(1) .x. self%values_(:,j,1,1,1,1)
+    do concurrent(integer :: j=1:size(gradient_2D%points_(x_dir,1,1,1)%values_,y_dir)) default(none) shared(gradient_2D, self)
+      gradient_2D%points_(x_dir,1,1,1)%values_(:,j) = self%gradient_operator_1D_(x_dir) .x. self%points_(x_dir,1,1,1)%values_(:,j)
     end do gradient_x_component
 
     gradient_y_component: &
-    do concurrent(integer :: i=1:size(gradient_2D%values_,1)) default(none) shared(gradient_2D, self)
-      gradient_2D%values_(i,:,2,1,1,1) = self%gradient_operator_1D_(2) .x. self%values_(i,:,1,1,1,1)
+    do concurrent(integer :: i=1:size(gradient_2D%points_(y_dir,1,1,1)%values_,x_dir)) default(none) shared(gradient_2D, self)
+      gradient_2D%points_(y_dir,1,1,1)%values_(i,:) = self%gradient_operator_1D_(y_dir) .x. self%points_(y_dir,1,1,1)%values_(i,:)
     end do gradient_y_component
 
     associate(dx => (self%x_max_ - self%x_min_)/self%cells_)
@@ -123,14 +126,14 @@ contains
 
     associate(x => self%grid(1), y => self%grid(2), header => [string_t("x,y,scalar")])
       associate(num_blank_lines => size(y)-1)
-        allocate(lines(size(header) + size(self%values_) + num_blank_lines))
+        allocate(lines(size(header) + size(self%points_(1,1,1,1)%values_) + num_blank_lines))
       end associate
       lines(1:size(header)) = header
       l = size(header)
       do j = 1, size(y)
         do i = 1, size(x)
           l = l + 1
-          lines(l) = .csv. string_t([x(i), y(j), self%values_(i,j,1,1,1,1)])
+          lines(l) = .csv. string_t([x(i), y(j), self%points_(1,1,1,1)%values_(i,j)])
         end do
         if (j/=size(y)) then
           l = l + 1
