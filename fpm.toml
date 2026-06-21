@@ -1,6 +1,6 @@
 name = "formal"
 
-[dev-dependencies]
+[dependencies]
 julienne = {git = "https://github.com/berkeleylab/julienne.git", tag = "3.6.2"}
 
 [install]
