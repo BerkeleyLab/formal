@@ -59,8 +59,8 @@ program advection_diffusion_2D
     end block advance_time
 
     associate( &
-       scalar_file   => s%to_file() &
-      ,velocity_file => v%to_file() &
+       scalar_file   => s%to_file("scalar") &
+      ,velocity_file => v%to_file("vector") &
     )
       call   scalar_file%write_lines("example/scripts/scalar.csv")
       call velocity_file%write_lines("example/scripts/velocity.csv")

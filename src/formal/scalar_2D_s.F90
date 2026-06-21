@@ -7,11 +7,12 @@ submodule(tensors_2D_m) scalar_2D_s
   use julienne_m, only : &
      call_julienne_assert_ &
     ,operator(.all.) &
+    ,operator(.csv.) &
     ,operator(.equalsExpected.) &
     ,operator(.greaterThan.) &
-    ,operator(.isAtLeast.)
+    ,operator(.isAtLeast.) &
+    ,string_t
   use tensors_1D_m, only : cell_centers_extended_1D, scalar_1D_t
-  use julienne_m, only : string_t, operator(.csv.)
   implicit none
 
 contains
@@ -120,20 +121,31 @@ contains
 
   module procedure scalar_2D_to_file
     type(string_t), allocatable :: lines(:)
-    integer i, j, l
+    integer i, j, l, m, n, p, q
+    double precision, allocatable :: x(:), y(:)
 
     call_julienne_assert(self%consistent())
 
-    associate(x => self%grid(1), y => self%grid(2), header => [string_t("x,y,scalar")])
+    !! The missing corners precludes printing the array self%values
+    associate( &
+       header => [string_t("x, y, " // name)] &
+      ,num_points => sum( [( [( [( [( size(self%points_(m,n,p,q)%values_), m = 1,size(self%points_,1) )], n = 1,size(self%points_,2) )], p = 1, size(self%points_,3) )], q = 1,size(self%points_,4) )] ) &
+      ,x => self%grid(x_dir) &
+      ,y => self%grid(y_dir) &
+    )
+      call_julienne_assert(num_points .equalsExpected. size(x)*size(y))
+
       associate(num_blank_lines => size(y)-1)
-        allocate(lines(size(header) + size(self%points_(1,1,1,1)%values_) + num_blank_lines))
+        allocate(lines(size(header) +  num_points + num_blank_lines))
       end associate
+
       lines(1:size(header)) = header
       l = size(header)
+
       do j = 1, size(y)
         do i = 1, size(x)
           l = l + 1
-          lines(l) = .csv. string_t([x(i), y(j), self%points_(1,1,1,1)%values_(i,j)])
+          lines(l) = .csv. string_t([x(i), y(j),  [( [( [( [( self%points_(m,n,p,q)%values_, m = 1,size(self%points_,1) )], n = 1,size(self%points_,2) )], p = 1, size(self%points_,3) )], q = 1,size(self%points_,4) )] ])
         end do
         if (j/=size(y)) then
           l = l + 1

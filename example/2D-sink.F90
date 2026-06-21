@@ -48,7 +48,7 @@ program sink_2D
 
   associate(v => vector_2D_t(vector_2D_initializer, order=order, cells=[11,11], x_min=[-1D0,-1D0], x_max=[1D0,1D0]))
     associate(div_v => .div. v, expected_divergence => divergence_2D_t(divergence_2D_initializer, mold=v))
-      associate(v_file => v%to_file(),div_v_file => div_v%to_file(), expected_divergence_file => expected_divergence%to_file())
+      associate(v_file => v%to_file("v"),div_v_file => div_v%to_file(".div. v"), expected_divergence_file => expected_divergence%to_file("expected .div. v"))
         call v_file%write_lines("example/scripts/sink-velocity.csv") 
         call div_v_file%write_lines("example/scripts/sink-divergence.csv") 
         call expected_divergence_file%write_lines("example/scripts/expected-divergence.csv")

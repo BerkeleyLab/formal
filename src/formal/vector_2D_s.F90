@@ -97,38 +97,6 @@ contains
     call_julienne_assert( vector_2D%conformable(mold) )
   end procedure
 
-  module procedure vector_2D_to_file
-    type(string_t), allocatable :: lines(:)
-    integer i, j, l
-
-    call_julienne_assert(self%consistent())
-
-    associate( &
-       header => [string_t("x,y,vector_x,vector_y")] &
-      ,x => cell_centers_1D(self%x_min_(x_dir), self%x_max_(x_dir), self%cells_(x_dir)) &
-      ,y => cell_centers_1D(self%x_min_(y_dir), self%x_max_(y_dir), self%cells_(y_dir)) &
-      ,vectors => self%at_cell_centers() &
-    )
-      associate(num_blank_lines => size(y)-1)
-        allocate(lines(size(header) + size(vectors)/space_dimension + num_blank_lines))
-      end associate
-      lines(1:size(header)) = header
-      l = size(header)
-      do j = 1, size(y)
-        do i = 1, size(x)
-          l = l + 1 
-          lines(l) = .csv. string_t([x(i), y(j), vectors(i,j,:)])
-        end do
-        if (j/=size(y)) then
-          l = l + 1 
-          lines(l) = ""
-        end if
-      end do
-    end associate
-
-    file = file_t(lines)
-  end procedure
-
   module procedure vector_2D_grid
 
     select case(description(coordinate, component))
@@ -241,6 +209,49 @@ contains
       )
     end associate
 
+  end procedure
+
+  module procedure vector_2D_to_file
+    type(string_t), allocatable :: lines(:)
+    integer i, j, l
+    double precision, allocatable :: x(:), y(:)
+
+    call_julienne_assert(self%consistent())
+
+    associate( &
+       header => [string_t("x, y, " // name)] &
+      ,x => self%grid(component=x_dir, coordinate=y_dir) &
+      ,y => self%grid(component=y_dir, coordinate=x_dir) &
+    )
+      associate(num_points => size(x)*size(y))
+
+        associate(num_blank_lines => size(y)-1)
+          allocate(lines(size(header) +  num_points + num_blank_lines))
+        end associate
+
+        associate(vectors => self%at_cell_centers())
+
+          call_julienne_assert(.all. (shape(vectors) .equalsExpected. [size(x), size(y), space_dimension]))
+
+          lines(1:size(header)) = header
+          l = size(header)
+
+          do j = 1, size(y)
+            do i = 1, size(x)
+              l = l + 1
+              lines(l) = .csv. string_t([x(i), y(j), vectors(i,j,:)])
+            end do
+            if (j/=size(y)) then
+              l = l + 1
+              lines(l) = ""
+            end if
+          end do
+
+        end associate
+      end associate
+    end associate
+
+    file = file_t(lines)
   end procedure
 
 end submodule vector_2D_s

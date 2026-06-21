@@ -9,12 +9,13 @@ submodule(tensors_2D_m) tensor_2D_s
     ,operator(.all.) &
     ,operator(.also.) &
     ,operator(.approximates.) &
+    ,operator(.csv.) &
     ,operator(.equalsExpected.) &
     ,operator(.isAtLeast.) &
     ,operator(.isAtMost.) &
     ,operator(.greaterThan.) &
-    ,operator(.within.)
-
+    ,operator(.within.) &
+    ,string_t
   implicit none
 
 contains
@@ -81,4 +82,4 @@ contains
     conformable = .true.
   end procedure
 
-end submodule
+end submodule tensor_2D_s

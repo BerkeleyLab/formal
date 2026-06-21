@@ -44,9 +44,9 @@ program vortex_2D
     associate(  velocity => .grad. phi & 
       ,expected_velocity => vector_2D_t(vector_2D_initializer, mold=phi) &
     ) 
-      associate(velocity_potential_file =>               phi%to_file() &
-                         ,velocity_file =>          velocity%to_file() &
-                ,expected_velocity_file => expected_velocity%to_file() &
+      associate(velocity_potential_file =>               phi%to_file("phi") &
+                         ,velocity_file =>          velocity%to_file("velocity") &
+                ,expected_velocity_file => expected_velocity%to_file("expected velocity") &
     )
         call velocity_potential_file%write_lines("example/scripts/velocity-potential.csv") 
         call velocity_file%write_lines("example/scripts/velocity.csv") 
