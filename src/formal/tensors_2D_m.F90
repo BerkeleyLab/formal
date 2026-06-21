@@ -434,7 +434,7 @@ module tensors_2D_m
       !! Result is number of spatial dimensions of non-unit size
       implicit none
       class(tensor_2D_t), intent(in) :: self
-      logical my_rank
+      integer my_rank
     end function
 
   end interface
