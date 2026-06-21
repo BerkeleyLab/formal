@@ -7,10 +7,14 @@ submodule(tensors_2D_m) tensor_2D_s
   use julienne_m, only : &
      call_julienne_assert_ &
     ,operator(.all.) &
+    ,operator(.also.) &
     ,operator(.approximates.) &
     ,operator(.equalsExpected.) &
+    ,operator(.isAtLeast.) &
+    ,operator(.isAtMost.) &
     ,operator(.greaterThan.) &
     ,operator(.within.)
+
   implicit none
 
 contains

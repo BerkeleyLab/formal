@@ -4,7 +4,12 @@
 #include "julienne-assert-macros.h"
 
 submodule(tensors_2D_m) gradient_2D_s
-  use julienne_m, only : call_julienne_assert_
+  use julienne_m, only : &
+     call_julienne_assert_ &
+    ,operator(.also.) &
+    ,operator(.equalsExpected.) &
+    ,operator(.isAtLeast.) &
+    ,operator(.isAtMost.)
   use tensors_1D_m, only : divergence_operator_1D_t
   implicit none
 
@@ -18,7 +23,7 @@ contains
     gradient_2D%tensor_2D_t = tensor_2D
     gradient_2D%divergence_operator_1D_ = divergence_operator_1D
 
-    call_julienne_assert(vector_2D%consistent())
+    call_julienne_assert(gradient_2D%consistent())
   end procedure
 
   module procedure gradient_2D_postmultiply_constant
