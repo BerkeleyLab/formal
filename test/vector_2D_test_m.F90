@@ -153,13 +153,7 @@ contains
       ,v => vector_2D_t(v_init, cells=[5,5], x_min=[0D0,0D0], x_max=[5D0,5D0], order=order) &
     )
       associate(u_dot_v => u .dot. v)
-        associate( u_file => u%to_file() &
-                  ,v_file => v%to_file() &
-                  ,u_dot_v_file => u_dot_v%to_file() &
-        ) 
-          test_diagnosis = test_diagnosis .also. &
-            (.all. (u_dot_v%values() .approximates. u_dot_v_exact .within. 1D-6))
-        end associate
+        test_diagnosis = test_diagnosis .also. (.all. (u_dot_v%values() .approximates. u_dot_v_exact .within. 1D-6))
       end associate
     end associate
   end function
