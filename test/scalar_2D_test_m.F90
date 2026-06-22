@@ -77,7 +77,7 @@ contains
          ,expected_gradient => vector_2D_t(expected_gradient_initializer, mold=scalar_2D) &
         )
           test_diagnosis = test_diagnosis .also. &
-            .all. (grad_scalar%values() .approximates. expected_gradient%values() .within. tolerance) &
+            .all. (grad_scalar%at_cell_centers() .approximates. expected_gradient%at_cell_centers() .within. tolerance) &
             // string_t(" for order ") // string_t(order)
         end associate
       end associate
