@@ -63,10 +63,10 @@ contains
       ,x_faces   =>        faces_1D(x_min(x_dir), x_max(x_dir), cells(x_dir)) &
       ,y_faces   =>        faces_1D(x_min(y_dir), x_max(y_dir), cells(y_dir)) &
     )
-      associate(vectors_x => initializer(x_faces,y_centers), vectors_y => initializer(x_faces,y_centers))
+      associate(vectors_x => initializer(x_faces,y_centers), vectors_y => initializer(x_centers,y_faces))
         vector_2D%tensor_2D_t = tensor_2D_t( &
           points = reshape(  &
-            source = [points_2D_t(vectors_x(:,:,x_dir)), points_2D_t(vectors_x(:,:,y_dir))] &
+            source = [points_2D_t(vectors_x(:,:,x_dir)), points_2D_t(vectors_y(:,:,y_dir))] &
            ,shape  = [space_dimension,1,1,1] &
           ) &
           ,cells = cells , x_min = x_min, x_max = x_max, order = order &

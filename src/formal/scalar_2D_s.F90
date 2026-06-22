@@ -98,17 +98,18 @@ contains
     allocate(gradient_2D%points_(y_dir,1,1,1)%values_(self%cells_(x_dir)  , self%cells_(y_dir)+1))
 
     gradient_x_component: &
-    do concurrent(integer :: j=1:size(gradient_2D%points_(x_dir,1,1,1)%values_,y_dir)) default(none) shared(gradient_2D, self)
-      gradient_2D%points_(x_dir,1,1,1)%values_(:,j) = self%gradient_operator_1D_(x_dir) .x. self%points_(x_dir,1,1,1)%values_(:,j)
+    do concurrent(integer :: j=1:size(self%points_(1,1,1,1)%values_,y_dir)) default(none) shared(gradient_2D, self)
+      gradient_2D%points_(x_dir,1,1,1)%values_(:,j) = self%gradient_operator_1D_(x_dir) .x. self%points_(1,1,1,1)%values_(:,j)
     end do gradient_x_component
 
     gradient_y_component: &
-    do concurrent(integer :: i=1:size(gradient_2D%points_(y_dir,1,1,1)%values_,x_dir)) default(none) shared(gradient_2D, self)
-      gradient_2D%points_(y_dir,1,1,1)%values_(i,:) = self%gradient_operator_1D_(y_dir) .x. self%points_(y_dir,1,1,1)%values_(i,:)
+    do concurrent(integer :: i=1:size(self%points_(1,1,1,1)%values_,x_dir)) default(none) shared(gradient_2D, self)
+      gradient_2D%points_(y_dir,1,1,1)%values_(i,:) = self%gradient_operator_1D_(y_dir) .x. self%points_(1,1,1,1)%values_(i,:)
     end do gradient_y_component
 
     associate(dx => (self%x_max_ - self%x_min_)/self%cells_)
       gradient_2D%divergence_operator_1D_ = divergence_operator_1D_t(self%order_, dx, self%cells_)
+
      !check_corbino_castillo_eq_17: &
      !associate(p => gradient_1D%weights(), b => [-1D0, [(0D0, c = 1, self%cells_)], 1D0])
      !  call_julienne_assert((.all. (matmul(transpose(self%gradient_operator_1D_%assemble()), p) .approximates. b/dx .within. 2D-3)))
