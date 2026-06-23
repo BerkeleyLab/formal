@@ -103,11 +103,11 @@ contains
     case("x coordinate of x components")
       vector_grid_1D =        faces_1D(x_min = self%x_min_(x_dir), x_max = self%x_max_(x_dir), cells = self%cells_(x_dir))
     case("y coordinate of x components")
-      vector_grid_1D = cell_centers_1D(x_min = self%x_min_(y_dir), x_max = self%x_max_(y_dir), cells = self%cells_(x_dir))
+      vector_grid_1D = cell_centers_1D(x_min = self%x_min_(y_dir), x_max = self%x_max_(y_dir), cells = self%cells_(y_dir))
     case("x coordinate of y components")
       vector_grid_1D = cell_centers_1D(x_min = self%x_min_(x_dir), x_max = self%x_max_(x_dir), cells = self%cells_(x_dir))
     case("y coordinate of y components")
-      vector_grid_1D =        faces_1D(x_min = self%x_min_(y_dir), x_max = self%x_max_(y_dir), cells = self%cells_(x_dir))
+      vector_grid_1D =        faces_1D(x_min = self%x_min_(y_dir), x_max = self%x_max_(y_dir), cells = self%cells_(y_dir))
     case default
       error stop "vector_2D_grid: invalid coordinate or component"
     end select
@@ -115,10 +115,9 @@ contains
   contains   
 
     pure function description(coordinate, component) result(point_cloud)
-      integer, intent(in) :: component, coordinate
+      integer, intent(in) :: coordinate, component
       character(len=:), allocatable :: point_cloud
-      !point_cloud = merge("x" // ,"y", coordinate==x_dir) // " coordinate of " // merge("x" // ,"y", component==y_dir) // " components"
-      point_cloud = "x"
+      point_cloud = merge("x" ,"y", coordinate==x_dir) // " coordinate of " // merge("x" ,"y", component==y_dir) // " components"
     end function
 
   end procedure
@@ -220,35 +219,33 @@ contains
 
     associate( &
        header => [string_t("x, y, " // name)] &
-      ,x => self%grid(component=x_dir, coordinate=y_dir) &
-      ,y => self%grid(component=y_dir, coordinate=x_dir) &
+      ,x => cell_centers_1D(self%x_min_(x_dir), self%x_max_(x_dir), self%cells_(x_dir)) &
+      ,y => cell_centers_1D(self%x_min_(y_dir), self%x_max_(y_dir), self%cells_(y_dir)) &
+      ,vectors => self%at_cell_centers() &
     )
-      associate(num_points => size(x)*size(y))
-
-        associate(num_blank_lines => size(y)-1)
-          allocate(lines(size(header) +  num_points + num_blank_lines))
-        end associate
-
-        associate(vectors => self%at_cell_centers())
-
-          call_julienne_assert(.all. (shape(vectors) .equalsExpected. [size(x), size(y), space_dimension]))
-
-          lines(1:size(header)) = header
-          l = size(header)
-
-          do j = 1, size(y)
-            do i = 1, size(x)
-              l = l + 1
-              lines(l) = .csv. string_t([x(i), y(j), vectors(i,j,:)])
-            end do
-            if (j/=size(y)) then
-              l = l + 1
-              lines(l) = ""
-            end if
-          end do
-
-        end associate
+      associate( &
+         num_points => size(x)*size(y) &
+        ,num_blank_lines => size(y)-1 &
+      )
+        allocate(lines(size(header) +  num_points + num_blank_lines))
       end associate
+
+      call_julienne_assert(.all. (shape(vectors) .equalsExpected. [size(x), size(y), space_dimension]))
+
+      lines(1:size(header)) = header
+      l = size(header)
+
+      do j = 1, size(y)
+        do i = 1, size(x)
+          l = l + 1
+          lines(l) = .csv. string_t([x(i), y(j), vectors(i,j,:)])
+        end do
+        if (j/=size(y)) then
+          l = l + 1
+          lines(l) = ""
+        end if
+      end do
+
     end associate
 
     file = file_t(lines)

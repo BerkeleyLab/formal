@@ -8,6 +8,8 @@ submodule(tensors_2D_m) scalar_2D_s
      call_julienne_assert_ &
     ,operator(.all.) &
     ,operator(.csv.) &
+    ,operator(//) &
+    ,operator(.expect.) &
     ,operator(.equalsExpected.) &
     ,operator(.greaterThan.) &
     ,operator(.isAtLeast.) &
@@ -130,7 +132,8 @@ contains
     !! The missing corners precludes printing the array self%values
     associate( &
        header => [string_t("x, y, " // name)] &
-      ,num_points => sum( [( [( [( [( size(self%points_(m,n,p,q)%values_), m = 1,size(self%points_,1) )], n = 1,size(self%points_,2) )], p = 1, size(self%points_,3) )], q = 1,size(self%points_,4) )] ) &
+      ,num_points => sum( [( [( [( [( size(self%points_(m,n,p,q)%values_), m = 1,size(self%points_,1) )] &
+                         ,n = 1,size(self%points_,2) )], p = 1, size(self%points_,3) )], q = 1,size(self%points_,4) )] ) &
       ,x => self%grid(x_dir) &
       ,y => self%grid(y_dir) &
     )
@@ -146,7 +149,8 @@ contains
       do j = 1, size(y)
         do i = 1, size(x)
           l = l + 1
-          lines(l) = .csv. string_t([x(i), y(j),  [( [( [( [( self%points_(m,n,p,q)%values_, m = 1,size(self%points_,1) )], n = 1,size(self%points_,2) )], p = 1, size(self%points_,3) )], q = 1,size(self%points_,4) )] ])
+          lines(l) = .csv. string_t( [x(i), y(j), [( [( [( [( self%points_(m,n,p,q)%values_(i,j), m = 1,size(self%points_,1) )] &
+                                    ,n = 1,size(self%points_,2) )], p = 1, size(self%points_,3) )], q = 1,size(self%points_,4) )] ])
         end do
         if (j/=size(y)) then
           l = l + 1
