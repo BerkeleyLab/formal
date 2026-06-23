@@ -2,7 +2,7 @@
 #  vector-field.gnuplot  --  2D vector/quiver plot from a CSV
 #  Line 1: column labels
 #  Lines 2+: x, y, velocity_x, velocity_y data
-#  Usage:  gnuplot -e "base_name='velocity'" vector-field.gnuplot
+#  Usage:  gnuplot -e "base_name='velocity'" 2D-vector-field.gnuplot
 #  Default: base_name='velocity'
 # ===============================================================
 
