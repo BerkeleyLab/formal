@@ -2,7 +2,7 @@
 #  2D-scalar-field.gnuplot  --  surface plot CSV
 #  Line 1: column labels
 #  Lines 2+: x, y, z data with blank lines between x-slices
-#  Usage:  gnuplot -d "base_name='velocity-potential'" 2D-scalar-field.gnuplot
+#  Usage:  gnuplot -e "base_name='velocity-potential'" 2D-scalar-field.gnuplot
 #  Default: base_name='velocity-potential'
 # ============================================================================
 
