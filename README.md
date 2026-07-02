@@ -22,7 +22,7 @@ Formal supports research on mimetic software abstractions for vector calculus by
 Formal's types and operators implement the discrete calculus of [Corbino & Castillo (2020)]:
 mimetic discretizations satisfying discrete versions of vector calculus theorems.
 
-Like the underlying numerical methods, Formal's software abstractios mimic their vector calculus counterparts.
+Like the underlying numerical methods, Formal's software abstractions mimic their vector calculus counterparts.
 For example, given scalar and vector fields $f$ and $\vec{v}$ defined over a unit volume $V = [0,1]^3$ bounded
 by a surface area $A$, the program [`example/extended-gauss-divergence.F90`] demonstrates satisfaction of the
 extended Gauss divergence theorem: 
