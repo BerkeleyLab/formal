@@ -19,7 +19,6 @@ contains
   pure function potential_gradient(x,y) result(grad_phi)
     double precision, intent(in) :: x(:), y(:)
     double precision grad_phi(size(x),size(y),space_dimension)
-    integer d
     do concurrent(integer :: i=1:size(x), j=1:size(y))
       grad_phi(i,j,:) = [x(i), -y(j)]
     end do
