@@ -1,7 +1,7 @@
 name = "formal"
 
 [dependencies]
-julienne = {git = "https://github.com/berkeleylab/julienne.git", tag = "3.6.2"}
+julienne = {git = "https://github.com/berkeleylab/julienne.git", tag = "4.1.0"}
 
 [install]
 library = true
