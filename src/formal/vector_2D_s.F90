@@ -215,12 +215,7 @@ contains
       ,y => cell_centers_extended_1D(self%x_min_(y_dir), self%x_max_(y_dir), self%cells_(y_dir)) &
       ,vectors => self%co_located_components() &
     )
-      associate( &
-         num_points => size(x)*size(y) &
-        ,num_blank_lines => size(y)-1 &
-      )
-        allocate(lines(size(header) +  num_points + num_blank_lines))
-      end associate
+      allocate(lines(size(header) +  size(x)*size(y)))
 
       call_julienne_assert(.all. (shape(vectors) .equalsExpected. [size(x), size(y), space_dimension]))
 
@@ -232,10 +227,6 @@ contains
           l = l + 1
           lines(l) = .csv. string_t([x(i), y(j), vectors(i,j,:)])
         end do
-        if (j/=size(y)) then
-          l = l + 1
-          lines(l) = ""
-        end if
       end do
 
     end associate
