@@ -147,7 +147,7 @@ module tensors_2D_m
     generic :: grid => vector_2D_grid
     generic :: consistent => vector_2D_consistent
     generic :: conformable => vector_2D_conformable_vector, vector_2D_conformable_scalar
-    generic :: at_cell_centers => vector_2D_at_cell_centers
+    generic :: co_located_components => vector_2D_co_located_components
     generic :: operator(.div.) => vector_2D_divergence
     generic :: operator(.dot.) => vector_2D_dot_vector
     generic :: to_file => vector_2D_to_file
@@ -157,7 +157,7 @@ module tensors_2D_m
     procedure, non_overridable, private :: vector_2D_consistent
     procedure, non_overridable, private :: vector_2D_conformable_vector
     procedure, non_overridable, private :: vector_2D_conformable_scalar
-    procedure, non_overridable, private :: vector_2D_at_cell_centers
+    procedure, non_overridable, private :: vector_2D_co_located_components
     procedure, non_overridable, private :: vector_2D_dot_vector
   end type
 
@@ -354,7 +354,7 @@ module tensors_2D_m
       double precision, allocatable :: divergence_grid_1D(:) !! grid points along the requested coordinate direction
     end function
 
-    pure module function vector_2D_at_cell_centers(self) result(vectors)
+    pure module function vector_2D_co_located_components(self) result(vectors)
       !! Vector values getter
       implicit none
       class(vector_2D_t), intent(in) :: self
@@ -382,11 +382,11 @@ module tensors_2D_m
       type(divergence_2D_t) divergence_2D
     end function
 
-    pure module function vector_2D_dot_vector(lhs, rhs) result(product)
+    pure module function vector_2D_dot_vector(lhs, rhs) result(scalar_product_2D)
       !! Result is scalar product of the 2D-vector arguments
       implicit none
       class(vector_2D_t), intent(in) :: lhs, rhs
-      type(scalar_product_2D_t) product
+      type(scalar_product_2D_t) scalar_product_2D
     end function
 
     pure module function gradient_2D_postmultiply_constant(lhs, rhs) result(product)

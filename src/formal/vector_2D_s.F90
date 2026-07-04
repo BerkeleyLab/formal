@@ -16,7 +16,7 @@ submodule(tensors_2D_m) vector_2D_s
     ,operator(.isAtLeast.) &
     ,operator(.within.) &
     ,string_t
-  use tensors_1D_m, only : cell_centers_1D, faces_1D, vector_1D_t, gradient_operator_1D_t
+  use tensors_1D_m, only : cell_centers_extended_1D, faces_1D, vector_1D_t, gradient_operator_1D_t
   use interpolator_1D_m, only : centers_to_faces_1D_t, faces_to_centers_1D_t
 
   implicit none
@@ -58,12 +58,12 @@ contains
   module procedure construct_2D_vector_from_function
 
    associate( &
-       x_centers => cell_centers_1D(x_min(x_dir), x_max(x_dir), cells(x_dir)) &
-      ,y_centers => cell_centers_1D(x_min(y_dir), x_max(y_dir), cells(y_dir)) &
-      ,x_faces   =>        faces_1D(x_min(x_dir), x_max(x_dir), cells(x_dir)) &
-      ,y_faces   =>        faces_1D(x_min(y_dir), x_max(y_dir), cells(y_dir)) &
+       x_ccext => cell_centers_extended_1D(x_min(x_dir), x_max(x_dir), cells(x_dir)) &
+      ,y_ccext => cell_centers_extended_1D(x_min(y_dir), x_max(y_dir), cells(y_dir)) &
+      ,x_faces =>        faces_1D(x_min(x_dir), x_max(x_dir), cells(x_dir)) &
+      ,y_faces =>        faces_1D(x_min(y_dir), x_max(y_dir), cells(y_dir)) &
     )
-      associate(vectors_x => initializer(x_faces,y_centers), vectors_y => initializer(x_centers,y_faces))
+      associate(vectors_x => initializer(x_faces,y_ccext), vectors_y => initializer(x_ccext,y_faces))
         vector_2D%tensor_2D_t = tensor_2D_t( &
           points = reshape(  &
             source = [points_2D_t(vectors_x(:,:,x_dir)), points_2D_t(vectors_y(:,:,y_dir))] &
@@ -103,9 +103,9 @@ contains
     case("x coordinate of x components")
       vector_grid_1D =        faces_1D(x_min = self%x_min_(x_dir), x_max = self%x_max_(x_dir), cells = self%cells_(x_dir))
     case("y coordinate of x components")
-      vector_grid_1D = cell_centers_1D(x_min = self%x_min_(y_dir), x_max = self%x_max_(y_dir), cells = self%cells_(y_dir))
+      vector_grid_1D = cell_centers_extended_1D(x_min = self%x_min_(y_dir), x_max = self%x_max_(y_dir), cells = self%cells_(y_dir))
     case("x coordinate of y components")
-      vector_grid_1D = cell_centers_1D(x_min = self%x_min_(x_dir), x_max = self%x_max_(x_dir), cells = self%cells_(x_dir))
+      vector_grid_1D = cell_centers_extended_1D(x_min = self%x_min_(x_dir), x_max = self%x_max_(x_dir), cells = self%cells_(x_dir))
     case("y coordinate of y components")
       vector_grid_1D =        faces_1D(x_min = self%x_min_(y_dir), x_max = self%x_max_(y_dir), cells = self%cells_(y_dir))
     case default
@@ -157,35 +157,26 @@ contains
 
   end procedure
 
-  module procedure vector_2D_at_cell_centers
-
-    double precision, allocatable :: x_components(:,:), y_components(:,:)
+  module procedure vector_2D_co_located_components
 
     call_julienne_assert(self%consistent())
 
-    ! values at cell centers extended to include boundaries only along the direction/component to be interpolated
-    allocate(x_components(self%cells_(x_dir)+2, self%cells_(y_dir)  ))
-    allocate(y_components(self%cells_(x_dir)  , self%cells_(y_dir)+2))
+    allocate(vectors(self%cells_(x_dir)+2, self%cells_(y_dir)+2, space_dimension)) ! values at cell centers extended to include boundaries
 
     construct_interpolator_array: &
     associate(interpolator => faces_to_centers_1D_t(order=self%order_, cells=self%cells_, dx=(self%x_max_ - self%x_min_)/self%cells_))
 
       interpolate_x_faces_to_centers_extended: &
       do concurrent(integer :: j = 1:size(self%points_(x_dir,1,1,1)%values_,y_dir))
-        x_components(:,j) = interpolator(x_dir)%center_values_extended(self%points_(x_dir,1,1,1)%values_(:,j))
+        vectors(:,j,x_dir) = interpolator(x_dir)%center_values_extended(self%points_(x_dir,1,1,1)%values_(:,j))
       end do interpolate_x_faces_to_centers_extended
 
       interpolate_y_faces_to_centers_extended: &
       do concurrent(integer :: i = 1:size(self%points_(y_dir,1,1,1)%values_,x_dir))
-        y_components(i,:) = interpolator(y_dir)%center_values_extended(self%points_(y_dir,1,1,1)%values_(i,:))
+        vectors(i,:,y_dir) = interpolator(y_dir)%center_values_extended(self%points_(y_dir,1,1,1)%values_(i,:))
       end do interpolate_y_faces_to_centers_extended
 
     end associate construct_interpolator_array
-
-    ! trim boundaries because edges lack tangential components and corners lack all commponents:
-    allocate(vectors(self%cells_(x_dir), self%cells_(y_dir), space_dimension))
-    vectors(:,:,x_dir) = x_components(2:self%cells_(x_dir)+1,  :                    )
-    vectors(:,:,y_dir) = y_components( :                    , 2:self%cells_(y_dir)+1)
 
   end procedure
 
@@ -194,18 +185,19 @@ contains
     call_julienne_assert(lhs%conformable(rhs))
 
     associate( &
-      lhs_centers => lhs%at_cell_centers() &
-     ,rhs_centers => rhs%at_cell_centers() &
+      lhs_ => lhs%co_located_components() &
+     ,rhs_ => rhs%co_located_components() &
     )
-      call_julienne_assert(.all. (shape(lhs_centers) .equalsExpected. shape(rhs_centers)))
+      call_julienne_assert(.all. (shape(lhs_) .equalsExpected. shape(rhs_)))
 
-      product%tensor_2D_t = tensor_2D_t( &
-         points = reshape([points_2D_t(lhs_centers(:,:,x_dir) * rhs_centers(:,:,x_dir) + lhs_centers(:,:,y_dir) * rhs_centers(:,:,y_dir))], [1,1,1,1]) &
-        ,cells = lhs%cells_ &
-        ,x_min = lhs%x_min_ &
-        ,x_max = lhs%x_max_ &
-        ,order = lhs%order_ &
-      )
+      scalar_product_2D%tensor_2D_t = &
+         tensor_2D_t( &
+            points = reshape([points_2D_t(lhs_(:,:,x_dir) * rhs_(:,:,x_dir) + lhs_(:,:,y_dir) * rhs_(:,:,y_dir))], [1,1,1,1]) &
+           ,cells = lhs%cells_ &
+           ,x_min = lhs%x_min_ &
+           ,x_max = lhs%x_max_ &
+           ,order = lhs%order_ &
+         )
     end associate
 
   end procedure
@@ -219,9 +211,9 @@ contains
 
     associate( &
        header => [string_t("x, y, " // name)] &
-      ,x => cell_centers_1D(self%x_min_(x_dir), self%x_max_(x_dir), self%cells_(x_dir)) &
-      ,y => cell_centers_1D(self%x_min_(y_dir), self%x_max_(y_dir), self%cells_(y_dir)) &
-      ,vectors => self%at_cell_centers() &
+      ,x => cell_centers_extended_1D(self%x_min_(x_dir), self%x_max_(x_dir), self%cells_(x_dir)) &
+      ,y => cell_centers_extended_1D(self%x_min_(y_dir), self%x_max_(y_dir), self%cells_(y_dir)) &
+      ,vectors => self%co_located_components() &
     )
       associate( &
          num_points => size(x)*size(y) &

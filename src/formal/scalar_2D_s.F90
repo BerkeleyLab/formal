@@ -96,8 +96,8 @@ contains
     gradient_2D%order_ = self%order_
 
     allocate(gradient_2D%points_(space_dimension,1,1,1))
-    allocate(gradient_2D%points_(x_dir,1,1,1)%values_(self%cells_(x_dir)+1, self%cells_(y_dir)  ))
-    allocate(gradient_2D%points_(y_dir,1,1,1)%values_(self%cells_(x_dir)  , self%cells_(y_dir)+1))
+    allocate(gradient_2D%points_(x_dir,1,1,1)%values_(self%cells_(x_dir)+1, self%cells_(y_dir)+2))
+    allocate(gradient_2D%points_(y_dir,1,1,1)%values_(self%cells_(x_dir)+2, self%cells_(y_dir)+1))
 
     gradient_x_component: &
     do concurrent(integer :: j=1:size(self%points_(1,1,1,1)%values_,y_dir)) default(none) shared(gradient_2D, self)

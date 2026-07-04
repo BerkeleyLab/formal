@@ -25,7 +25,7 @@ module scalar_2D_test_m
     procedure, nopass :: results
   end type
 
-  double precision, parameter :: tolerance = 5D-2
+  double precision, parameter :: tolerance = 1D-8
   integer, parameter :: space_dimension = 2
 
 contains
@@ -44,19 +44,19 @@ contains
    ])
   end function
 
-  pure function biquadratic(x,y) result(z)
+  pure function stagnation_point_potential(x,y) result(z)
     double precision, intent(in) :: x(:), y(:)
     double precision z(size(x),size(y))
     do concurrent(integer :: j=1:size(y)) default(none) shared(x,y,z)
-      z(:,j) = 1 - 2*x + 3*x**2 - x*y(j)/5 + 3*y(j)**2 - 2*y(j)
+       z(:,j) = (x**2 - y(j)**2)/2
     end do
   end function
 
-  pure function biquadratic_gradient(x,y) result(gradient)
+  pure function stagnation_point_velocity(x,y) result(gradient)
     double precision, intent(in) :: x(:), y(:)
     double precision gradient(size(x),size(y),space_dimension)
     do concurrent(integer :: i=1:size(x), j=1:size(y)) default(none) shared(gradient,x,y)
-      gradient(i,j,:) = [-2 + 6*x(i) - y(j)/5, -x(i)/5 + 6*y(j) - 2]
+       gradient(i,j,:) = [x(i), - y(j)]
     end do
   end function
 
@@ -66,18 +66,18 @@ contains
     procedure(vector_2D_initializer_i), pointer :: expected_gradient_initializer
     integer order
 
-    scalar_2D_initializer => biquadratic
-    expected_gradient_initializer => biquadratic_gradient
+    scalar_2D_initializer => stagnation_point_potential
+    expected_gradient_initializer => stagnation_point_velocity
     test_diagnosis = passing_test()
 
     do order = 2, 4, 2
-      associate(scalar_2D => scalar_2D_t(scalar_2D_initializer, order=order, cells=[30,20], x_min=[-1D0,1D0], x_max=[9D0,4D0]))
+      associate(scalar_2D => scalar_2D_t(scalar_2D_initializer, order=order, cells=[30,20], x_min=[-10D0,-10D0], x_max=[20D0,10D0]))
         associate( &
           grad_scalar => .grad. scalar_2D &
          ,expected_gradient => vector_2D_t(expected_gradient_initializer, mold=scalar_2D) &
         )
           test_diagnosis = test_diagnosis .also. &
-            .all. (grad_scalar%at_cell_centers() .approximates. expected_gradient%at_cell_centers() .within. tolerance) &
+            .all. (grad_scalar%co_located_components() .approximates. expected_gradient%co_located_components() .within. tolerance) &
             // string_t(" for order ") // string_t(order)
         end associate
       end associate
