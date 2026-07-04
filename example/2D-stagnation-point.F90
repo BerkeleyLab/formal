@@ -53,13 +53,9 @@ program stagnation_point_2D
       )
         block 
           character(len=*), parameter :: path = "example/scripts/"
-          character(len=*), parameter :: &
-             velocity_potential_csv = path // "velocity-potential.csv" &
-            ,velocity_csv           = path // "velocity.csv" &
-            ,velocity_expected_csv  = path // "expected-velocity.csv"
-          call velocity_potential_file%write_lines(velocity_potential_csv)
-          call velocity_file%write_lines(velocity_csv)
-          call velocity_expected_file%write_lines(velocity_expected_csv)
+          call velocity_potential_file%write_lines(path // "velocity-potential.csv")
+          call velocity_file%write_lines(path // "velocity.csv")
+          call velocity_expected_file%write_lines(path // "expected-velocity.csv")
           print *
           print '(a)', "With gnuplot installed, plot the results by setting your present working" 
           print '(a)', "directory to formal/example/scripts and executing the following commands:" // new_line('')
