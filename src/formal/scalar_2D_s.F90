@@ -129,7 +129,6 @@ contains
 
     call_julienne_assert(self%consistent())
 
-    !! The missing corners precludes printing the array self%values
     associate( &
        header => [string_t("x, y, " // name)] &
       ,num_points => sum( [( [( [( [( size(self%points_(m,n,p,q)%values_), m = 1,size(self%points_,1) )] &
