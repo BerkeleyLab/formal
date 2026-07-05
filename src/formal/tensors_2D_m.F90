@@ -95,7 +95,7 @@ module tensors_2D_m
     type(gradient_operator_1D_t) gradient_operator_1D_(space_dimension)
   contains
     generic :: operator(.grad.) => scalar_2D_gradient
-    generic :: points => scalar_2D_values
+    generic :: values => scalar_2D_values
     generic :: grid => scalar_2D_grid
     generic :: consistent => scalar_2D_consistent
     generic :: conformable => scalar_2D_conformable_scalar
@@ -382,11 +382,11 @@ module tensors_2D_m
       type(divergence_2D_t) divergence_2D
     end function
 
-    pure module function vector_2D_dot_vector(lhs, rhs) result(scalar_product_2D)
+    pure module function vector_2D_dot_vector(lhs, rhs) result(scalar_2D)
       !! Result is scalar product of the 2D-vector arguments
       implicit none
       class(vector_2D_t), intent(in) :: lhs, rhs
-      type(scalar_product_2D_t) scalar_product_2D
+      type(scalar_2D_t) scalar_2D
     end function
 
     pure module function gradient_2D_postmultiply_constant(lhs, rhs) result(product)

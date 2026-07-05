@@ -189,14 +189,19 @@ contains
     )
       call_julienne_assert(.all. (shape(lhs_) .equalsExpected. shape(rhs_)))
 
-      scalar_product_2D%tensor_2D_t = &
+      scalar_2D = scalar_2D_t( &
          tensor_2D_t( &
             points = reshape([points_2D_t(lhs_(:,:,x_dir) * rhs_(:,:,x_dir) + lhs_(:,:,y_dir) * rhs_(:,:,y_dir))], [1,1,1,1]) &
            ,cells = lhs%cells_ &
            ,x_min = lhs%x_min_ &
            ,x_max = lhs%x_max_ &
            ,order = lhs%order_ &
-         )
+         ) &
+        ,gradient_operator_1D_t( &
+           k = lhs%order_ &
+          ,dx = (lhs%x_max_ - lhs%x_min_)/lhs%cells_ &
+          ,cells = lhs%cells_ &
+      )  )
     end associate
 
   end procedure
