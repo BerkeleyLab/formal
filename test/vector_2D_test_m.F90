@@ -146,16 +146,16 @@ contains
     u_init => u_field
     v_init => v_field
 
-    order = 2
-
-    associate( &
-       u => vector_2D_t(u_init, cells=[5,5], x_min=[0D0,0D0], x_max=[5D0,5D0], order=order) &
-      ,v => vector_2D_t(v_init, cells=[5,5], x_min=[0D0,0D0], x_max=[5D0,5D0], order=order) &
-    )
-      associate(u_dot_v => u .dot. v)
-        test_diagnosis = test_diagnosis .also. (.all. (u_dot_v%values() .approximates. u_dot_v_exact .within. 1D-6))
+    do order = 2, 4, 2
+      associate( &
+         u => vector_2D_t(u_init, cells=[10,10], x_min=[0D0,0D0], x_max=[5D0,5D0], order=order) &
+        ,v => vector_2D_t(v_init, cells=[10,10], x_min=[0D0,0D0], x_max=[5D0,5D0], order=order) &
+      )
+        associate(u_dot_v => u .dot. v)
+          test_diagnosis = test_diagnosis .also. (.all. (u_dot_v%values() .approximates. u_dot_v_exact .within. 1D-6))
+        end associate
       end associate
-    end associate
+    end do
   end function
 
 end module vector_2D_test_m
