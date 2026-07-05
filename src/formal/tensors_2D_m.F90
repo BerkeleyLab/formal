@@ -14,11 +14,9 @@ module tensors_2D_m
   public :: vector_2D_t
   public :: gradient_2D_t
   public :: divergence_2D_t
-  public :: scalar_product_2D_t
   public :: scalar_2D_initializer_i
   public :: vector_2D_initializer_i
   public :: divergence_2D_initializer_i
-  public :: scalar_product_2D_initializer_i
 
   integer, parameter :: space_dimension = 2, max_tensor_rank = 4, x_dir = 1, y_dir = 2, z_dir = 3
 
@@ -26,13 +24,6 @@ module tensors_2D_m
 
     pure function scalar_2D_initializer_i(x,y) result(f)
       !! Sampling function for initializing a scalar_2D_t object
-      implicit none
-      double precision, intent(in) :: x(:), y(:)
-      double precision f(size(x),size(y))
-    end function
-
-    pure function scalar_product_2D_initializer_i(x,y) result(f)
-      !! Sampling function for initializing a scalar_product_2D_t object
       implicit none
       double precision, intent(in) :: x(:), y(:)
       double precision f(size(x),size(y))
@@ -223,29 +214,25 @@ module tensors_2D_m
 
   end interface
 
-  type, extends(tensor_2D_t) :: scalar_product_2D_t
-    !! A 2D mimetic scalar-product field abstraction
+  type, extends(tensor_2D_t) :: divergence_2D_t
+    !! A 2D mimetic divergence field abstraction with a public method that produces corresponding numerical quadrature weights
   contains
-    generic :: values => scalar_product_2D_values
-    generic :: grid => scalar_product_2D_grid
+    generic :: values => divergence_2D_values
+    generic :: grid => divergence_2D_grid
     generic :: consistent => tensor_2D_consistent
     generic :: conformable => tensor_2D_conformable
-    generic :: operator(*) => scalar_product_2D_premultiply_constant, scalar_product_2D_postmultiply_constant
-    generic :: to_file => scalar_product_2D_to_file
-    procedure, non_overridable, private :: scalar_product_2D_to_file
-    procedure, private, non_overridable :: scalar_product_2D_values
-    procedure, private, non_overridable :: scalar_product_2D_grid
-    procedure, private, non_overridable :: scalar_product_2D_postmultiply_constant
-    procedure, private, non_overridable, pass(rhs) :: scalar_product_2D_premultiply_constant
+    generic :: operator(*) => divergence_2D_premultiply_constant, divergence_2D_postmultiply_constant
+    generic :: to_file => divergence_2D_to_file
+    procedure, non_overridable, private :: divergence_2D_to_file
+    procedure, private, non_overridable :: divergence_2D_values
+    procedure, private, non_overridable :: divergence_2D_grid
+    procedure, private, non_overridable :: divergence_2D_postmultiply_constant
+    procedure, private, non_overridable, pass(rhs) :: divergence_2D_premultiply_constant
   end type
 
-  type, extends(scalar_product_2D_t) :: divergence_2D_t
-    !! A 2D mimetic divergence field abstraction with a public method that produces corresponding numerical quadrature weights
-  end type
+  interface divergence_2D_t
 
-  interface scalar_product_2D_t
-
-    pure module function construct_2D_scalar_product_from_function(initializer, order, cells, x_min, x_max) result(scalar_product_2D)
+    pure module function construct_2D_divergence_from_function(initializer, order, cells, x_min, x_max) result(divergence_2D)
       !! Result is a 2D scalar product initialized by sampling the initializer at cell centers defined by the other arguments
       implicit none
       procedure(scalar_2D_initializer_i), pointer, intent(in) :: initializer
@@ -253,22 +240,17 @@ module tensors_2D_m
       integer, intent(in) :: cells(:) !! number of grid cells spanning each spatial direction
       double precision, intent(in) :: x_min(:) !! grid location minima
       double precision, intent(in) :: x_max(:) !! grid location maxima
-      type(scalar_product_2D_t) scalar_product_2D
+      type(divergence_2D_t) divergence_2D
     end function
 
-    pure module function construct_2D_scalar_product_from_vector_mold(initializer, mold) result(scalar_product_2D)
+    pure module function construct_2D_divergence_from_vector_mold(initializer, mold) result(divergence_2D)
       !! Result is a 2D scalar product initialized by sampling the initializer on cell centers defined by the mold
       implicit none
-      procedure(scalar_product_2D_initializer_i), pointer, intent(in) :: initializer
+      procedure(divergence_2D_initializer_i), pointer, intent(in) :: initializer
       type(vector_2D_t), intent(in) :: mold
-      type(scalar_product_2D_t) scalar_product_2D
+      type(divergence_2D_t) divergence_2D
     end function
 
-  end interface
-
-  interface divergence_2D_t
-    module procedure construct_2D_scalar_product_from_function
-    module procedure construct_2D_scalar_product_from_vector_mold
   end interface
 
   interface
@@ -346,10 +328,10 @@ module tensors_2D_m
       double precision, allocatable :: vector_grid_1D(:) !! grid points along the requested coordinate direction
     end function
 
-    pure module function scalar_product_2D_grid(self, direction) result(divergence_grid_1D)
+    pure module function divergence_2D_grid(self, direction) result(divergence_grid_1D)
       !! Result array contains divergence grid locations along the requested spatial direction
       implicit none
-      class(scalar_product_2D_t), intent(in) :: self
+      class(divergence_2D_t), intent(in) :: self
       integer, intent(in) :: direction
       double precision, allocatable :: divergence_grid_1D(:) !! grid points along the requested coordinate direction
     end function
@@ -361,10 +343,10 @@ module tensors_2D_m
       double precision, allocatable :: vectors(:,:,:)
     end function
 
-    pure module function scalar_product_2D_values(self) result(divergences)
+    pure module function divergence_2D_values(self) result(divergences)
       !! Vector values getter
       implicit none
-      class(scalar_product_2D_t), intent(in) :: self
+      class(divergence_2D_t), intent(in) :: self
       double precision, allocatable :: divergences(:,:)
     end function
 
@@ -405,20 +387,20 @@ module tensors_2D_m
       type(gradient_2D_t) product
     end function
 
-    pure module function scalar_product_2D_postmultiply_constant(lhs, rhs) result(product)
-      !! Result is product of the scalar_product_2D_t lhs and the constant rhs
+    pure module function divergence_2D_postmultiply_constant(lhs, rhs) result(product)
+      !! Result is product of the divergence_2D_t lhs and the constant rhs
       implicit none
-      class(scalar_product_2D_t), intent(in) :: lhs
+      class(divergence_2D_t), intent(in) :: lhs
       double precision, intent(in) :: rhs
-      type(scalar_product_2D_t) product
+      type(divergence_2D_t) product
     end function
 
-    pure module function scalar_product_2D_premultiply_constant(lhs, rhs) result(product)
-      !! Result is product of the scalar_product_2D_t rhs and the constant lhs
+    pure module function divergence_2D_premultiply_constant(lhs, rhs) result(product)
+      !! Result is product of the divergence_2D_t rhs and the constant lhs
       implicit none
-      class(scalar_product_2D_t), intent(in) :: rhs
+      class(divergence_2D_t), intent(in) :: rhs
       double precision, intent(in) :: lhs
-      type(scalar_product_2D_t) product
+      type(divergence_2D_t) product
     end function
 
     pure module function scalar_2D_to_file(self, name) result(file)
@@ -437,10 +419,10 @@ module tensors_2D_m
       type(file_t) file
     end function
 
-    pure module function scalar_product_2D_to_file(self, name) result(file)
+    pure module function divergence_2D_to_file(self, name) result(file)
       !! Result is a file_t object containing the grid points and the corresponding 2D scalar-product values
       implicit none
-      class(scalar_product_2D_t), intent(in) :: self
+      class(divergence_2D_t), intent(in) :: self
       character(len=*), intent(in) :: name
       type(file_t) file
     end function

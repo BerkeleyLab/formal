@@ -3,7 +3,7 @@
 
 #include "julienne-assert-macros.h"
 
-submodule(tensors_2D_m) scalar_product_2D_s
+submodule(tensors_2D_m) divergence_2D_s
   use julienne_m, only : &
      call_julienne_assert_ &
     ,operator(.all.) &
@@ -16,7 +16,7 @@ submodule(tensors_2D_m) scalar_product_2D_s
 
 contains
 
-  module procedure scalar_product_2D_values
+  module procedure divergence_2D_values
 
     call_julienne_assert(self%consistent())
 
@@ -24,7 +24,7 @@ contains
 
   end procedure
 
-  module procedure scalar_product_2D_grid
+  module procedure divergence_2D_grid
 
     call_julienne_assert(self%consistent())
 
@@ -40,37 +40,37 @@ contains
     end associate construct_prototype
   end procedure
 
-  module procedure construct_2D_scalar_product_from_function
+  module procedure construct_2D_divergence_from_function
 
     define_grid: &
     associate( &
        x => cell_centers_1D(x_min(1), x_max(1), cells(1)) &
       ,y => cell_centers_1D(x_min(2), x_max(2), cells(2)) &
     )
-      allocate(scalar_product_2D%tensor_2D_t%points_(1,1,1,1))
-      scalar_product_2D%tensor_2D_t%points_(1,1,1,1)%values_ = initializer(x,y)
-      scalar_product_2D%tensor_2D_t%cells_ = cells
-      scalar_product_2D%tensor_2D_t%x_min_ = x_min
-      scalar_product_2D%tensor_2D_t%x_max_ = x_max
-      scalar_product_2D%tensor_2D_t%order_ = order
+      allocate(divergence_2D%tensor_2D_t%points_(1,1,1,1))
+      divergence_2D%tensor_2D_t%points_(1,1,1,1)%values_ = initializer(x,y)
+      divergence_2D%tensor_2D_t%cells_ = cells
+      divergence_2D%tensor_2D_t%x_min_ = x_min
+      divergence_2D%tensor_2D_t%x_max_ = x_max
+      divergence_2D%tensor_2D_t%order_ = order
     end associate define_grid
 
-    call_julienne_assert(scalar_product_2D%consistent())
+    call_julienne_assert(divergence_2D%consistent())
 
   end procedure
 
-  module procedure construct_2D_scalar_product_from_vector_mold
+  module procedure construct_2D_divergence_from_vector_mold
 
     call_julienne_assert(mold%consistent())
 
-    scalar_product_2D = scalar_product_2D_t(initializer, cells = mold%cells_, x_min = mold%x_min_, x_max = mold%x_max_, order = mold%order_)
+    divergence_2D = divergence_2D_t(initializer, cells = mold%cells_, x_min = mold%x_min_, x_max = mold%x_max_, order = mold%order_)
 
-    call_julienne_assert(scalar_product_2D%consistent())
-    call_julienne_assert(scalar_product_2D%conformable(mold))
+    call_julienne_assert(divergence_2D%consistent())
+    call_julienne_assert(divergence_2D%conformable(mold))
 
   end procedure
 
-  module procedure scalar_product_2D_postmultiply_constant
+  module procedure divergence_2D_postmultiply_constant
 
      call_julienne_assert(lhs%consistent())
 
@@ -85,11 +85,11 @@ contains
 
   end procedure
 
-  module procedure scalar_product_2D_premultiply_constant
+  module procedure divergence_2D_premultiply_constant
     product = rhs * lhs
   end procedure
 
-  module procedure scalar_product_2D_to_file
+  module procedure divergence_2D_to_file
     type(string_t), allocatable :: lines(:)
     integer i, j, l
     double precision, allocatable :: x(:), y(:)
@@ -130,6 +130,6 @@ contains
     end associate
 
     file = file_t(lines)
-  end procedure scalar_product_2D_to_file
+  end procedure divergence_2D_to_file
 
-end submodule scalar_product_2D_s
+end submodule divergence_2D_s
