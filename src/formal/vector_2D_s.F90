@@ -124,6 +124,8 @@ contains
      
   module procedure vector_2D_divergence
 
+    double precision, dimension(self%cells_(x_dir)+2, self%cells_(y_dir)+2) :: div_x_term, div_y_term
+
     call_julienne_assert(self%consistent())
 
     divergence_2D%x_min_ = self%x_min_
@@ -134,24 +136,21 @@ contains
     allocate(divergence_2D%points_(1, 1, 1, 1))
     allocate(divergence_2D%points_(1, 1, 1, 1)%values_(self%cells_(x_dir), self%cells_(y_dir)))
 
-    associate(v_x => divergence_2D%points_(x_dir,1,1,1)%values_, v_y => divergence_2D%points_(y_dir,1,1,1)%values_)
-
-      divergence_x_term: &
-      do concurrent(integer :: j = 1:size(v_x,y_dir)) default(none) shared(divergence_2D, self, v_x)
-        associate(padded_divergence => self%divergence_operator_1D_(x_dir) .x. v_x(:,j))
-          divergence_2D%points_(1,1,1,1)%values_(:,j) = padded_divergence(2:size(padded_divergence)-1)
-        end associate
-      end do divergence_x_term
-
-      add_y_term: &
-      do concurrent(integer :: i = 1:size(v_y,x_dir)) default(none) shared(divergence_2D, self, v_y)
-        associate(padded_divergence => self%divergence_operator_1D_(y_dir) .x. v_y(i,:))
-          divergence_2D%points_(1,1,1,1)%values_(i,:) = &
-            divergence_2D%points_(1,1,1,1)%values_(i,:) + padded_divergence(2:size(padded_divergence)-1)
-        end associate
-      end do add_y_term
-
+    associate(v_x => self%points_(x_dir,1,1,1)%values_)
+      do concurrent(integer :: j = 1:size(v_x,y_dir)) default(none) shared(divergence_2D, self, v_x, div_x_term)
+        div_x_term(:,j) = self%divergence_operator_1D_(x_dir) .x. v_x(:,j)
+      end do
     end associate
+
+    associate(v_y => self%points_(y_dir,1,1,1)%values_)
+      do concurrent(integer :: i = 1:size(v_y,x_dir)) default(none) shared(divergence_2D, self, v_y, div_y_term)
+        div_y_term(i,:) = self%divergence_operator_1D_(y_dir) .x. v_y(i,:)
+      end do
+    end associate
+
+    divergence_2D%points_(1, 1, 1, 1)%values_ = &
+        div_x_term(2:size(div_x_term,x_dir)-1, 2:size(div_x_term,y_dir)-1) &
+      + div_y_term(2:size(div_y_term,x_dir)-1, 2:size(div_y_term,y_dir)-1)
 
     call_julienne_assert(divergence_2D%conformable(self))
 
