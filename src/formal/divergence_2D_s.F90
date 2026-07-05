@@ -16,12 +16,21 @@ submodule(tensors_2D_m) divergence_2D_s
 
 contains
 
+  module procedure divergence_2D_conformable_scalar
+    call_julienne_assert(scalar_2D_consistent(scalar_2D))
+    call_julienne_assert(self%tensor_2D_conformable(scalar_2D))
+    conformable = .true.
+  end procedure
+
+  module procedure divergence_2D_conformable_vector
+    call_julienne_assert(vector_2D_consistent(vector_2D))
+    call_julienne_assert(self%tensor_2D_conformable(vector_2D))
+    conformable = .true.
+  end procedure
+
   module procedure divergence_2D_values
-
     call_julienne_assert(self%consistent())
-
     divergences = self%points_(1,1,1,1)%values_(:,:)
-
   end procedure
 
   module procedure divergence_2D_grid
@@ -70,23 +79,47 @@ contains
 
   end procedure
 
-  module procedure divergence_2D_postmultiply_constant
+  module procedure divergence_2D_minus_scalar
 
-     call_julienne_assert(lhs%consistent())
+     call_julienne_assert(lhs%conformable(rhs))
 
-     allocate(product%tensor_2D_t%points_(1,1,1,1))
-     product%points_(1,1,1,1)%values_ = lhs%points_(1,1,1,1)%values_ * rhs
-     product%cells_ = lhs%cells_
-     product%x_min_ = lhs%x_min_
-     product%x_max_ = lhs%x_max_
-     product%order_ = lhs%order_
+     allocate(difference%points_(1,1,1,1))
+     allocate(difference%points_(1,1,1,1)%values_(rhs%cells_(x_dir)+2, rhs%cells_(y_dir)+2))
 
-     call_julienne_assert(product%consistent())
+     associate( &
+        x_last => size(rhs%points_(1,1,1,1)%values_,x_dir) - 1 &
+       ,y_last => size(rhs%points_(1,1,1,1)%values_,y_dir) - 1 &
+     )
+       difference%points_(1,1,1,1)%values_(2:x_last-1, 2:y_last-1) = & ! internal points
+              lhs%points_(1,1,1,1)%values_ &
+            - rhs%points_(1,1,1,1)%values_(2:x_last-1, 2:y_last-1)
+       difference%points_(1,1,1,1)%values_(1,:)      = - rhs%points_(1,1,1,1)%values_(1,:)      ! x_min boundary
+       difference%points_(1,1,1,1)%values_(x_last,:) = - rhs%points_(1,1,1,1)%values_(x_last,:) ! x_max boundary
+       difference%points_(1,1,1,1)%values_(:,1)      = - rhs%points_(1,1,1,1)%values_(:,1)      ! y_min boundary
+       difference%points_(1,1,1,1)%values_(:,y_last) = - rhs%points_(1,1,1,1)%values_(:,y_last) ! y_max boundary
+     end associate
+
+     difference%cells_ = lhs%cells_
+     difference%x_min_ = lhs%x_min_
+     difference%x_max_ = lhs%x_max_
+     difference%order_ = lhs%order_
+
+     call_julienne_assert(difference%consistent())
 
   end procedure
 
+  module procedure divergence_2D_postmultiply_constant
+    lhs_x_rhs%tensor_2D_t =  tensor_2D_t( &
+       points = reshape([points_2D_t(lhs%points_(1,1,1,1)%values_ * rhs)], shape = [1,1,1,1]) &
+      ,cells  = lhs%cells_ &
+      ,x_min  = lhs%x_min_ &
+      ,x_max  = lhs%x_max_ &
+      ,order  = lhs%order_ &
+    )
+  end procedure
+
   module procedure divergence_2D_premultiply_constant
-    product = rhs * lhs
+    lhs_x_rhs = rhs * lhs
   end procedure
 
   module procedure divergence_2D_to_file

@@ -54,8 +54,7 @@ program advection_diffusion_2D
     advance_time: &
     block
       double precision :: dt = 1D-6
-      !s = s + dt * d_dt(s)
-      s = d_dt(s, v)
+      !s = s + dt * d_dt(s, v)
     end block advance_time
 
     associate( &
@@ -75,17 +74,7 @@ contains
     type(vector_2D_t), intent(in) :: v
     type(scalar_2D_t) ds_dt
     double precision, parameter :: D = 1D0
-
-    associate(grad_s => .grad. s)
-      associate( &
-         div_D_grad_s => .div. (D * grad_s) &
-        ,v_dot_grad_s => v .dot. grad_s &
-      )
-        ds_dt = s
-        !ds_dt = .div. (D * grad_s) - v .dot. grad_s
-      end associate
-    end associate
-
+    ds_dt = .div. (D * .grad. s) - (v .dot. .grad. s)
   end function
 
 end program

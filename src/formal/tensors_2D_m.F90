@@ -220,12 +220,16 @@ module tensors_2D_m
     generic :: values => divergence_2D_values
     generic :: grid => divergence_2D_grid
     generic :: consistent => tensor_2D_consistent
-    generic :: conformable => tensor_2D_conformable
+    generic :: conformable => divergence_2D_conformable_scalar, divergence_2D_conformable_vector
     generic :: operator(*) => divergence_2D_premultiply_constant, divergence_2D_postmultiply_constant
+    generic :: operator(-) => divergence_2D_minus_scalar
     generic :: to_file => divergence_2D_to_file
     procedure, non_overridable, private :: divergence_2D_to_file
     procedure, private, non_overridable :: divergence_2D_values
     procedure, private, non_overridable :: divergence_2D_grid
+    procedure, private, non_overridable :: divergence_2D_minus_scalar
+    procedure, private, non_overridable :: divergence_2D_conformable_vector
+    procedure, private, non_overridable :: divergence_2D_conformable_scalar
     procedure, private, non_overridable :: divergence_2D_postmultiply_constant
     procedure, private, non_overridable, pass(rhs) :: divergence_2D_premultiply_constant
   end type
@@ -280,6 +284,22 @@ module tensors_2D_m
       !! Assert the arguments' components are conformable, self-consistent, and consistent with each other
       implicit none
       class(scalar_2D_t), intent(in) :: self, scalar_2D
+      logical conformable
+    end function
+
+    pure module function divergence_2D_conformable_scalar(self, scalar_2D) result(conformable)
+      !! Assert the arguments' components are conformable, self-consistent, and consistent with each other
+      implicit none
+      class(divergence_2D_t), intent(in) :: self
+      class(scalar_2D_t), intent(in) :: scalar_2D
+      logical conformable
+    end function
+
+    pure module function divergence_2D_conformable_vector(self, vector_2D) result(conformable)
+      !! Assert the arguments' components are conformable, self-consistent, and consistent with each other
+      implicit none
+      class(divergence_2D_t), intent(in) :: self
+      class(vector_2D_t), intent(in) :: vector_2D
       logical conformable
     end function
 
@@ -387,20 +407,28 @@ module tensors_2D_m
       type(gradient_2D_t) product
     end function
 
-    pure module function divergence_2D_postmultiply_constant(lhs, rhs) result(product)
+    pure module function divergence_2D_postmultiply_constant(lhs, rhs) result(lhs_x_rhs)
       !! Result is product of the divergence_2D_t lhs and the constant rhs
       implicit none
       class(divergence_2D_t), intent(in) :: lhs
       double precision, intent(in) :: rhs
-      type(divergence_2D_t) product
+      type(divergence_2D_t) lhs_x_rhs
     end function
 
-    pure module function divergence_2D_premultiply_constant(lhs, rhs) result(product)
-      !! Result is product of the divergence_2D_t rhs and the constant lhs
+    pure module function divergence_2D_premultiply_constant(lhs, rhs) result(lhs_x_rhs)
+      !! Result is product of the constant rhs and the lhs divergence_2D_t
       implicit none
       class(divergence_2D_t), intent(in) :: rhs
       double precision, intent(in) :: lhs
-      type(divergence_2D_t) product
+      type(divergence_2D_t) lhs_x_rhs
+    end function
+
+    pure module function divergence_2D_minus_scalar(lhs, rhs) result(difference)
+      !! Result is the pointwise difference between the lhs and rhs
+      implicit none
+      class(divergence_2D_t), intent(in) :: lhs
+      class(scalar_2D_t), intent(in) :: rhs
+      type(scalar_2D_t) difference
     end function
 
     pure module function scalar_2D_to_file(self, name) result(file)
