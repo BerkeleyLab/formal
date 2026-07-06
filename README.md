@@ -65,7 +65,7 @@ ds_dt = .div. (D * .grad. s) - (v .dot. .grad. s)
 ```
 where `s` is the concentration of a passive scalar quantity, `D` is a diffusion coefficient, and
 `v` is a prescribed velocity field. The [2D-advection-diffusion.F90](./example/2D-advection-diffusion.F90) 
-program to advance the above eqution over time using a Runge-Kutta scheme.
+program to advance the above equation over time using a Runge-Kutta scheme.
 
 ### Other example programs
 See this repository's [example](./example) subdirectory for demonstrations of how
