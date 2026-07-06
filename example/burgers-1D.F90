@@ -122,7 +122,7 @@ program burgers_1D
 
         associate(x => u%grid())
           do n = 1, size(x)
-            write(file_unit,"(*(G13.6,:,'  '))"), x(n), u_surface(n,:) ! write space-separated values
+            write(file_unit,"(*(G13.6,:,'  '))") x(n), u_surface(n,:) ! write space-separated values
           end do
         end associate
 
