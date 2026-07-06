@@ -10,7 +10,6 @@ submodule(tensors_2D_m) gradient_2D_s
     ,operator(.equalsExpected.) &
     ,operator(.isAtLeast.) &
     ,operator(.isAtMost.)
-  use tensors_1D_m, only : divergence_operator_1D_t
   implicit none
 
 contains
