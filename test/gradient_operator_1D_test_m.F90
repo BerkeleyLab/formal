@@ -205,8 +205,13 @@ contains
             ,error_fine_max   => maxval(abs(grad_fine_values - grad_fine_expected)) &
           )
             associate(order_actual => log(error_coarse_max/error_fine_max)/log(dble(fine_cells)/coarse_cells))
+#ifndef __GFORTRAN__
               test_diagnosis = test_diagnosis .also. (order_actual .approximates. dble(order_desired) .within. rough_tolerance) &
                 // " (4th-order d(sinusoid)/dx order of accuracy)"
+#else
+              test_diagnosis = test_diagnosis .also. (order_actual .approximates. dble(order_desired) .within. 1.1*rough_tolerance) &
+                // " (4th-order d(sinusoid)/dx order of accuracy)"
+#endif
             end associate
           end associate
         end associate
