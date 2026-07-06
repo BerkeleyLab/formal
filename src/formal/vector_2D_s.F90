@@ -16,7 +16,7 @@ submodule(tensors_2D_m) vector_2D_s
     ,operator(.isAtLeast.) &
     ,operator(.within.) &
     ,string_t
-  use tensors_1D_m, only : cell_centers_extended_1D, faces_1D, vector_1D_t, gradient_operator_1D_t
+  use tensors_1D_m, only : cell_centers_extended_1D, faces_1D, vector_1D_t
   use interpolator_1D_m, only : centers_to_faces_1D_t, faces_to_centers_1D_t
 
   implicit none
