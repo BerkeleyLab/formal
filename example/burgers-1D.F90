@@ -28,7 +28,7 @@ program burgers_1D
   !! * Corbino & Castillo (2020) https://doi.org/10.1016/j.cam.2019.06.042.
   !! * Dumett & Castillo  (2022) https://doi.org/10.13140/RG.2.2.26630.14400
   use initial_condition_m, only : initial_condition
-  use julienne_m, only :  command_line_t, csv, call_julienne_assert_, operator(.equalsExpected.), string_t
+  use julienne_m, only :  command_line_t, call_julienne_assert_, operator(.equalsExpected.), string_t
   use formal_m, only : scalar_1D_t, scalar_1D_initializer_i, d_dx, d2_dx2
   use iso_fortran_env, only : output_unit
   implicit none
@@ -67,7 +67,7 @@ program burgers_1D
   block
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer
     double precision, parameter :: pi = acos(-1D0), nu=1D0, t_final=0.6D0
-    double precision, allocatable :: u_surface(:,:), time(:)
+    double precision, allocatable :: u_surface(:,:)
     double precision dt
     type(scalar_1D_t) u
     integer step, n
