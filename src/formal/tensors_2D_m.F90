@@ -86,6 +86,8 @@ module tensors_2D_m
     type(gradient_operator_1D_t) gradient_operator_1D_(space_dimension)
   contains
     generic :: operator(.grad.) => scalar_2D_gradient
+    generic :: operator(*) => scalar_2D_postmultiply_double, scalar_2D_premultiply_double
+    generic :: operator(+) => scalar_2D_plus_scalar
     generic :: values => scalar_2D_values
     generic :: grid => scalar_2D_grid
     generic :: consistent => scalar_2D_consistent
@@ -97,6 +99,9 @@ module tensors_2D_m
     procedure, non_overridable, private :: scalar_2D_grid
     procedure, non_overridable, private :: scalar_2D_consistent
     procedure, non_overridable, private :: scalar_2D_conformable_scalar
+    procedure, non_overridable, private :: scalar_2D_postmultiply_double
+    procedure, non_overridable, private :: scalar_2D_plus_scalar
+    procedure, non_overridable, private, pass(rhs) :: scalar_2D_premultiply_double
   end type
 
   interface scalar_2D_t
@@ -338,6 +343,29 @@ module tensors_2D_m
       class(scalar_2D_t), intent(in) :: self
       integer, intent(in) :: direction
       double precision, allocatable :: scalar_grid_1D(:)
+    end function
+
+    pure module function scalar_2D_postmultiply_double(lhs, rhs) result(lhs_x_rhs)
+      !! Result is product of the scalar_2D_t lhs and double-precision (constant) rhs
+      implicit none
+      class(scalar_2D_t), intent(in) :: lhs
+      double precision, intent(in) :: rhs
+      type(scalar_2D_t) lhs_x_rhs
+    end function
+
+    pure module function scalar_2D_premultiply_double(lhs, rhs) result(lhs_x_rhs)
+      !! Result is product of the scalar_2D_t rhs and double-precision (constant) lhs
+      implicit none
+      class(scalar_2D_t), intent(in) :: rhs
+      double precision, intent(in) :: lhs
+      type(scalar_2D_t) lhs_x_rhs
+    end function
+
+    pure module function scalar_2D_plus_scalar(lhs, rhs) result(lhs_plus_rhs)
+      !! Result is product of the scalar_2D_t lhs and double-precision (constant) rhs
+      implicit none
+      class(scalar_2D_t), intent(in) :: lhs, rhs
+      type(scalar_2D_t) lhs_plus_rhs
     end function
 
     pure module function vector_2D_grid(self, component, coordinate) result(vector_grid_1D)

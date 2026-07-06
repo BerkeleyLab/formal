@@ -28,7 +28,6 @@ contains
     end do
   end function
 
-
 end module
 
 program advection_diffusion_2D
@@ -54,7 +53,7 @@ program advection_diffusion_2D
     advance_time: &
     block
       double precision :: dt = 1D-6
-      !s = s + dt * d_dt(s, v)
+      s = s + dt * d_dt(s, v)
     end block advance_time
 
     associate( &
