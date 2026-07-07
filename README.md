@@ -91,7 +91,7 @@ Building and testing
 --------------------
  Vendor   | Compiler    | Version(s) Tested | Build/Test Command
 ----------|-------------|-------------------|-------------------
- LFortran | `lfortran`  | latest            | `fpm test --compiler lfortran --flag "--cpp --realloc-lhs-arrays"`
+ LFortran | `lfortran`  | latest            | `fpm test --compiler lfortran --flag "--cpp --realloc-lhs-arrays --separate-compilation"`
  LLVM     | `flang`     | 20-22             | `fpm test --compiler flang --profile release`
  LLVM     | `flang`     | 19                | `fpm test --compiler flang --profile release --flag "-mmlir -allow-assumed-rank"`
 
