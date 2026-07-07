@@ -32,6 +32,7 @@ module vector_2D_test_m
 
   integer, parameter :: space_dimension = 2
   double precision, parameter :: tolerance = 1D-2
+  double precision, parameter :: u_const(*) = [1D0,2D0], v_const(*) = [3D0,4D0], u_dot_v_exact = dot_product(u_const, v_const)
 
 contains
 
@@ -45,7 +46,8 @@ contains
    type(test_result_t), allocatable :: test_results(:)
 
    test_results = vector_2D_test%run([ &
-     test_description_t('computing the divergence of a vector field', usher(check_divergence)) &
+      test_description_t('computing the divergence of a vector field', usher(check_divergence)) &
+     ,test_description_t('computing the dot product of two vector fields', usher(check_dot_product)) &
    ])
   end function
 
@@ -113,6 +115,44 @@ contains
               (.all. (div_vector%values() .approximates. expected_divergence%values() .within. tolerance)) &
               // string_t(" for order ") // string_t(order)
           end associate
+        end associate
+      end associate
+    end do
+  end function
+
+  pure function u_field(x,y) result(u)
+    double precision, intent(in) :: x(:), y(:)
+    double precision u(size(x),size(y),space_dimension)
+    do concurrent(integer :: i=1:size(x), j=1:size(y))
+      u(i,j,:) = u_const
+    end do
+  end function
+
+  pure function v_field(x,y) result(v)
+    double precision, intent(in) :: x(:), y(:)
+    double precision v(size(x),size(y),space_dimension)
+    do concurrent(integer :: i=1:size(x), j=1:size(y))
+      v(i,j,:) = v_const
+    end do
+  end function
+
+  function check_dot_product() result(test_diagnosis)
+    type(test_diagnosis_t) test_diagnosis
+    procedure(vector_2D_initializer_i), pointer :: u_init, v_init
+    integer order
+
+    test_diagnosis = passing_test()
+
+    u_init => u_field
+    v_init => v_field
+
+    do order = 2, 4, 2
+      associate( &
+         u => vector_2D_t(u_init, cells=[10,10], x_min=[0D0,0D0], x_max=[5D0,5D0], order=order) &
+        ,v => vector_2D_t(v_init, cells=[10,10], x_min=[0D0,0D0], x_max=[5D0,5D0], order=order) &
+      )
+        associate(u_dot_v => u .dot. v)
+          test_diagnosis = test_diagnosis .also. (.all. (u_dot_v%values() .approximates. u_dot_v_exact .within. 1D-6))
         end associate
       end associate
     end do

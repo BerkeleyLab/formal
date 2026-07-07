@@ -99,6 +99,7 @@ contains
         associate( s_grid           => s%grid()      &
                   ,grad_s_grid      => grad_s%grid() &
                   ,laplacian_s_grid => laplacian_s%grid())
+#ifndef __GFORTRAN__
           associate( s_table           => tabulate( &
                         string_t([character(len=22)::"x", "f(x) expected"         , "f(x) actual"         ]) &
                        ,s_grid, f(s_grid), s%values() &
@@ -115,6 +116,20 @@ contains
              call grad_s_table%write_lines()
              call laplacian_s_table%write_lines()
           end associate
+#else
+          block
+            type(file_t) s_table, grad_s_table, laplacian_s_table
+            s_table = tabulate( string_t([character(len=22)::"x", "f(x) expected"         , "f(x) actual"         ]) &
+                               ,s_grid, f(s_grid), s%values() )
+            grad_s_table = tabulate( string_t([character(len=22)::"x", ".grad. f expected"     , ".grad. f actual"     ]) &
+                                    ,grad_s_grid, df_dx(grad_s_grid), grad_s%values() )
+            laplacian_s_table = tabulate( string_t([character(len=22)::"x", ".laplacian. f expected", ".laplacian. f actual"]) &
+                                         ,laplacian_s_grid, d2f_dx2(laplacian_s_grid), laplacian_s%values() )
+            call s_table%write_lines()
+            call grad_s_table%write_lines()
+            call laplacian_s_table%write_lines()
+          end block
+#endif
         end associate
       end associate
     end associate

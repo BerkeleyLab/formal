@@ -27,15 +27,6 @@ module formal_m
     ,vector_2D_initializer_i & ! vector_2D_t initializar abstract interface
     ,divergence_2D_initializer_i ! divergence_2D_t initializar abstract interface
 
-  use tensors_3D_m, only : &
-     scalar_3D_t & ! discrete 3D scalar field derived type
-    ,vector_3D_t & ! discrete 3D vector field derived type
-    ,divergence_3D_t & ! discrete 3D divergence field derived type
-    ,gradient_3D_t & ! result of `.grad. s` for a scalar_3D_t s
-    ,scalar_3D_initializer_i & ! scalar_3D_t initializer abstract interface
-    ,vector_3D_initializer_i & ! vector_3D_t initializar abstract interface
-    ,divergence_3D_initializer_i ! divergence_2D_t initializar abstract interface
-
   use differential_operators_1D_m, only : &
      gradient_operator_1D_t & ! matrix operator defining a 1D mimetic gradient
     ,divergence_operator_1D_t ! matrix operator defining a 1D mimetic divergence
