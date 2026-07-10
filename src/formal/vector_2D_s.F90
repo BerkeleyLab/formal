@@ -156,7 +156,7 @@ contains
 
   end procedure
 
-  module procedure vector_2D_co_located_components
+  module procedure vector_2D_to_centers_extended
 
     call_julienne_assert(self%consistent())
 
@@ -179,13 +179,46 @@ contains
 
   end procedure
 
+  module procedure vector_2D_postmultiply_scalar
+
+    call_julienne_assert(vector_2D%conformable(scalar_2D))
+
+    associate(vector => vector_2D%to_centers_extended())
+
+      call_julienne_assert(.all. ([size(vector,x_dir), size(vector,y_dir)] .equalsExpected. shape(scalar_2D%points(1,1,1,1)%values_)))
+
+      vector_x_scalar = construct_2D_vector_from_components( &
+         tensor_2D_t( &
+            points = reshape( &
+               source = [ points_2D_t(vector(:,:,x_dir) * scalar_2D%points_(1,1,1,1)%values_) &
+                         ,points_2D_t(vector(:,:,y_dir) * scalar_2D%points_(1,1,1,1)%values_)] &
+              ,shape  = [space_dimension,1,1,1] &
+            ) &
+           ,cells = vector_2D%cells_ &
+           ,x_min = vector_2D%x_min_ &
+           ,x_max = vector_2D%x_max_ &
+           ,order = vector_2D%order_ &
+         ) &
+        ,divergence_operator_1D_t( &
+           k = vector_2D%order_ &
+          ,dx = (vector_2D%x_max_ - vector_2D%x_min_)/vector_2D%cells_ &
+          ,cells = vector_2D%cells_ &
+      )  )
+    end associate
+
+  end procedure
+
+  module procedure vector_2D_premultiply_scalar
+    scalar_x_vector = vector_2D * scalar_2D
+  end procedure
+
   module procedure vector_2D_dot_vector
 
     call_julienne_assert(lhs%conformable(rhs))
 
     associate( &
-      lhs_ => lhs%co_located_components() &
-     ,rhs_ => rhs%co_located_components() &
+      lhs_ => lhs%to_centers_extended() &
+     ,rhs_ => rhs%to_centers_extended() &
     )
       call_julienne_assert(.all. (shape(lhs_) .equalsExpected. shape(rhs_)))
 
@@ -217,7 +250,7 @@ contains
        header => [string_t("x, y, " // name)] &
       ,x => cell_centers_extended_1D(self%x_min_(x_dir), self%x_max_(x_dir), self%cells_(x_dir)) &
       ,y => cell_centers_extended_1D(self%x_min_(y_dir), self%x_max_(y_dir), self%cells_(y_dir)) &
-      ,vectors => self%co_located_components() &
+      ,vectors => self%to_centers_extended() &
     )
       allocate(lines(size(header) +  size(x)*size(y)))
 

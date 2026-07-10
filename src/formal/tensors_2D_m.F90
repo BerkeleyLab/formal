@@ -9,7 +9,7 @@ module tensors_2D_m
   use julienne_m, only : file_t 
   implicit none
 
-  private
+  !private
   public :: scalar_2D_t
   public :: vector_2D_t
   public :: gradient_2D_t
@@ -85,6 +85,7 @@ module tensors_2D_m
     private
     type(gradient_operator_1D_t) gradient_operator_1D_(space_dimension)
   contains
+    generic :: assignment(=) => scalar_2D_assign_divergence
     generic :: operator(.grad.) => scalar_2D_gradient
     generic :: operator(*) => scalar_2D_postmultiply_double, scalar_2D_premultiply_double
     generic :: operator(+) => scalar_2D_plus_scalar
@@ -93,6 +94,7 @@ module tensors_2D_m
     generic :: consistent => scalar_2D_consistent
     generic :: conformable => scalar_2D_conformable_scalar
     generic :: to_file => scalar_2D_to_file
+    procedure, non_overridable, private :: scalar_2D_assign_divergence
     procedure, non_overridable, private :: scalar_2D_to_file
     procedure, non_overridable, private :: scalar_2D_gradient
     procedure, non_overridable, private :: scalar_2D_values
@@ -143,9 +145,10 @@ module tensors_2D_m
     generic :: grid => vector_2D_grid
     generic :: consistent => vector_2D_consistent
     generic :: conformable => vector_2D_conformable_vector, vector_2D_conformable_scalar
-    generic :: co_located_components => vector_2D_co_located_components
+    generic :: to_centers_extended => vector_2D_to_centers_extended
     generic :: operator(.div.) => vector_2D_divergence
     generic :: operator(.dot.) => vector_2D_dot_vector
+    generic :: operator(*) => vector_2D_postmultiply_scalar, vector_2D_premultiply_scalar
     generic :: to_file => vector_2D_to_file
     procedure, non_overridable, private :: vector_2D_to_file
     procedure, non_overridable, private :: vector_2D_grid
@@ -153,8 +156,10 @@ module tensors_2D_m
     procedure, non_overridable, private :: vector_2D_consistent
     procedure, non_overridable, private :: vector_2D_conformable_vector
     procedure, non_overridable, private :: vector_2D_conformable_scalar
-    procedure, non_overridable, private :: vector_2D_co_located_components
+    procedure, non_overridable, private :: vector_2D_to_centers_extended
     procedure, non_overridable, private :: vector_2D_dot_vector
+    procedure, non_overridable, private :: vector_2D_postmultiply_scalar
+    procedure, non_overridable, private, pass(vector_2D) :: vector_2D_premultiply_scalar
   end type
 
   interface vector_2D_t
@@ -227,7 +232,7 @@ module tensors_2D_m
     generic :: consistent => tensor_2D_consistent
     generic :: conformable => divergence_2D_conformable_scalar, divergence_2D_conformable_vector
     generic :: operator(*) => divergence_2D_premultiply_constant, divergence_2D_postmultiply_constant
-    generic :: operator(-) => divergence_2D_minus_scalar
+    generic :: operator(-) => divergence_2D_minus_scalar, divergence_2D_minus_divergence
     generic :: to_file => divergence_2D_to_file
     procedure, non_overridable, private :: divergence_2D_to_file
     procedure, private, non_overridable :: divergence_2D_values
@@ -236,6 +241,7 @@ module tensors_2D_m
     procedure, private, non_overridable :: divergence_2D_conformable_vector
     procedure, private, non_overridable :: divergence_2D_conformable_scalar
     procedure, private, non_overridable :: divergence_2D_postmultiply_constant
+    procedure, private, non_overridable :: divergence_2D_minus_divergence
     procedure, private, non_overridable, pass(rhs) :: divergence_2D_premultiply_constant
   end type
 
@@ -277,6 +283,13 @@ module tensors_2D_m
       class(tensor_2D_t), intent(in) :: self, tensor_2D
       logical conformable
     end function
+
+    pure module subroutine scalar_2D_assign_divergence(lhs, rhs)
+      !! Assign 2D divergence to 2D scalar at internal points
+      implicit none
+      class(scalar_2D_t), intent(inout) :: lhs
+      type(divergence_2D_t), intent(in) :: rhs
+    end subroutine
 
     pure module function scalar_2D_consistent(self) result(self_consistent)
       !! Assert components allocated and self-consistent, including sufficient accuracy for gradient operator
@@ -384,7 +397,7 @@ module tensors_2D_m
       double precision, allocatable :: divergence_grid_1D(:) !! grid points along the requested coordinate direction
     end function
 
-    pure module function vector_2D_co_located_components(self) result(vectors)
+    pure module function vector_2D_to_centers_extended(self) result(vectors)
       !! Vector values getter
       implicit none
       class(vector_2D_t), intent(in) :: self
@@ -410,6 +423,22 @@ module tensors_2D_m
       implicit none
       class(vector_2D_t), intent(in) :: self
       type(divergence_2D_t) divergence_2D
+    end function
+
+    pure module function vector_2D_postmultiply_scalar(vector_2D, scalar_2D) result(vector_x_scalar)
+      !! Result is product of the 2D vector and scalar arguments
+      implicit none
+      class(vector_2D_t), intent(in) :: vector_2D
+      type(scalar_2D_t), intent(in) :: scalar_2D
+      type(vector_2D_t) vector_x_scalar
+    end function
+
+    pure module function vector_2D_premultiply_scalar(scalar_2D, vector_2D) result(scalar_x_vector)
+      !! Result is product of the 2D vector and scalar arguments
+      implicit none
+      class(vector_2D_t), intent(in) :: vector_2D
+      type(scalar_2D_t), intent(in) :: scalar_2D
+      type(vector_2D_t) scalar_x_vector
     end function
 
     pure module function vector_2D_dot_vector(lhs, rhs) result(scalar_2D)
@@ -449,6 +478,13 @@ module tensors_2D_m
       class(divergence_2D_t), intent(in) :: rhs
       double precision, intent(in) :: lhs
       type(divergence_2D_t) lhs_x_rhs
+    end function
+
+    pure module function divergence_2D_minus_divergence(lhs, rhs) result(difference)
+      !! Result is the pointwise difference between the lhs and rhs
+      implicit none
+      class(divergence_2D_t), intent(in) :: lhs, rhs
+      type(divergence_2D_t) difference
     end function
 
     pure module function divergence_2D_minus_scalar(lhs, rhs) result(difference)

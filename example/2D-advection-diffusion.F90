@@ -53,15 +53,17 @@ program advection_diffusion_2D
     advance_time: &
     block
       double precision :: dt = 1D-6
-      s = s + dt * d_dt(s, v)
+      associate(s_half => s + (dt/2) * d_dt(s, v))
+        s = s + dt * d_dt(s_half, v)
+      end associate
     end block advance_time
 
     associate( &
        scalar_file   => s%to_file("scalar") &
       ,velocity_file => v%to_file("vector") &
     )
-      call   scalar_file%write_lines("example/scripts/scalar.csv")
-      call velocity_file%write_lines("example/scripts/velocity.csv")
+      call   scalar_file%write_lines("example/scripts/scalar-adv-dif.csv")
+      call velocity_file%write_lines("example/scripts/velocity-adv-dif.csv")
     end associate
 
   end associate
@@ -73,7 +75,7 @@ contains
     type(vector_2D_t), intent(in) :: v
     type(scalar_2D_t) ds_dt
     double precision, parameter :: D = 1D0
-    ds_dt = .div. (D * .grad. s) - (v .dot. .grad. s)
+    ds_dt = .div. (D * .grad. s) - .div. (v * s)
   end function
 
 end program
