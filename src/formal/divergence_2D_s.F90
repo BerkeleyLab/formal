@@ -68,6 +68,20 @@ contains
 
   end procedure
 
+  module procedure divergence_2D_minus_divergence
+    call_julienne_assert(lhs%conformable(rhs))
+
+    difference%tensor_2D_t =  tensor_2D_t( &
+       points = reshape([points_2D_t(lhs%points_(1,1,1,1)%values_ - rhs%points_(1,1,1,1)%values_)], shape = [1,1,1,1]) &
+      ,cells  = lhs%cells_ &
+      ,x_min  = lhs%x_min_ &
+      ,x_max  = lhs%x_max_ &
+      ,order  = lhs%order_ &
+    )
+    call_julienne_assert(difference%consistent())
+
+  end procedure
+
   module procedure construct_2D_divergence_from_vector_mold
 
     call_julienne_assert(mold%consistent())

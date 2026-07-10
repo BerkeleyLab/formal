@@ -230,7 +230,7 @@ module tensors_2D_m
     generic :: consistent => tensor_2D_consistent
     generic :: conformable => divergence_2D_conformable_scalar, divergence_2D_conformable_vector
     generic :: operator(*) => divergence_2D_premultiply_constant, divergence_2D_postmultiply_constant
-    generic :: operator(-) => divergence_2D_minus_scalar
+    generic :: operator(-) => divergence_2D_minus_scalar, divergence_2D_minus_divergence
     generic :: to_file => divergence_2D_to_file
     procedure, non_overridable, private :: divergence_2D_to_file
     procedure, private, non_overridable :: divergence_2D_values
@@ -239,6 +239,7 @@ module tensors_2D_m
     procedure, private, non_overridable :: divergence_2D_conformable_vector
     procedure, private, non_overridable :: divergence_2D_conformable_scalar
     procedure, private, non_overridable :: divergence_2D_postmultiply_constant
+    procedure, private, non_overridable :: divergence_2D_minus_divergence
     procedure, private, non_overridable, pass(rhs) :: divergence_2D_premultiply_constant
   end type
 
@@ -468,6 +469,13 @@ module tensors_2D_m
       class(divergence_2D_t), intent(in) :: rhs
       double precision, intent(in) :: lhs
       type(divergence_2D_t) lhs_x_rhs
+    end function
+
+    pure module function divergence_2D_minus_divergence(lhs, rhs) result(difference)
+      !! Result is the pointwise difference between the lhs and rhs
+      implicit none
+      class(divergence_2D_t), intent(in) :: lhs, rhs
+      type(divergence_2D_t) difference
     end function
 
     pure module function divergence_2D_minus_scalar(lhs, rhs) result(difference)
