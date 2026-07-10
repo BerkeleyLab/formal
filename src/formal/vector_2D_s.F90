@@ -156,7 +156,7 @@ contains
 
   end procedure
 
-  module procedure vector_2D_co_located_components
+  module procedure vector_2D_to_centers_extended
 
     call_julienne_assert(self%consistent())
 
@@ -184,8 +184,8 @@ contains
     call_julienne_assert(lhs%conformable(rhs))
 
     associate( &
-      lhs_ => lhs%co_located_components() &
-     ,rhs_ => rhs%co_located_components() &
+      lhs_ => lhs%to_centers_extended() &
+     ,rhs_ => rhs%to_centers_extended() &
     )
       call_julienne_assert(.all. (shape(lhs_) .equalsExpected. shape(rhs_)))
 
@@ -217,7 +217,7 @@ contains
        header => [string_t("x, y, " // name)] &
       ,x => cell_centers_extended_1D(self%x_min_(x_dir), self%x_max_(x_dir), self%cells_(x_dir)) &
       ,y => cell_centers_extended_1D(self%x_min_(y_dir), self%x_max_(y_dir), self%cells_(y_dir)) &
-      ,vectors => self%co_located_components() &
+      ,vectors => self%to_centers_extended() &
     )
       allocate(lines(size(header) +  size(x)*size(y)))
 

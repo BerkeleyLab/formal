@@ -143,7 +143,7 @@ module tensors_2D_m
     generic :: grid => vector_2D_grid
     generic :: consistent => vector_2D_consistent
     generic :: conformable => vector_2D_conformable_vector, vector_2D_conformable_scalar
-    generic :: co_located_components => vector_2D_co_located_components
+    generic :: to_centers_extended => vector_2D_to_centers_extended
     generic :: operator(.div.) => vector_2D_divergence
     generic :: operator(.dot.) => vector_2D_dot_vector
     generic :: to_file => vector_2D_to_file
@@ -153,7 +153,7 @@ module tensors_2D_m
     procedure, non_overridable, private :: vector_2D_consistent
     procedure, non_overridable, private :: vector_2D_conformable_vector
     procedure, non_overridable, private :: vector_2D_conformable_scalar
-    procedure, non_overridable, private :: vector_2D_co_located_components
+    procedure, non_overridable, private :: vector_2D_to_centers_extended
     procedure, non_overridable, private :: vector_2D_dot_vector
   end type
 
@@ -384,7 +384,7 @@ module tensors_2D_m
       double precision, allocatable :: divergence_grid_1D(:) !! grid points along the requested coordinate direction
     end function
 
-    pure module function vector_2D_co_located_components(self) result(vectors)
+    pure module function vector_2D_to_centers_extended(self) result(vectors)
       !! Vector values getter
       implicit none
       class(vector_2D_t), intent(in) :: self
