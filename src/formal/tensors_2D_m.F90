@@ -85,6 +85,7 @@ module tensors_2D_m
     private
     type(gradient_operator_1D_t) gradient_operator_1D_(space_dimension)
   contains
+    generic :: assignment(=) => scalar_2D_assign_divergence
     generic :: operator(.grad.) => scalar_2D_gradient
     generic :: operator(*) => scalar_2D_postmultiply_double, scalar_2D_premultiply_double
     generic :: operator(+) => scalar_2D_plus_scalar
@@ -93,6 +94,7 @@ module tensors_2D_m
     generic :: consistent => scalar_2D_consistent
     generic :: conformable => scalar_2D_conformable_scalar
     generic :: to_file => scalar_2D_to_file
+    procedure, non_overridable, private :: scalar_2D_assign_divergence
     procedure, non_overridable, private :: scalar_2D_to_file
     procedure, non_overridable, private :: scalar_2D_gradient
     procedure, non_overridable, private :: scalar_2D_values
@@ -281,6 +283,13 @@ module tensors_2D_m
       class(tensor_2D_t), intent(in) :: self, tensor_2D
       logical conformable
     end function
+
+    pure module subroutine scalar_2D_assign_divergence(lhs, rhs)
+      !! Assign 2D divergence to 2D scalar at internal points
+      implicit none
+      class(scalar_2D_t), intent(inout) :: lhs
+      type(divergence_2D_t), intent(in) :: rhs
+    end subroutine
 
     pure module function scalar_2D_consistent(self) result(self_consistent)
       !! Assert components allocated and self-consistent, including sufficient accuracy for gradient operator

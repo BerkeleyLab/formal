@@ -168,6 +168,34 @@ contains
 
   end procedure
 
+  module procedure scalar_2D_assign_divergence
+
+     call_julienne_assert(lhs%conformable(rhs))
+
+     allocate(lhs%points_(1,1,1,1))
+     allocate(lhs%points_(1,1,1,1)%values_(rhs%cells_(x_dir)+2, rhs%cells_(y_dir)+2))
+
+     associate( &
+        x_last => size(rhs%points_(1,1,1,1)%values_,x_dir) - 1 &
+       ,y_last => size(rhs%points_(1,1,1,1)%values_,y_dir) - 1 &
+     )
+       lhs%points_(1,1,1,1)%values_(2:x_last-1, 2:y_last-1) = rhs%points_(1,1,1,1)%values_(2:x_last-1, 2:y_last-1) ! internal points
+       lhs%points_(1,1,1,1)%values_(1         ,  :        ) = 0D0 ! x_min boundary
+       lhs%points_(1,1,1,1)%values_(  x_last  ,  :        ) = 0D0 ! x_max boundary
+       lhs%points_(1,1,1,1)%values_( :        , 1         ) = 0D0 ! y_min boundary
+       lhs%points_(1,1,1,1)%values_( :        ,   y_last  ) = 0D0 ! y_max boundary
+     end associate
+
+     lhs%cells_ = rhs%cells_
+     lhs%x_min_ = rhs%x_min_
+     lhs%x_max_ = rhs%x_max_
+     lhs%order_ = rhs%order_
+
+     call_julienne_assert(lhs%consistent())
+
+  end procedure
+
+
   module procedure scalar_2D_to_file
     type(string_t), allocatable :: lines(:)
     integer i, j, l, m, n, p, q

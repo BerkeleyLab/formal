@@ -75,10 +75,7 @@ contains
     type(vector_2D_t), intent(in) :: v
     type(scalar_2D_t) ds_dt
     double precision, parameter :: D = 1D0
-    !ds_dt = .div. (D * .grad. s) - (v .dot. .grad. s)
-    !ds_dt = .div. (D * .grad. s) - .div. (v * s)
-    associate(ds_dt => .div.(v * s))
-    end associate
+    ds_dt = .div. (D * .grad. s) - .div. (v * s)
   end function
 
 end program
