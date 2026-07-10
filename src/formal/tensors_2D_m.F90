@@ -9,7 +9,7 @@ module tensors_2D_m
   use julienne_m, only : file_t 
   implicit none
 
-  private
+  !private
   public :: scalar_2D_t
   public :: vector_2D_t
   public :: gradient_2D_t
@@ -146,6 +146,7 @@ module tensors_2D_m
     generic :: to_centers_extended => vector_2D_to_centers_extended
     generic :: operator(.div.) => vector_2D_divergence
     generic :: operator(.dot.) => vector_2D_dot_vector
+    generic :: operator(*) => vector_2D_postmultiply_scalar, vector_2D_premultiply_scalar
     generic :: to_file => vector_2D_to_file
     procedure, non_overridable, private :: vector_2D_to_file
     procedure, non_overridable, private :: vector_2D_grid
@@ -155,6 +156,8 @@ module tensors_2D_m
     procedure, non_overridable, private :: vector_2D_conformable_scalar
     procedure, non_overridable, private :: vector_2D_to_centers_extended
     procedure, non_overridable, private :: vector_2D_dot_vector
+    procedure, non_overridable, private :: vector_2D_postmultiply_scalar
+    procedure, non_overridable, private, pass(vector_2D) :: vector_2D_premultiply_scalar
   end type
 
   interface vector_2D_t
@@ -410,6 +413,22 @@ module tensors_2D_m
       implicit none
       class(vector_2D_t), intent(in) :: self
       type(divergence_2D_t) divergence_2D
+    end function
+
+    pure module function vector_2D_postmultiply_scalar(vector_2D, scalar_2D) result(vector_x_scalar)
+      !! Result is product of the 2D vector and scalar arguments
+      implicit none
+      class(vector_2D_t), intent(in) :: vector_2D
+      type(scalar_2D_t), intent(in) :: scalar_2D
+      type(vector_2D_t) vector_x_scalar
+    end function
+
+    pure module function vector_2D_premultiply_scalar(scalar_2D, vector_2D) result(scalar_x_vector)
+      !! Result is product of the 2D vector and scalar arguments
+      implicit none
+      class(vector_2D_t), intent(in) :: vector_2D
+      type(scalar_2D_t), intent(in) :: scalar_2D
+      type(vector_2D_t) scalar_x_vector
     end function
 
     pure module function vector_2D_dot_vector(lhs, rhs) result(scalar_2D)
