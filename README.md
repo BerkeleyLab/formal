@@ -94,6 +94,10 @@ Building and testing
  LFortran | `lfortran`  | latest            | `fpm test --compiler lfortran --flag "--cpp --realloc-lhs-arrays --separate-compilation"`
  LLVM     | `flang`     | 20-22             | `fpm test --compiler flang --profile release`
  LLVM     | `flang`     | 19                | `fpm test --compiler flang --profile release --flag "-mmlir -allow-assumed-rank"`
+ GCC      | `gfortran`  | 16.1.1, 17.0.0    | `fpm test --compiler gfortran --profile release`
+
+GCC 16.1.1 and 17.0.0 are unreleased development versions. GCC 16.2.0 will be the first release
+that supports the latest versions of Formal.
 
 ### `fpm` versions before 0.13.0
 With LLVM, replace the `flang` with `flang-new` and delete `--profile release` from the above commands. 
@@ -105,8 +109,6 @@ Once appropriately patched versions of these compilers have been released, this 
 
  Vendor   | Compiler    | Version(s) Tested     | Build/Test Command
 ----------|-------------|-----------------------|-------------------
- GCC      | `gfortran`  | 14-15                 | `fpm test --compiler gfortran --profile release`
- GCC      | `gfortran`  | 13                    | `fpm test --compiler gfortran --profile release --flag "-ffree-line-length-none"`
  Intel    | `ifx`       | 2025.2.0              | `FOR_COARRAY_NUM_IMAGES=1 fpm test --compiler ifx --flag "-fpp -O3 -coarray" --profile release`
  NAG      | `nagfor`    | 7.2                   | `fpm test --compiler nagfor --flag "-O3 -fpp"`
 
