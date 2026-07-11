@@ -52,10 +52,9 @@ a feature of the forthcoming Fortran 2028 standard.
 Examples
 --------
 ### Highlights
-As demonstrated in this repository's two-dimensional (2D) advection/diffusion partial differential equation
-(PDE) solver, Formal now supports two-dimensional (2D) operators that compute the gradient (`.grad.`) of a
-scalar field, the divergence (`.div.`) of vector field, and arithmetic operators sufficient to express the
-advection/diffusion PDE,
+Formal now supports two-dimensional (2D) operators that compute the gradient (`.grad.`) of a
+scalar field, the divergence (`.div.`) of vector field, and the arithmetic operators required 
+for expressing the advection/diffusion partial differential equation (PDE)
 
 $$ \partial s / \partial t = \nabla \cdot (D \nabla s) - \vec{v} \cdot \nabla s$$
 
@@ -63,13 +62,14 @@ in code as
 ```
 ds_dt = .div. (D * .grad. s) - (v .dot. .grad. s)
 ```
-where `s` is the concentration of a passive scalar quantity, `D` is a diffusion coefficient, and
-`v` is a prescribed velocity field. The [2D-advection-diffusion.F90](./example/2D-advection-diffusion.F90) 
-program to advance the above equation over time using a Runge-Kutta scheme.
+where `s` is the concentration of a passive scalar quantity, `D` is a molecular diffusion
+coefficient,  and `v` is a prescribed, divergence-free velocity field. The example program 
+[2D-advection-diffusion](./example/2D-advection-diffusion.F90) advances the above PDE in
+time using a Runge-Kutta scheme.
 
 ### Other example programs
-See this repository's [example](./example) subdirectory for demonstrations of how
-to use Formal.  For usage information for each example, execute something like
+See this repository's [example](./example) subdirectory for additional demonstrations of
+using Formal.  For each example, obtain usage information f execute something like
 ```bash
 fpm run --example <base-name> -- --help
 ```
