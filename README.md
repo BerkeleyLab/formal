@@ -52,24 +52,24 @@ a feature of the forthcoming Fortran 2028 standard.
 Examples
 --------
 ### Highlights
-As demonstrated in this repository's two-dimensional (2D) advection/diffusion partial differential equation
-(PDE) solver, Formal now supports two-dimensional (2D) operators that compute the gradient (`.grad.`) of a
-scalar field, the divergence (`.div.`) of vector field, and arithmetic operators sufficient to express the
-advection/diffusion PDE,
+Formal now supports two-dimensional (2D) operators that compute the gradient (`.grad.`) of a
+scalar field, the divergence (`.div.`) of vector field, and the arithmetic operators required 
+for expressing the advection/diffusion partial differential equation (PDE)
 
-$$ \partial s / \partial t = \nabla \cdot (D \nabla s) - \vec{v} \cdot \nabla s$$
+$$ \partial s / \partial t = \nabla \cdot (D \nabla s) - \nabla \cdot (\vec{v}s)$$
 
 in code as
 ```
-ds_dt = .div. (D * .grad. s) - (v .dot. .grad. s)
+ds_dt = .div. (D * .grad. s) - .div. (v * s)
 ```
-where `s` is the concentration of a passive scalar quantity, `D` is a diffusion coefficient, and
-`v` is a prescribed velocity field. The [2D-advection-diffusion.F90](./example/2D-advection-diffusion.F90) 
-program to advance the above equation over time using a Runge-Kutta scheme.
+where `s` is the concentration of a passive scalar quantity, `D` is a molecular diffusion
+coefficient, and `v` is a prescribed, divergence-free velocity field.  The
+ 2D-advection-diffusion [example program](./example/2D-advection-diffusion.F90) uses a
+Runge-Kutta scheme to advance the above PDE in time.
 
 ### Other example programs
-See this repository's [example](./example) subdirectory for demonstrations of how
-to use Formal.  For usage information for each example, execute something like
+See this repository's [example](./example) subdirectory for additional demonstrations of
+using Formal.  For each example, obtain usage information f execute something like
 ```bash
 fpm run --example <base-name> -- --help
 ```
@@ -94,6 +94,10 @@ Building and testing
  LFortran | `lfortran`  | latest            | `fpm test --compiler lfortran --flag "--cpp --realloc-lhs-arrays --separate-compilation"`
  LLVM     | `flang`     | 20-22             | `fpm test --compiler flang --profile release`
  LLVM     | `flang`     | 19                | `fpm test --compiler flang --profile release --flag "-mmlir -allow-assumed-rank"`
+ GCC      | `gfortran`  | 16.1.1, 17.0.0    | `fpm test --compiler gfortran --profile release`
+
+GCC 16.1.1 and 17.0.0 are unreleased development versions. GCC 16.2.0 will be the first release
+that supports the latest versions of Formal.
 
 ### `fpm` versions before 0.13.0
 With LLVM, replace the `flang` with `flang-new` and delete `--profile release` from the above commands. 
@@ -105,8 +109,6 @@ Once appropriately patched versions of these compilers have been released, this 
 
  Vendor   | Compiler    | Version(s) Tested     | Build/Test Command
 ----------|-------------|-----------------------|-------------------
- GCC      | `gfortran`  | 14-15                 | `fpm test --compiler gfortran --profile release`
- GCC      | `gfortran`  | 13                    | `fpm test --compiler gfortran --profile release --flag "-ffree-line-length-none"`
  Intel    | `ifx`       | 2025.2.0              | `FOR_COARRAY_NUM_IMAGES=1 fpm test --compiler ifx --flag "-fpp -O3 -coarray" --profile release`
  NAG      | `nagfor`    | 7.2                   | `fpm test --compiler nagfor --flag "-O3 -fpp"`
 
