@@ -56,16 +56,16 @@ Formal now supports two-dimensional (2D) operators that compute the gradient (`.
 scalar field, the divergence (`.div.`) of vector field, and the arithmetic operators required 
 for expressing the advection/diffusion partial differential equation (PDE)
 
-$$ \partial s / \partial t = \nabla \cdot (D \nabla s) - \vec{v} \cdot \nabla s$$
+$$ \partial s / \partial t = \nabla \cdot (D \nabla s) - \nabla \cdot (\vec{v}s)$$
 
 in code as
 ```
-ds_dt = .div. (D * .grad. s) - (v .dot. .grad. s)
+ds_dt = .div. (D * .grad. s) - .div. (v * s)
 ```
 where `s` is the concentration of a passive scalar quantity, `D` is a molecular diffusion
-coefficient,  and `v` is a prescribed, divergence-free velocity field. The example program 
-[2D-advection-diffusion](./example/2D-advection-diffusion.F90) advances the above PDE in
-time using a Runge-Kutta scheme.
+coefficient, and `v` is a prescribed, divergence-free velocity field.  The
+ 2D-advection-diffusion [example program](./example/2D-advection-diffusion.F90) uses a
+Runge-Kutta scheme to advance the above PDE in time.
 
 ### Other example programs
 See this repository's [example](./example) subdirectory for additional demonstrations of
