@@ -61,6 +61,7 @@ module tensors_2D_m
     integer cells_(space_dimension) !! number of grid cells spanning the domain
     integer order_ !! order of accuracy of mimetic discretization
   contains
+    generic :: conformable => tensor_2D_conformable
     procedure, non_overridable, private :: tensor_rank
     procedure, non_overridable, private :: tensor_2D_consistent
     procedure, non_overridable, private :: tensor_2D_conformable
@@ -92,7 +93,6 @@ module tensors_2D_m
     generic :: values => scalar_2D_values
     generic :: grid => scalar_2D_grid
     generic :: consistent => scalar_2D_consistent
-    generic :: conformable => scalar_2D_conformable_scalar
     generic :: to_file => scalar_2D_to_file
     procedure, non_overridable, private :: scalar_2D_assign_divergence
     procedure, non_overridable, private :: scalar_2D_to_file
@@ -100,7 +100,6 @@ module tensors_2D_m
     procedure, non_overridable, private :: scalar_2D_values
     procedure, non_overridable, private :: scalar_2D_grid
     procedure, non_overridable, private :: scalar_2D_consistent
-    procedure, non_overridable, private :: scalar_2D_conformable_scalar
     procedure, non_overridable, private :: scalar_2D_postmultiply_double
     procedure, non_overridable, private :: scalar_2D_plus_scalar
     procedure, non_overridable, private, pass(rhs) :: scalar_2D_premultiply_double
@@ -144,7 +143,6 @@ module tensors_2D_m
   contains
     generic :: grid => vector_2D_grid
     generic :: consistent => vector_2D_consistent
-    generic :: conformable => vector_2D_conformable_vector, vector_2D_conformable_scalar
     generic :: to_centers_extended => vector_2D_to_centers_extended
     generic :: operator(.div.) => vector_2D_divergence
     generic :: operator(.dot.) => vector_2D_dot_vector
@@ -154,8 +152,6 @@ module tensors_2D_m
     procedure, non_overridable, private :: vector_2D_grid
     procedure, non_overridable, private :: vector_2D_divergence
     procedure, non_overridable, private :: vector_2D_consistent
-    procedure, non_overridable, private :: vector_2D_conformable_vector
-    procedure, non_overridable, private :: vector_2D_conformable_scalar
     procedure, non_overridable, private :: vector_2D_to_centers_extended
     procedure, non_overridable, private :: vector_2D_dot_vector
     procedure, non_overridable, private :: vector_2D_postmultiply_scalar
@@ -230,7 +226,6 @@ module tensors_2D_m
     generic :: values => divergence_2D_values
     generic :: grid => divergence_2D_grid
     generic :: consistent => tensor_2D_consistent
-    generic :: conformable => divergence_2D_conformable_scalar, divergence_2D_conformable_vector
     generic :: operator(*) => divergence_2D_premultiply_constant, divergence_2D_postmultiply_constant
     generic :: operator(-) => divergence_2D_minus_scalar, divergence_2D_minus_divergence
     generic :: to_file => divergence_2D_to_file
@@ -238,8 +233,6 @@ module tensors_2D_m
     procedure, private, non_overridable :: divergence_2D_values
     procedure, private, non_overridable :: divergence_2D_grid
     procedure, private, non_overridable :: divergence_2D_minus_scalar
-    procedure, private, non_overridable :: divergence_2D_conformable_vector
-    procedure, private, non_overridable :: divergence_2D_conformable_scalar
     procedure, private, non_overridable :: divergence_2D_postmultiply_constant
     procedure, private, non_overridable :: divergence_2D_minus_divergence
     procedure, private, non_overridable, pass(rhs) :: divergence_2D_premultiply_constant
@@ -296,51 +289,6 @@ module tensors_2D_m
       implicit none
       class(scalar_2D_t), intent(in) :: self
       logical self_consistent
-    end function
-
-    pure module function scalar_2D_conformable_scalar(self, scalar_2D) result(conformable)
-      !! Assert the arguments' components are conformable, self-consistent, and consistent with each other
-      implicit none
-      class(scalar_2D_t), intent(in) :: self, scalar_2D
-      logical conformable
-    end function
-
-    pure module function divergence_2D_conformable_scalar(self, scalar_2D) result(conformable)
-      !! Assert the arguments' components are conformable, self-consistent, and consistent with each other
-      implicit none
-      class(divergence_2D_t), intent(in) :: self
-      class(scalar_2D_t), intent(in) :: scalar_2D
-      logical conformable
-    end function
-
-    pure module function divergence_2D_conformable_vector(self, vector_2D) result(conformable)
-      !! Assert the arguments' components are conformable, self-consistent, and consistent with each other
-      implicit none
-      class(divergence_2D_t), intent(in) :: self
-      class(vector_2D_t), intent(in) :: vector_2D
-      logical conformable
-    end function
-
-    pure module function vector_2D_consistent(self) result(self_consistent)
-      !! Assert components allocated and self-consistent, including sufficient accuracy for divergence operator
-      implicit none
-      class(vector_2D_t), intent(in) :: self
-      logical self_consistent
-    end function
-
-    pure module function vector_2D_conformable_vector(self, vector_2D) result(conformable)
-      !! Assert the arguments' components are conformable, self-consistent, and consistent with each other
-      implicit none
-      class(vector_2D_t), intent(in) :: self, vector_2D
-      logical conformable
-    end function
-
-    pure module function vector_2D_conformable_scalar(self, scalar_2D) result(conformable)
-      !! Assert components allocated and self-consistent
-      implicit none
-      class(vector_2D_t), intent(in) :: self
-      class(scalar_2D_t), intent(in) :: scalar_2D
-      logical conformable
     end function
 
     pure module function scalar_2D_values(self) result(values)
@@ -402,6 +350,13 @@ module tensors_2D_m
       implicit none
       class(vector_2D_t), intent(in) :: self
       double precision, allocatable :: vectors(:,:,:)
+    end function
+
+    pure module function vector_2D_consistent(self) result(self_consistent)
+      !! Assert internal self consistency, including sufficient accuracy for divergence operator
+      implicit none
+      class(vector_2D_t), intent(in) :: self
+      logical self_consistent
     end function
 
     pure module function divergence_2D_values(self) result(divergences)

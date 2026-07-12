@@ -26,13 +26,6 @@ contains
     self_consistent = .true.
   end procedure
 
-  module procedure scalar_2D_conformable_scalar
-    call_julienne_assert(scalar_2D_consistent(self))
-    call_julienne_assert(scalar_2D_consistent(scalar_2D))
-    call_julienne_assert(self%tensor_2D_conformable(scalar_2D))
-    conformable = .true.
-  end procedure
-
   module procedure construct_2D_scalar_from_components
 
     call_julienne_assert(size(gradient_operator_1D) .equalsExpected. space_dimension)

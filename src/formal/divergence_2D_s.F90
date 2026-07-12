@@ -16,18 +16,6 @@ submodule(tensors_2D_m) divergence_2D_s
 
 contains
 
-  module procedure divergence_2D_conformable_scalar
-    call_julienne_assert(scalar_2D_consistent(scalar_2D))
-    call_julienne_assert(self%tensor_2D_conformable(scalar_2D))
-    conformable = .true.
-  end procedure
-
-  module procedure divergence_2D_conformable_vector
-    call_julienne_assert(vector_2D_consistent(vector_2D))
-    call_julienne_assert(self%tensor_2D_conformable(vector_2D))
-    conformable = .true.
-  end procedure
-
   module procedure divergence_2D_values
     call_julienne_assert(self%consistent())
     divergences = self%points_(1,1,1,1)%values_(:,:)

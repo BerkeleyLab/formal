@@ -41,20 +41,6 @@ contains
     self_consistent = .true.
   end procedure
 
-  module procedure vector_2D_conformable_vector
-    call_julienne_assert(vector_2D_consistent(self))
-    call_julienne_assert(vector_2D_consistent(vector_2D))
-    call_julienne_assert(self%tensor_2D_conformable(vector_2D))
-    conformable = .true.
-  end procedure
-
-  module procedure vector_2D_conformable_scalar
-    call_julienne_assert(vector_2D_consistent(self))
-    call_julienne_assert(scalar_2D_consistent(scalar_2D))
-    call_julienne_assert(self%tensor_2D_conformable(scalar_2D))
-    conformable = .true.
-  end procedure
-
   module procedure construct_2D_vector_from_function
 
    associate( &
@@ -185,7 +171,7 @@ contains
 
     associate(vector => vector_2D%to_centers_extended())
 
-      call_julienne_assert(.all. ([size(vector,x_dir), size(vector,y_dir)] .equalsExpected. shape(scalar_2D%points(1,1,1,1)%values_)))
+      call_julienne_assert(.all. ([size(vector,x_dir), size(vector,y_dir)] .equalsExpected. shape(scalar_2D%points_(1,1,1,1)%values_)))
 
       vector_x_scalar = construct_2D_vector_from_components( &
          tensor_2D_t( &
