@@ -25,7 +25,8 @@ module formal_m
     ,gradient_2D_t & ! result of `.grad. s` for a scalar_2D_t s
     ,scalar_2D_initializer_i & ! scalar_2D_t initializer abstract interface
     ,vector_2D_initializer_i & ! vector_2D_t initializar abstract interface
-    ,divergence_2D_initializer_i ! divergence_2D_t initializar abstract interface
+    ,divergence_2D_initializer_i & ! divergence_2D_t initializar abstract interface
+    ,x_dir, y_dir
 
   use differential_operators_1D_m, only : &
      gradient_operator_1D_t & ! matrix operator defining a 1D mimetic gradient

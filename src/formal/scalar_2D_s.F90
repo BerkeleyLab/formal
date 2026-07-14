@@ -15,6 +15,7 @@ submodule(tensors_2D_m) scalar_2D_s
     ,operator(.isAtLeast.) &
     ,string_t
   use tensors_1D_m, only : cell_centers_extended_1D, scalar_1D_t
+  use interpolator_1D_m, only : centers_to_faces_1D_t
   implicit none
 
 contains
@@ -24,13 +25,6 @@ contains
     call_julienne_assert(.all. (self%cells_ .isAtLeast. 2*self%order_))
     call_julienne_assert(size(self%gradient_operator_1D_) .equalsExpected. space_dimension)
     self_consistent = .true.
-  end procedure
-
-  module procedure scalar_2D_conformable_scalar
-    call_julienne_assert(scalar_2D_consistent(self))
-    call_julienne_assert(scalar_2D_consistent(scalar_2D))
-    call_julienne_assert(self%tensor_2D_conformable(scalar_2D))
-    conformable = .true.
   end procedure
 
   module procedure construct_2D_scalar_from_components
@@ -170,9 +164,11 @@ contains
 
   module procedure scalar_2D_assign_divergence
 
-     call_julienne_assert(lhs%conformable(rhs))
+     call_julienne_assert(rhs%consistent())
 
+     if (allocated(lhs%points_)) deallocate(lhs%points_)
      allocate(lhs%points_(1,1,1,1))
+     if (allocated(lhs%points_(1,1,1,1)%values_)) deallocate(lhs%points_(1,1,1,1)%values_)
      allocate(lhs%points_(1,1,1,1)%values_(rhs%cells_(x_dir)+2, rhs%cells_(y_dir)+2))
 
      associate( &
@@ -192,6 +188,7 @@ contains
      lhs%order_ = rhs%order_
 
      call_julienne_assert(lhs%consistent())
+     call_julienne_assert(lhs%conformable(rhs))
 
   end procedure
 
@@ -234,5 +231,40 @@ contains
 
     file = file_t(lines)
   end procedure
+
+  module procedure scalar_2D_to_faces
+
+    call_julienne_assert(self%consistent())
+
+    construct_interpolator_array: &
+    associate(interpolator => centers_to_faces_1D_t(order=self%order_, cells=self%cells_, dx=(self%x_max_ - self%x_min_)/self%cells_))
+
+      select case(direction)
+
+      case(x_dir)
+
+        allocate(scalars(self%cells_(x_dir)+1, self%cells_(y_dir)+2))
+
+        interpolate_centers_to_x_faces: &
+        do concurrent(integer :: j = 1:size(self%points_(1,1,1,1)%values_,y_dir))
+          scalars(:,j) = interpolator(x_dir)%face_values(self%points_(1,1,1,1)%values_(:,j))
+        end do interpolate_centers_to_x_faces
+
+      case(y_dir)
+
+        allocate(scalars(self%cells_(x_dir)+2, self%cells_(y_dir)+1))
+
+        interpolate_centers_to_y_faces: &
+        do concurrent(integer :: i = 1:size(self%points_(1,1,1,1)%values_,x_dir))
+          scalars(i,:) = interpolator(y_dir)%face_values(self%points_(1,1,1,1)%values_(i,:))
+        end do interpolate_centers_to_y_faces
+
+      case default
+        error stop "scalar_2D_to_faces in scalar_2D_s: invalid direction"
+      end select
+
+    end associate construct_interpolator_array
+
+  end procedure scalar_2D_to_faces
 
 end submodule scalar_2D_s
