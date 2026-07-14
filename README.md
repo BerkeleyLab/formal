@@ -7,10 +7,10 @@ ___________                         .__
      \/                    \/     \/          
 ```
 
-Formal: Fortran mimetic abstraction language
+Formal: Formulaic mimetic abstraction language
 ============================================
 
-_Towards an embedded domain-specific language (DSL) for the formal verification of vector-calculus computations._
+_Towards an embedded domain-specific language (DSL) for verifiable vector-calculus computations._
 
 Introduction
 ------------
@@ -20,7 +20,7 @@ Formal supports research on mimetic software abstractions for vector calculus by
 - Differential and integral operators for writing vector and tensor expressions.
 
 Formal's types and operators implement the discrete calculus of [Corbino & Castillo (2020)]:
-mimetic discretizations satisfying discrete versions of vector calculus theorems.
+mimetic numerical methods that satisfy discrete versions of vector calculus theorems.
 
 Like the underlying numerical methods, Formal's software abstractions mimic their vector calculus counterparts.
 For example, given scalar and vector fields $f$ and $\vec{v}$ defined over a unit volume $V = [0,1]^3$ bounded
@@ -47,7 +47,6 @@ where the small residual of approximately $-.222 \times 10^{-15}$ evidences a hi
 
 **Future work:** Formal lays a foundation for defining DSL embedded in Fortran via template requirements,
 a feature of the forthcoming Fortran 2028 standard.
-
 
 Examples
 --------
