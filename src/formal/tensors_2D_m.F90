@@ -17,8 +17,10 @@ module tensors_2D_m
   public :: scalar_2D_initializer_i
   public :: vector_2D_initializer_i
   public :: divergence_2D_initializer_i
+  public :: x_dir
+  public :: y_dir
 
-  integer, parameter :: space_dimension = 2, max_tensor_rank = 4, x_dir = 1, y_dir = 2, z_dir = 3
+  integer, parameter :: space_dimension = 2, max_tensor_rank = 4, x_dir = 1, y_dir = 2
 
   abstract interface
 
@@ -144,6 +146,7 @@ module tensors_2D_m
     type(divergence_operator_1D_t) divergence_operator_1D_(space_dimension)
   contains
     generic :: grid => vector_2D_grid
+    generic :: values => vector_2D_values
     generic :: consistent => vector_2D_consistent
     generic :: to_centers_extended => vector_2D_to_centers_extended
     generic :: operator(.div.) => vector_2D_divergence
@@ -152,6 +155,7 @@ module tensors_2D_m
     generic :: to_file => vector_2D_to_file
     procedure, non_overridable, private :: vector_2D_to_file
     procedure, non_overridable, private :: vector_2D_grid
+    procedure, non_overridable, private :: vector_2D_values
     procedure, non_overridable, private :: vector_2D_divergence
     procedure, non_overridable, private :: vector_2D_consistent
     procedure, non_overridable, private :: vector_2D_to_centers_extended
@@ -345,6 +349,14 @@ module tensors_2D_m
       class(vector_2D_t), intent(in) :: self
       integer, intent(in) :: component, coordinate
       double precision, allocatable :: vector_grid_1D(:) !! grid points along the requested coordinate direction
+    end function
+
+    pure module function vector_2D_values(self, direction) result(vector_values)
+      !! Result contains the vector values for the component designated by "direction"
+      implicit none
+      class(vector_2D_t), intent(in) :: self
+      integer, intent(in) :: direction
+      double precision, allocatable :: vector_values(:,:) 
     end function
 
     pure module function divergence_2D_grid(self, direction) result(divergence_grid_1D)

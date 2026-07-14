@@ -41,6 +41,10 @@ contains
     self_consistent = .true.
   end procedure
 
+  module procedure vector_2D_values
+    vector_values = self%points_(direction,1,1,1)%values_
+  end procedure
+
   module procedure construct_2D_vector_from_function
 
    associate( &

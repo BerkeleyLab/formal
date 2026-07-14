@@ -15,12 +15,16 @@ module vector_2D_test_m
     ,test_diagnosis_t &
     ,test_result_t &
     ,test_t &
-    ,usher
+    ,usher 
   use formal_m, only : &
-     vector_2D_t &
+     scalar_2D_t &
+    ,scalar_2D_initializer_i &
+    ,vector_2D_t &
     ,vector_2D_initializer_i &
     ,divergence_2D_t &
-    ,divergence_2D_initializer_i
+    ,divergence_2D_initializer_i &
+    ,x_dir &
+    ,y_dir
 
   implicit none
 
@@ -48,6 +52,7 @@ contains
    test_results = vector_2D_test%run([ &
       test_description_t('computing the divergence of a vector field', usher(check_divergence)) &
      ,test_description_t('computing the dot product of two vector fields', usher(check_dot_product)) &
+     ,test_description_t('computing the product of a vector field and a scalar', usher(check_vector_scalar_product)) &
    ])
   end function
 
@@ -153,6 +158,56 @@ contains
       )
         associate(u_dot_v => u .dot. v)
           test_diagnosis = test_diagnosis .also. (.all. (u_dot_v%values() .approximates. u_dot_v_exact .within. 1D-6))
+        end associate
+      end associate
+    end do
+  end function
+
+  pure function scalar_field(x,y) result(s)
+    double precision, intent(in) :: x(:), y(:)
+    double precision s(size(x),size(y))
+    do concurrent(integer :: i=1:size(x), j=1:size(y))
+      s(i,j) = x(i)
+    end do
+  end function
+
+  pure function vector_field(x,y) result(v)
+    double precision, intent(in) :: x(:), y(:)
+    double precision v(size(x),size(y),space_dimension)
+    do concurrent(integer :: i=1:size(x), j=1:size(y))
+      v(i,j,:) = y(j)
+    end do
+  end function
+
+  pure function scalar_vector_product(x,y) result(u)
+    double precision, intent(in) :: x(:), y(:)
+    double precision u(size(x),size(y),space_dimension)
+    do concurrent(integer :: i=1:size(x), j=1:size(y))
+      u(i,j,:) = x(i)*y(j)
+    end do
+  end function
+
+  function check_vector_scalar_product() result(test_diagnosis)
+    type(test_diagnosis_t) test_diagnosis
+    procedure(scalar_2D_initializer_i), pointer :: s_init
+    procedure(vector_2D_initializer_i), pointer :: v_init, vs_init
+    integer order
+
+    test_diagnosis = passing_test()
+
+    s_init => scalar_field
+    v_init => vector_field
+    vs_init => scalar_vector_product
+
+    do order = 2, 4, 2
+      associate( &
+         s => scalar_2D_t(s_init, cells=[10,10], x_min=[0D0,0D0], x_max=[5D0,5D0], order=order) &
+        ,v => vector_2D_t(v_init, cells=[10,10], x_min=[0D0,0D0], x_max=[5D0,5D0], order=order) &
+        ,vs_expected => vector_2D_t(vs_init, cells=[10,10], x_min=[0D0,0D0], x_max=[5D0,5D0], order=order) &
+      )
+        associate(vs => v * s)
+          test_diagnosis = test_diagnosis .also. (.all. (vs%values(x_dir) .approximates. vs_expected%values(x_dir) .within. 1D-6))
+          test_diagnosis = test_diagnosis .also. (.all. (vs%values(y_dir) .approximates. vs_expected%values(y_dir) .within. 1D-6))
         end associate
       end associate
     end do
