@@ -93,9 +93,11 @@ module tensors_2D_m
     generic :: values => scalar_2D_values
     generic :: grid => scalar_2D_grid
     generic :: consistent => scalar_2D_consistent
+    generic :: to_faces => scalar_2D_to_faces
     generic :: to_file => scalar_2D_to_file
     procedure, non_overridable, private :: scalar_2D_assign_divergence
     procedure, non_overridable, private :: scalar_2D_to_file
+    procedure, non_overridable, private :: scalar_2D_to_faces
     procedure, non_overridable, private :: scalar_2D_gradient
     procedure, non_overridable, private :: scalar_2D_values
     procedure, non_overridable, private :: scalar_2D_grid
@@ -289,6 +291,14 @@ module tensors_2D_m
       implicit none
       class(scalar_2D_t), intent(in) :: self
       logical self_consistent
+    end function
+
+    pure module function scalar_2D_to_faces(self, direction) result(scalars)
+      !! Result is the scalar values interpolated form centers-extended to faces along the requested direction
+      implicit none
+      class(scalar_2D_t), intent(in) :: self
+      integer, intent(in) :: direction
+      double precision, allocatable :: scalars(:,:)
     end function
 
     pure module function scalar_2D_values(self) result(values)

@@ -169,15 +169,18 @@ contains
 
     call_julienne_assert(vector_2D%conformable(scalar_2D))
 
-    associate(vector => vector_2D%to_centers_extended())
+    associate( &
+       scalar_x => scalar_2D%to_faces(x_dir) &
+      ,scalar_y => scalar_2D%to_faces(y_dir) &
+    )
+      call_julienne_assert(.all. (shape(scalar_x) .equalsExpected. shape(vector_2D%points_(x_dir,1,1,1)%values_)))
+      call_julienne_assert(.all. (shape(scalar_y) .equalsExpected. shape(vector_2D%points_(y_dir,1,1,1)%values_)))
 
-      call_julienne_assert(.all. ([size(vector,x_dir), size(vector,y_dir)] .equalsExpected. shape(scalar_2D%points_(1,1,1,1)%values_)))
-
-      vector_x_scalar = construct_2D_vector_from_components( &
+      vector_x_scalar = vector_2D_t( &
          tensor_2D_t( &
             points = reshape( &
-               source = [ points_2D_t(vector(:,:,x_dir) * scalar_2D%points_(1,1,1,1)%values_) &
-                         ,points_2D_t(vector(:,:,y_dir) * scalar_2D%points_(1,1,1,1)%values_)] &
+               source = [ points_2D_t(vector_2D%points_(x_dir,1,1,1)%values_ * scalar_x) &
+                         ,points_2D_t(vector_2D%points_(y_dir,1,1,1)%values_ * scalar_y)] &
               ,shape  = [space_dimension,1,1,1] &
             ) &
            ,cells = vector_2D%cells_ &
