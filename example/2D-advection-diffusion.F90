@@ -12,7 +12,7 @@ contains
     double precision, intent(in) :: x(:), y(:)
     double precision gaussian(size(x),size(y))
     double precision, parameter :: pi = acos(-1D0)
-    double precision, parameter :: x0 = 1D0, y0 = 1D0, sigma = pi/5
+    double precision, parameter :: x0 = -pi/2, y0 = -pi/2, sigma = pi/8
     do concurrent(integer :: j=1:size(y)) default(none) shared(x,y,gaussian)
       associate(r => sqrt((x-x0)**2 + (y(j)-y0)**2))
         gaussian(:,j) = exp(-(r**2)/(2*sigma**2))
@@ -20,21 +20,21 @@ contains
     end do
   end function
 
-  pure function stagnation_point_velocity(x,y) result(grad_phi)
+  pure function taylor_green_velocity(x,y) result(velocity)
     double precision, intent(in) :: x(:), y(:)
-    double precision grad_phi(size(x),size(y),space_dimension)
+    double precision velocity(size(x),size(y),space_dimension)
     do concurrent(integer :: i=1:size(x), j=1:size(y))
-      grad_phi(i,j,:) = [x(i), -y(j)]
+      velocity(i,j,:) = [10*sin(x(i))*cos(y(j)), -10*cos(x(i))*sin(y(j))]
     end do
   end function
 
 end module
 
 program advection_diffusion_2D
-  !! Solve the advection-diffusion equation for a passive scalar moving through a static
-  !! 2D velocity field.
+  !! Solve the advection-diffusion equation for a passive scalar moving through a
+  !! static velocity field define by 2D Taylor-Green vortices.
   use julienne_m, only : file_t
-  use fields_m, only : scalar_field, stagnation_point_velocity
+  use fields_m, only : scalar_field, taylor_green_velocity
   use formal_m, only : scalar_2D_t, vector_2D_t, scalar_2D_initializer_i, vector_2D_initializer_i
   implicit none
 
@@ -42,28 +42,37 @@ program advection_diffusion_2D
   procedure(scalar_2D_initializer_i), pointer :: scalar_2D_initializer
   procedure(vector_2D_initializer_i), pointer :: velocity_2D_initializer
   type(scalar_2D_t) s
+  double precision, parameter :: pi = acos(-1D0)
 
   scalar_2D_initializer => scalar_field
-  velocity_2D_initializer => stagnation_point_velocity
+  velocity_2D_initializer => taylor_green_velocity
 
-  s = scalar_2D_t(scalar_2D_initializer, order=4, cells=[20,20], x_min=[-2D0,-2D0], x_max=[2D0,2D0])
+  s = scalar_2D_t(scalar_2D_initializer, order=4, cells=[51,51], x_min=[-pi,-pi], x_max=[pi,pi])
 
   associate(v => vector_2D_t(velocity_2D_initializer, mold=s))
 
-    advance_time: &
-    block
-      double precision :: dt = 1D-6
-      associate(s_half => s + (dt/2) * d_dt(s, v))
-        s = s + dt * d_dt(s_half, v)
-      end associate
-    end block advance_time
-
     associate( &
        scalar_file   => s%to_file("scalar") &
-      ,velocity_file => v%to_file("vector") &
+      ,velocity_file => v%to_file("velocity") &
     )
-      call   scalar_file%write_lines("example/scripts/scalar-adv-dif.csv")
-      call velocity_file%write_lines("example/scripts/velocity-adv-dif.csv")
+      call   scalar_file%write_lines("example/scripts/scalar-initial.csv")
+      call velocity_file%write_lines("example/scripts/velocity.csv")
+    end associate
+
+    advance_time: &
+    block
+      double precision :: dt = 1D-4
+      integer step
+
+      do step = 1, 500
+        associate(s_half => s + (dt/2) * d_dt(s, v))
+          s = s + dt * d_dt(s_half, v)
+        end associate
+      end do
+    end block advance_time
+
+    associate(scalar_file => s%to_file("scalar"))
+      call scalar_file%write_lines("example/scripts/scalar-final.csv")
     end associate
 
   end associate
@@ -74,7 +83,7 @@ contains
     type(scalar_2D_t), intent(in) :: s
     type(vector_2D_t), intent(in) :: v
     type(scalar_2D_t) ds_dt
-    double precision, parameter :: D = 1D0
+    double precision, parameter :: D = 0.2D0
     ds_dt = .div. (D * .grad. s) - .div. (v * s)
   end function
 
