@@ -132,10 +132,10 @@ jobs:
           #  container: phhargrove/lfortran:0.64.0-1
 
           # https://github.com/lfortran/lfortran/pkgs/container/lfortran
-          #- os: ubuntu-22.04
-          #  compiler: lfortran
-          #  version: 0.64.0
-          #  container: ghcr.io/lfortran/lfortran:v0.64.0
+          - os: ubuntu-22.04
+            compiler: lfortran
+            version: 0.64.0
+            container: ghcr.io/lfortran/lfortran:v0.64.0
           - os: ubuntu-22.04
             compiler: lfortran
             version: latest
