@@ -77,7 +77,32 @@ contains
     call_julienne_assert(lhs_x_rhs%consistent())
   end procedure
 
+  module procedure scalar_2D_postmultiply_integer
+
+    call_julienne_assert(lhs%consistent())
+
+    lhs_x_rhs =  scalar_2D_t(  &
+       tensor_2D_t( &
+          points = reshape([points_2D_t(lhs%points_(1,1,1,1)%values_ * rhs)], shape = [1,1,1,1]) &
+         ,cells  = lhs%cells_  &
+         ,x_min  = lhs%x_min_  &
+         ,x_max  = lhs%x_max_  &
+         ,order  = lhs%order_  &
+       ) &
+      ,gradient_operator_1D_t( &
+          k = lhs%order_       &
+         ,dx = (lhs%x_max_ - lhs%x_min_)/lhs%cells_ &
+         ,cells  = lhs%cells_  &
+    )  )
+
+    call_julienne_assert(lhs_x_rhs%consistent())
+  end procedure
+
   module procedure scalar_2D_premultiply_double
+    lhs_x_rhs =  rhs * lhs
+  end procedure
+
+  module procedure scalar_2D_premultiply_integer
     lhs_x_rhs =  rhs * lhs
   end procedure
 
