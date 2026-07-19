@@ -9,7 +9,7 @@ module tensors_2D_m
   use julienne_m, only : file_t 
   implicit none
 
-  !private
+  private
   public :: scalar_2D_t
   public :: vector_2D_t
   public :: gradient_2D_t
