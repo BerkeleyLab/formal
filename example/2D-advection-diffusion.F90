@@ -89,7 +89,7 @@ contains
     type(scalar_2D_t), intent(in) :: s
     type(vector_2D_t), intent(in) :: v
     type(scalar_2D_t) ds_dt
-    double precision, parameter :: D = 0.2D0
+    double precision, parameter :: D = 0.5D0
     ds_dt = .div. (D * .grad. s) - .div. (v * s)
   end function
 
