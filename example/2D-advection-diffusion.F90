@@ -65,8 +65,14 @@ program advection_diffusion_2D
       integer step
 
       do step = 1, 500
-        associate(s_half => s + (dt/2) * d_dt(s, v))
-          s = s + dt * d_dt(s_half, v)
+        associate(k1 => d_dt(s, v))
+          associate(k2 => d_dt(s + (dt/2)*k1, v))
+            associate(k3 => d_dt(s + (dt/2)*k2, v))
+              associate(k4 => d_dt(s + dt*k3, v))
+                s = s + (dt/6)*(k1 + 2*k2 + 2*k3 + k4)
+              end associate
+            end associate
+          end associate
         end associate
       end do
     end block advance_time
@@ -83,7 +89,7 @@ contains
     type(scalar_2D_t), intent(in) :: s
     type(vector_2D_t), intent(in) :: v
     type(scalar_2D_t) ds_dt
-    double precision, parameter :: D = 0.2D0
+    double precision, parameter :: D = 0.5D0
     ds_dt = .div. (D * .grad. s) - .div. (v * s)
   end function
 

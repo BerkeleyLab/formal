@@ -9,7 +9,7 @@ module tensors_2D_m
   use julienne_m, only : file_t 
   implicit none
 
-  !private
+  private
   public :: scalar_2D_t
   public :: vector_2D_t
   public :: gradient_2D_t
@@ -90,7 +90,8 @@ module tensors_2D_m
   contains
     generic :: assignment(=) => scalar_2D_assign_divergence
     generic :: operator(.grad.) => scalar_2D_gradient
-    generic :: operator(*) => scalar_2D_postmultiply_double, scalar_2D_premultiply_double
+    generic :: operator(*) => scalar_2D_postmultiply_double, scalar_2D_premultiply_double &
+                             ,scalar_2D_postmultiply_integer, scalar_2D_premultiply_integer
     generic :: operator(+) => scalar_2D_plus_scalar
     generic :: values => scalar_2D_values
     generic :: grid => scalar_2D_grid
@@ -104,9 +105,9 @@ module tensors_2D_m
     procedure, non_overridable, private :: scalar_2D_values
     procedure, non_overridable, private :: scalar_2D_grid
     procedure, non_overridable, private :: scalar_2D_consistent
-    procedure, non_overridable, private :: scalar_2D_postmultiply_double
+    procedure, non_overridable, private :: scalar_2D_postmultiply_double, scalar_2D_postmultiply_integer
     procedure, non_overridable, private :: scalar_2D_plus_scalar
-    procedure, non_overridable, private, pass(rhs) :: scalar_2D_premultiply_double
+    procedure, non_overridable, private, pass(rhs) :: scalar_2D_premultiply_double, scalar_2D_premultiply_integer
   end type
 
   interface scalar_2D_t
@@ -328,11 +329,27 @@ module tensors_2D_m
       type(scalar_2D_t) lhs_x_rhs
     end function
 
+    pure module function scalar_2D_postmultiply_integer(lhs, rhs) result(lhs_x_rhs)
+      !! Result is product of the scalar_2D_t lhs and double-precision (constant) rhs
+      implicit none
+      class(scalar_2D_t), intent(in) :: lhs
+      integer, intent(in) :: rhs
+      type(scalar_2D_t) lhs_x_rhs
+    end function
+
     pure module function scalar_2D_premultiply_double(lhs, rhs) result(lhs_x_rhs)
       !! Result is product of the scalar_2D_t rhs and double-precision (constant) lhs
       implicit none
       class(scalar_2D_t), intent(in) :: rhs
       double precision, intent(in) :: lhs
+      type(scalar_2D_t) lhs_x_rhs
+    end function
+
+    pure module function scalar_2D_premultiply_integer(lhs, rhs) result(lhs_x_rhs)
+      !! Result is product of the scalar_2D_t rhs and double-precision (constant) lhs
+      implicit none
+      class(scalar_2D_t), intent(in) :: rhs
+      integer, intent(in) :: lhs
       type(scalar_2D_t) lhs_x_rhs
     end function
 
