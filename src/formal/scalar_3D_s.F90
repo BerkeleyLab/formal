@@ -1,0 +1,320 @@
+! Copyright (c) 2026, The Regents of the University of California
+! Terms of use are as specified in LICENSE.txt
+
+#include "julienne-assert-macros.h"
+
+submodule(tensors_3D_m) scalar_3D_s
+  use julienne_m, only : &
+     call_julienne_assert_ &
+    ,operator(.all.) &
+    ,operator(.csv.) &
+    ,operator(//) &
+    ,operator(.expect.) &
+    ,operator(.equalsExpected.) &
+    ,operator(.greaterThan.) &
+    ,operator(.isAtLeast.) &
+    ,string_t
+  use tensors_1D_m, only : cell_centers_extended_1D, scalar_1D_t
+  use interpolator_1D_m, only : centers_to_faces_1D_t
+  implicit none
+
+contains
+
+  module procedure scalar_3D_consistent
+    call_julienne_assert(self%tensor_3D_consistent())
+    call_julienne_assert(.all. (self%cells_ .isAtLeast. 2*self%order_))
+    call_julienne_assert(size(self%gradient_operator_1D_) .equalsExpected. space_dimension)
+    self_consistent = .true.
+  end procedure
+
+  module procedure construct_3D_scalar_from_components
+
+    call_julienne_assert(size(gradient_operator_1D) .equalsExpected. space_dimension)
+
+    scalar_3D%tensor_3D_t = tensor_3D
+    scalar_3D%gradient_operator_1D_ = gradient_operator_1D
+
+    call_julienne_assert(scalar_3D%consistent())
+
+  end procedure
+
+  module procedure scalar_3D_values
+    call_julienne_assert(self%consistent())
+    values = self%points_(1,1,1,1)%values_
+  end procedure
+
+  module procedure scalar_3D_grid
+    call_julienne_assert(self%consistent())
+    associate(scalar_1D => scalar_1D_t( &
+       constant = 0D0 &
+      ,cells = self%cells_(direction) &
+      ,x_min = self%x_min_(direction) &
+      ,x_max = self%x_max_(direction) &
+      ,order = self%order_ &
+    ))
+      scalar_grid_1D = scalar_1D%grid()
+    end associate
+  end procedure
+
+  module procedure scalar_3D_postmultiply_double
+
+    call_julienne_assert(lhs%consistent())
+
+    lhs_x_rhs =  scalar_3D_t(  &
+       tensor_3D_t( &
+          points = reshape([points_3D_t(lhs%points_(1,1,1,1)%values_ * rhs)], shape = [1,1,1,1]) &
+         ,cells  = lhs%cells_  &
+         ,x_min  = lhs%x_min_  &
+         ,x_max  = lhs%x_max_  &
+         ,order  = lhs%order_  &
+       ) &
+      ,gradient_operator_1D_t( &
+          k = lhs%order_       &
+         ,dx = (lhs%x_max_ - lhs%x_min_)/lhs%cells_ &
+         ,cells  = lhs%cells_  &
+    )  )
+
+    call_julienne_assert(lhs_x_rhs%consistent())
+  end procedure
+
+  module procedure scalar_3D_postmultiply_integer
+
+    call_julienne_assert(lhs%consistent())
+
+    lhs_x_rhs =  scalar_3D_t(  &
+       tensor_3D_t( &
+          points = reshape([points_3D_t(lhs%points_(1,1,1,1)%values_ * rhs)], shape = [1,1,1,1]) &
+         ,cells  = lhs%cells_  &
+         ,x_min  = lhs%x_min_  &
+         ,x_max  = lhs%x_max_  &
+         ,order  = lhs%order_  &
+       ) &
+      ,gradient_operator_1D_t( &
+          k = lhs%order_       &
+         ,dx = (lhs%x_max_ - lhs%x_min_)/lhs%cells_ &
+         ,cells  = lhs%cells_  &
+    )  )
+
+    call_julienne_assert(lhs_x_rhs%consistent())
+  end procedure
+
+  module procedure scalar_3D_premultiply_double
+    lhs_x_rhs =  rhs * lhs
+  end procedure
+
+  module procedure scalar_3D_premultiply_integer
+    lhs_x_rhs =  rhs * lhs
+  end procedure
+
+  module procedure scalar_3D_plus_scalar
+
+    call_julienne_assert(rhs%conformable(lhs))
+
+    lhs_plus_rhs =  scalar_3D_t(  &
+       tensor_3D_t( &
+          points = reshape([points_3D_t(lhs%points_(1,1,1,1)%values_ + rhs%points_(1,1,1,1)%values_)], shape = [1,1,1,1]) &
+         ,cells  = lhs%cells_  &
+         ,x_min  = lhs%x_min_  &
+         ,x_max  = lhs%x_max_  &
+         ,order  = lhs%order_  &
+       ) &
+      ,gradient_operator_1D_t( &
+          k = lhs%order_       &
+         ,dx = (lhs%x_max_ - lhs%x_min_)/lhs%cells_ &
+         ,cells  = lhs%cells_  &
+    )  )
+
+    call_julienne_assert(lhs_plus_rhs%consistent())
+  end procedure
+
+  module procedure construct_3D_scalar_from_function
+
+    associate( &
+       x => cell_centers_extended_1D(x_min(x_dir), x_max(x_dir), cells(x_dir)) &
+      ,y => cell_centers_extended_1D(x_min(y_dir), x_max(y_dir), cells(y_dir)) &
+      ,z => cell_centers_extended_1D(x_min(z_dir), x_max(z_dir), cells(z_dir)) &
+    )
+      scalar_3D%tensor_3D_t = tensor_3D_t( &
+         points = reshape([points_3D_t(initializer(x,y,z))], shape=[1,1,1,1]), cells = cells , x_min = x_min, x_max = x_max, order = order &
+      )
+      scalar_3D%gradient_operator_1D_ = gradient_operator_1D_t(k=order, dx=(x_max - x_min)/cells, cells=cells)
+    end associate
+
+    call_julienne_assert(scalar_3D%consistent())
+
+  end procedure
+
+  module procedure construct_3D_scalar_from_mold
+    call_julienne_assert(mold%consistent())
+    scalar_3D = scalar_3D_t(initializer, cells = mold%cells_, x_min = mold%x_min_, x_max = mold%x_max_, order = mold%order_)
+    call_julienne_assert(scalar_3D%consistent())
+  end procedure
+
+  module procedure scalar_3D_gradient
+
+    integer c, i, j
+
+    call_julienne_assert(self%consistent())
+
+    gradient_3D%x_min_ = self%x_min_
+    gradient_3D%x_max_ = self%x_max_
+    gradient_3D%cells_ = self%cells_
+    gradient_3D%order_ = self%order_
+
+    allocate(gradient_3D%points_(space_dimension,1,1,1))
+    allocate(gradient_3D%points_(x_dir,1,1,1)%values_(self%cells_(x_dir)+1, self%cells_(y_dir)+2, self%cells_(z_dir)+1))
+    allocate(gradient_3D%points_(y_dir,1,1,1)%values_(self%cells_(x_dir)+2, self%cells_(y_dir)+1, self%cells_(z_dir)+1))
+    allocate(gradient_3D%points_(z_dir,1,1,1)%values_(self%cells_(x_dir)+1, self%cells_(y_dir)+1, self%cells_(z_dir)+2))
+
+    gradient_x_component: &
+    do concurrent(integer :: j=1:size(self%points_(1,1,1,1)%values_,y_dir), k=1:size(self%points_(1,1,1,1)%values_,z_dir) ) &
+      default(none) shared(gradient_3D, self)
+      gradient_3D%points_(x_dir,1,1,1)%values_(:,j,k) = self%gradient_operator_1D_(x_dir) .x. self%points_(1,1,1,1)%values_(:,j,k)
+    end do gradient_x_component
+
+    gradient_y_component: &
+    do concurrent(integer :: i=1:size(self%points_(1,1,1,1)%values_,x_dir), k=1:size(self%points_(1,1,1,1)%values_,z_dir)) &
+      default(none) shared(gradient_3D, self)
+      gradient_3D%points_(y_dir,1,1,1)%values_(i,:,k) = self%gradient_operator_1D_(y_dir) .x. self%points_(1,1,1,1)%values_(i,:,k)
+    end do gradient_y_component
+
+    gradient_z_component: &
+    do concurrent(integer :: i=1:size(self%points_(1,1,1,1)%values_,x_dir), j=1:size(self%points_(1,1,1,1)%values_,y_dir)) &
+      default(none) shared(gradient_3D, self)
+      gradient_3D%points_(z_dir,1,1,1)%values_(i,j,:) = self%gradient_operator_1D_(z_dir) .x. self%points_(1,1,1,1)%values_(i,j,:)
+    end do gradient_z_component
+
+    associate(dx => (self%x_max_ - self%x_min_)/self%cells_)
+      gradient_3D%divergence_operator_1D_ = divergence_operator_1D_t(self%order_, dx, self%cells_)
+
+     !check_corbino_castillo_eq_17: &
+     !associate(p => gradient_1D%weights(), b => [-1D0, [(0D0, c = 1, self%cells_)], 1D0])
+     !  call_julienne_assert((.all. (matmul(transpose(self%gradient_operator_1D_%assemble()), p) .approximates. b/dx .within. 3D-3)))
+     !end associate check_corbino_castillo_eq_17
+    end associate
+
+    call_julienne_assert(gradient_3D%consistent())
+
+  end procedure
+
+  module procedure scalar_3D_assign_divergence
+
+     call_julienne_assert(rhs%consistent())
+
+     if (allocated(lhs%points_)) deallocate(lhs%points_)
+     allocate(lhs%points_(1,1,1,1))
+     if (allocated(lhs%points_(1,1,1,1)%values_)) deallocate(lhs%points_(1,1,1,1)%values_)
+     allocate(lhs%points_(1,1,1,1)%values_(rhs%cells_(x_dir)+2, rhs%cells_(y_dir)+2, rhs%cells_(z_dir)+2))
+
+     associate( &
+        x_last => size(rhs%points_(1,1,1,1)%values_,x_dir) - 1 &
+       ,y_last => size(rhs%points_(1,1,1,1)%values_,y_dir) - 1 &
+       ,z_last => size(rhs%points_(1,1,1,1)%values_,z_dir) - 1 &
+     )
+       lhs%points_(1,1,1,1)%values_(2:x_last-1, 2:y_last-1, 2:z_last-1) = rhs%points_(1,1,1,1)%values_(2:x_last-1, 2:y_last-1, 2:z_last-1) ! internal points
+       lhs%points_(1,1,1,1)%values_(1     ,  :   ,  :   ) = 0D0 ! x_min boundary
+       lhs%points_(1,1,1,1)%values_(x_last,  :   ,  :   ) = 0D0 ! x_max boundary
+       lhs%points_(1,1,1,1)%values_(  :   ,  1   ,  :   ) = 0D0 ! y_min boundary
+       lhs%points_(1,1,1,1)%values_(  :   ,y_last,  :   ) = 0D0 ! y_max boundary
+       lhs%points_(1,1,1,1)%values_(  :   ,  :   ,  1   ) = 0D0 ! z_min boundary
+       lhs%points_(1,1,1,1)%values_(  :   ,  :   ,z_last) = 0D0 ! z_max boundary
+     end associate
+
+     lhs%cells_ = rhs%cells_
+     lhs%x_min_ = rhs%x_min_
+     lhs%x_max_ = rhs%x_max_
+     lhs%order_ = rhs%order_
+
+     call_julienne_assert(lhs%consistent())
+     call_julienne_assert(lhs%conformable(rhs))
+
+  end procedure
+
+
+  module procedure scalar_3D_to_file
+    type(string_t), allocatable :: lines(:)
+    integer i, j, k, l, m, n, p, q
+    double precision, allocatable :: x(:), y(:)
+
+    call_julienne_assert(self%consistent())
+
+    associate( &
+       header => [string_t("x, y, z, " // name)] &
+      ,num_points => sum( [( [( [( [( size(self%points_(m,n,p,q)%values_), m = 1,size(self%points_,1) )] &
+                         ,n = 1,size(self%points_,2) )], p = 1, size(self%points_,3) )], q = 1,size(self%points_,4) )] ) &
+      ,x => self%grid(x_dir) &
+      ,y => self%grid(y_dir) &
+      ,z => self%grid(z_dir) &
+    )
+      call_julienne_assert(num_points .equalsExpected. size(x)*size(y))
+
+      associate(num_blank_lines => size(y)-1)
+        allocate(lines(size(header) +  num_points + num_blank_lines))
+      end associate
+
+      lines(1:size(header)) = header
+      l = size(header)
+
+      do k = 1, size(z)
+        do j = 1, size(y)
+          do i = 1, size(x)
+            l = l + 1
+            lines(l) = .csv. string_t( [x(i), y(j), z(k), [( [( [( [( self%points_(m,n,p,q)%values_(i,j,k), m = 1,size(self%points_,1) )] &
+                                      ,n = 1,size(self%points_,2) )], p = 1, size(self%points_,3) )], q = 1,size(self%points_,4) )] ])
+          end do
+          if (j/=size(y)) then
+            l = l + 1
+            lines(l) = ""
+          end if
+        end do
+      end do
+    end associate
+
+    file = file_t(lines)
+  end procedure
+
+  module procedure scalar_3D_to_faces
+
+    call_julienne_assert(self%consistent())
+
+    construct_interpolator_array: &
+    associate(interpolator => centers_to_faces_1D_t(order=self%order_, cells=self%cells_, dx=(self%x_max_ - self%x_min_)/self%cells_))
+
+      select case(direction)
+
+      case(x_dir)
+
+        allocate(scalars(self%cells_(x_dir)+1, self%cells_(y_dir)+2, self%cells_(z_dir)+2))
+
+        interpolate_centers_to_x_faces: &
+        do concurrent(integer :: j = 1:size(self%points_(1,1,1,1)%values_,y_dir), k = 1:size(self%points_(1,1,1,1)%values_,z_dir))
+          scalars(:,j,k) = interpolator(x_dir)%face_values(self%points_(1,1,1,1)%values_(:,j,k))
+        end do interpolate_centers_to_x_faces
+
+      case(y_dir)
+
+        allocate(scalars(self%cells_(x_dir)+2, self%cells_(y_dir)+1, self%cells_(z_dir)+2))
+
+        interpolate_centers_to_y_faces: &
+        do concurrent(integer :: i = 1:size(self%points_(1,1,1,1)%values_,x_dir), k = 1:size(self%points_(1,1,1,1)%values_,z_dir))
+          scalars(i,:,k) = interpolator(y_dir)%face_values(self%points_(1,1,1,1)%values_(i,:,k))
+        end do interpolate_centers_to_y_faces
+
+      case(z_dir)
+
+        allocate(scalars(self%cells_(x_dir)+2, self%cells_(y_dir)+2, self%cells_(z_dir)+1))
+
+        interpolate_centers_to_y_faces: &
+        do concurrent(integer :: i = 1:size(self%points_(1,1,1,1)%values_,x_dir), j = 1:size(self%points_(1,1,1,1)%values_,z_dir))
+          scalars(i,j,:) = interpolator(z_dir)%face_values(self%points_(1,1,1,1)%values_(i,j,:))
+        end do interpolate_centers_to_y_faces
+
+      case default
+        error stop "scalar_3D_to_faces in scalar_3D_s: invalid direction"
+      end select
+
+    end associate construct_interpolator_array
+
+  end procedure scalar_3D_to_faces
+
+end submodule scalar_3D_s
