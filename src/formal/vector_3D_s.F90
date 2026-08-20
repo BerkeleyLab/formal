@@ -8,15 +8,14 @@ submodule(tensors_3D_m) vector_3D_s
      call_julienne_assert_ &
     ,operator(//) &
     ,operator(.all.) &
-    ,operator(.approximates.) &
     ,operator(.csv.) &
     ,operator(.equalsExpected.) &
     ,operator(.expect.) &
     ,operator(.greaterThan.) &
     ,operator(.isAtLeast.) &
-    ,operator(.within.) &
     ,string_t
   use tensors_1D_m, only : cell_centers_extended_1D, faces_1D, vector_1D_t
+  use tensors_2D_m, only : x_dir, y_dir
   use interpolator_1D_m, only : centers_to_faces_1D_t, faces_to_centers_1D_t
 
   implicit none
@@ -62,7 +61,7 @@ contains
       )
         vector_3D%tensor_3D_t = tensor_3D_t( &
           points = reshape(  &
-            source = [points_3D_t(vectors_x(:,:,:,x_dir)), points_3D_t(vectors_y(:,:,:,y_dir)), points_3D_t(vectors_y(:,:,:,z_dir))] &
+            source = [points_3D_t(vectors_x(:,:,:,x_dir)), points_3D_t(vectors_y(:,:,:,y_dir)), points_3D_t(vectors_z(:,:,:,z_dir))] &
            ,shape  = [space_dimension,1,1,1] &
           ) &
           ,cells = cells , x_min = x_min, x_max = x_max, order = order &
@@ -269,7 +268,7 @@ contains
     )
       allocate(lines(size(header) +  size(x)*size(y)))
 
-      call_julienne_assert(.all. (shape(vectors) .equalsExpected. [size(x), size(y), space_dimension]))
+      call_julienne_assert(.all. (shape(vectors) .equalsExpected. [size(x), size(y), size(z), space_dimension]))
 
       lines(1:size(header)) = header
       l = size(header)

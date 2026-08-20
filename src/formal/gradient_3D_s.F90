@@ -10,6 +10,7 @@ submodule(tensors_3D_m) gradient_3D_s
     ,operator(.equalsExpected.) &
     ,operator(.isAtLeast.) &
     ,operator(.isAtMost.)
+  use tensors_2D_m, only : x_dir, y_dir
   implicit none
 
 contains

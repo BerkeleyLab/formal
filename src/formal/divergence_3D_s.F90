@@ -11,6 +11,7 @@ submodule(tensors_3D_m) divergence_3D_s
     ,operator(.greaterThan.) &
     ,operator(.isAtLeast.)
   use tensors_1D_m, only : divergence_1D_t, cell_centers_1D
+  use tensors_2D_m, only : x_dir, y_dir
   use julienne_m, only : string_t, operator(.csv.)
   implicit none
 

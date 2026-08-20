@@ -7,14 +7,15 @@ submodule(tensors_3D_m) scalar_3D_s
   use julienne_m, only : &
      call_julienne_assert_ &
     ,operator(.all.) &
+    ,operator(.also.) &
     ,operator(.csv.) &
     ,operator(//) &
-    ,operator(.expect.) &
     ,operator(.equalsExpected.) &
-    ,operator(.greaterThan.) &
     ,operator(.isAtLeast.) &
+    ,stop_and_print &
     ,string_t
   use tensors_1D_m, only : cell_centers_extended_1D, scalar_1D_t
+  use tensors_2D_m, only : x_dir, y_dir
   use interpolator_1D_m, only : centers_to_faces_1D_t
   implicit none
 
@@ -162,9 +163,9 @@ contains
     gradient_3D%order_ = self%order_
 
     allocate(gradient_3D%points_(space_dimension,1,1,1))
-    allocate(gradient_3D%points_(x_dir,1,1,1)%values_(self%cells_(x_dir)+1, self%cells_(y_dir)+2, self%cells_(z_dir)+1))
-    allocate(gradient_3D%points_(y_dir,1,1,1)%values_(self%cells_(x_dir)+2, self%cells_(y_dir)+1, self%cells_(z_dir)+1))
-    allocate(gradient_3D%points_(z_dir,1,1,1)%values_(self%cells_(x_dir)+1, self%cells_(y_dir)+1, self%cells_(z_dir)+2))
+    allocate(gradient_3D%points_(x_dir,1,1,1)%values_(self%cells_(x_dir)+1, self%cells_(y_dir)+2, self%cells_(z_dir)+2))
+    allocate(gradient_3D%points_(y_dir,1,1,1)%values_(self%cells_(x_dir)+2, self%cells_(y_dir)+1, self%cells_(z_dir)+2))
+    allocate(gradient_3D%points_(z_dir,1,1,1)%values_(self%cells_(x_dir)+2, self%cells_(y_dir)+2, self%cells_(z_dir)+1))
 
     gradient_x_component: &
     do concurrent(integer :: j=1:size(self%points_(1,1,1,1)%values_,y_dir), k=1:size(self%points_(1,1,1,1)%values_,z_dir) ) &
@@ -183,6 +184,7 @@ contains
       default(none) shared(gradient_3D, self)
       gradient_3D%points_(z_dir,1,1,1)%values_(i,j,:) = self%gradient_operator_1D_(z_dir) .x. self%points_(1,1,1,1)%values_(i,j,:)
     end do gradient_z_component
+
 
     associate(dx => (self%x_max_ - self%x_min_)/self%cells_)
       gradient_3D%divergence_operator_1D_ = divergence_operator_1D_t(self%order_, dx, self%cells_)

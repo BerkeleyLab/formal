@@ -17,11 +17,9 @@ module tensors_3D_m
   public :: scalar_3D_initializer_i
   public :: vector_3D_initializer_i
   public :: divergence_3D_initializer_i
-  public :: x_dir
-  public :: y_dir
   public :: z_dir
 
-  integer, parameter :: space_dimension = 3, max_tensor_rank = 4, x_dir = 1, y_dir = 2, z_dir = 3
+  integer, parameter :: space_dimension = 3, z_dir = 3, max_tensor_rank = 4
 
   abstract interface
 

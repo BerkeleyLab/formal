@@ -9,7 +9,6 @@ submodule(tensors_3D_m) tensor_3D_s
     ,operator(.all.) &
     ,operator(.also.) &
     ,operator(.approximates.) &
-    ,operator(.csv.) &
     ,operator(.equalsExpected.) &
     ,operator(.isAtLeast.) &
     ,operator(.isAtMost.) &
@@ -33,7 +32,7 @@ contains
     call_julienne_assert(allocated(self%points_))
 
     associate(tensor_3D_rank => self%tensor_rank())
-      call_julienne_assert( (tensor_3D_rank .isAtLeast. 0) .also. (tensor_3D_rank .isAtMost. max_tensor_rank) )
+      call_julienne_assert( (tensor_3D_rank .isAtLeast. 0) .also. (tensor_3D_rank .isAtMost. max_tensor_rank))
     end associate
 
     do concurrent(integer :: i=1:size(self%points_,1), j=1:size(self%points_,2), k=1:size(self%points_,3), m=1:size(self%points_,4))
