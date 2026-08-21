@@ -14,8 +14,7 @@ submodule(tensors_2D_m) tensor_2D_s
     ,operator(.isAtLeast.) &
     ,operator(.isAtMost.) &
     ,operator(.greaterThan.) &
-    ,operator(.within.) &
-    ,string_t
+    ,operator(.within.)
   implicit none
 
 contains

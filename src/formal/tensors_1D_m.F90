@@ -548,7 +548,6 @@ contains
     double precision, intent(in) :: x_min, x_max
     integer, intent(in) :: cells
     double precision, allocatable:: x(:)
-    integer cell
     x = [x_min, cell_centers_1D(x_min, x_max, cells), x_max]
   end function
 

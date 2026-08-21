@@ -6,7 +6,6 @@
 submodule(tensors_1D_m) scalar_1D_s
   use julienne_m, only : &
     call_julienne_assert_ &
-   ,julienne_assert &
    ,operator(//) &
    ,operator(.all.) &
    ,operator(.approximates.) &
@@ -14,8 +13,7 @@ submodule(tensors_1D_m) scalar_1D_s
    ,operator(.csv.) &
    ,operator(.isAtLeast.) &
    ,operator(.greaterThan.) &
-   ,operator(.within.) &
-   ,string_t
+   ,operator(.within.)
   use interpolator_1D_m, only : faces_to_centers_1d_t
   implicit none
 

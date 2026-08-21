@@ -27,7 +27,6 @@ contains
 end module
 
 program stagnation_point_2D
-  use julienne_m, only : file_t
   use velocity_potential_m, only : potential, potential_gradient
   use formal_m, only : scalar_2D_t, vector_2D_t, scalar_2D_initializer_i, vector_2D_initializer_i
   implicit none

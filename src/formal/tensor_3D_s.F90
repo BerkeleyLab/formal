@@ -13,8 +13,7 @@ submodule(tensors_3D_m) tensor_3D_s
     ,operator(.isAtLeast.) &
     ,operator(.isAtMost.) &
     ,operator(.greaterThan.) &
-    ,operator(.within.) &
-    ,string_t
+    ,operator(.within.)
   implicit none
 
 contains
