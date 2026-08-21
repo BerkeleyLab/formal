@@ -11,7 +11,6 @@ program print_assembled_1D_operators
   implicit none
 
   type(command_line_t) command_line
-  integer row
 
   command_line_settings: &
   associate( &
@@ -47,6 +46,7 @@ contains
   subroutine print_gradient_operator(k, dx, m)
     integer, intent(in) :: k, m 
     double precision, intent(in) :: dx
+    integer row
 
     print *, new_line(""), "Gradient operator: order = ", k, " | cells = ", m, " | dx = ", dx
 
@@ -65,6 +65,7 @@ contains
   subroutine print_divergence_operator(k, dx, m)
     integer, intent(in) :: k, m 
     double precision, intent(in) :: dx
+    integer row
 
     print *, new_line(""), "Divergence operator: order = ", k, " | cells = ", m, " | dx = ", dx
 

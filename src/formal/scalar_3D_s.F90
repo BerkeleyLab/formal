@@ -152,8 +152,6 @@ contains
 
   module procedure scalar_3D_gradient
 
-    integer c, i, j
-
     call_julienne_assert(self%consistent())
 
     gradient_3D%x_min_ = self%x_min_
@@ -183,7 +181,6 @@ contains
       default(none) shared(gradient_3D, self)
       gradient_3D%points_(z_dir,1,1,1)%values_(i,j,:) = self%gradient_operator_1D_(z_dir) .x. self%points_(1,1,1,1)%values_(i,j,:)
     end do gradient_z_component
-
 
     associate(dx => (self%x_max_ - self%x_min_)/self%cells_)
       gradient_3D%divergence_operator_1D_ = divergence_operator_1D_t(self%order_, dx, self%cells_)
@@ -235,7 +232,6 @@ contains
   module procedure scalar_3D_to_file
     type(string_t), allocatable :: lines(:)
     integer i, j, k, l, m, n, p, q
-    double precision, allocatable :: x(:), y(:)
 
     call_julienne_assert(self%consistent())
 
@@ -305,10 +301,10 @@ contains
 
         allocate(scalars(self%cells_(x_dir)+2, self%cells_(y_dir)+2, self%cells_(z_dir)+1))
 
-        interpolate_centers_to_y_faces: &
+        interpolate_centers_to_z_faces: &
         do concurrent(integer :: i = 1:size(self%points_(1,1,1,1)%values_,x_dir), j = 1:size(self%points_(1,1,1,1)%values_,z_dir))
           scalars(i,j,:) = interpolator(z_dir)%face_values(self%points_(1,1,1,1)%values_(i,j,:))
-        end do interpolate_centers_to_y_faces
+        end do interpolate_centers_to_z_faces
 
       case default
         error stop "scalar_3D_to_faces in scalar_3D_s: invalid direction"

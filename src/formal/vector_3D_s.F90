@@ -14,9 +14,9 @@ submodule(tensors_3D_m) vector_3D_s
     ,operator(.greaterThan.) &
     ,operator(.isAtLeast.) &
     ,string_t
-  use tensors_1D_m, only : cell_centers_extended_1D, faces_1D, vector_1D_t
+  use tensors_1D_m, only : cell_centers_extended_1D, faces_1D
   use tensors_2D_m, only : x_dir, y_dir
-  use interpolator_1D_m, only : centers_to_faces_1D_t, faces_to_centers_1D_t
+  use interpolator_1D_m, only : faces_to_centers_1D_t
 
   implicit none
 
@@ -255,7 +255,6 @@ contains
   module procedure vector_3D_to_file
     type(string_t), allocatable :: lines(:)
     integer i, j, k, l
-    double precision, allocatable :: x(:), y(:)
 
     call_julienne_assert(self%consistent())
 
