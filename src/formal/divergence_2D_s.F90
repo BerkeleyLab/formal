@@ -127,7 +127,6 @@ contains
   module procedure divergence_2D_to_file
     type(string_t), allocatable :: lines(:)
     integer i, j, l
-    double precision, allocatable :: x(:), y(:)
 
     call_julienne_assert(self%consistent())
 

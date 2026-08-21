@@ -33,7 +33,6 @@ end module
 program advection_diffusion_2D
   !! Solve the advection-diffusion equation for a passive scalar moving through a
   !! static velocity field define by 2D Taylor-Green vortices.
-  use julienne_m, only : file_t
   use fields_m, only : scalar_field, taylor_green_velocity
   use formal_m, only : scalar_2D_t, vector_2D_t, scalar_2D_initializer_i, vector_2D_initializer_i
   implicit none

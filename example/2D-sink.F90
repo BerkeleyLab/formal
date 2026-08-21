@@ -14,7 +14,7 @@ contains
 
   pure function velocity(x,y) result(v)
     double precision, intent(in) :: x(:), y(:)
-    double precision v(size(x),size(y),space_dimension), theta
+    double precision v(size(x),size(y),space_dimension)
     double precision, parameter :: Q = 1D0
     do concurrent(integer :: i=1:size(x), j=1:size(y))
       associate(r => sqrt(x(i)**2 + y(j)**2))
@@ -34,8 +34,7 @@ contains
 end module
 
 program sink_2D
-  use julienne_m, only : file_t
-  use sink_2D_functions_m, only : velocity, divergence, pi
+  use sink_2D_functions_m, only : velocity, divergence
   use formal_m, only : vector_2D_t, divergence_2D_t, divergence_2D_initializer_i, vector_2D_initializer_i
   implicit none
 

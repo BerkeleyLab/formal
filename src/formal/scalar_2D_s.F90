@@ -151,8 +151,6 @@ contains
 
   module procedure scalar_2D_gradient
 
-    integer c, i, j
-
     call_julienne_assert(self%consistent())
 
     gradient_2D%x_min_ = self%x_min_
@@ -221,7 +219,6 @@ contains
   module procedure scalar_2D_to_file
     type(string_t), allocatable :: lines(:)
     integer i, j, l, m, n, p, q
-    double precision, allocatable :: x(:), y(:)
 
     call_julienne_assert(self%consistent())
 
