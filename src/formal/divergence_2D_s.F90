@@ -18,7 +18,7 @@ contains
 
   module procedure divergence_2D_values
     call_julienne_assert(self%consistent())
-    divergences = self%points_(1,1,1,1)%values_(:,:)
+    divergences = self%points_(1,1,1,1)%values_
   end procedure
 
   module procedure divergence_2D_grid

@@ -11,6 +11,7 @@ program test_suite_driver
   use interpolator_1D_test_m, only : interpolator_1D_test_t
   use scalar_1D_test_m, only : scalar_1D_test_t
   use scalar_2D_test_m, only : scalar_2D_test_t
+  use scalar_3D_test_m, only : scalar_3D_test_t
   use vector_2D_test_m, only : vector_2D_test_t
   implicit none
 
@@ -22,6 +23,7 @@ program test_suite_driver
     ,test_fixture_t(interpolator_1D_test_t()) &
     ,test_fixture_t(scalar_1D_test_t()) &
     ,test_fixture_t(scalar_2D_test_t()) &
+    ,test_fixture_t(scalar_3D_test_t()) &
     ,test_fixture_t(vector_2D_test_t()) &
   ]))
     call test_harness%report_results
