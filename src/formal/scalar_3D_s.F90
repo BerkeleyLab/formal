@@ -12,7 +12,6 @@ submodule(tensors_3D_m) scalar_3D_s
     ,operator(//) &
     ,operator(.equalsExpected.) &
     ,operator(.isAtLeast.) &
-    ,stop_and_print &
     ,string_t
   use tensors_1D_m, only : cell_centers_extended_1D, scalar_1D_t
   use tensors_2D_m, only : x_dir, y_dir
