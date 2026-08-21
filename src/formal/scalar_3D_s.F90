@@ -305,10 +305,10 @@ contains
 
         allocate(scalars(self%cells_(x_dir)+2, self%cells_(y_dir)+2, self%cells_(z_dir)+1))
 
-        interpolate_centers_to_y_faces: &
+        interpolate_centers_to_z_faces: &
         do concurrent(integer :: i = 1:size(self%points_(1,1,1,1)%values_,x_dir), j = 1:size(self%points_(1,1,1,1)%values_,z_dir))
           scalars(i,j,:) = interpolator(z_dir)%face_values(self%points_(1,1,1,1)%values_(i,j,:))
-        end do interpolate_centers_to_y_faces
+        end do interpolate_centers_to_z_faces
 
       case default
         error stop "scalar_3D_to_faces in scalar_3D_s: invalid direction"
