@@ -151,7 +151,7 @@ module tensors_3D_m
     generic :: to_centers_extended => vector_3D_to_centers_extended
     generic :: operator(.div.) => vector_3D_divergence
     generic :: operator(.dot.) => vector_3D_dot_vector
-    generic :: operator(*) => vector_3D_postmultiply_scalar, vector_3D_premultiply_scalar
+    generic :: operator(*) => vector_3D_postmultiply_scalar_3D, vector_3D_premultiply_scalar_3D
     generic :: to_file => vector_3D_to_file
     procedure, non_overridable, private :: vector_3D_to_file
     procedure, non_overridable, private :: vector_3D_grid
@@ -160,8 +160,8 @@ module tensors_3D_m
     procedure, non_overridable, private :: vector_3D_consistent
     procedure, non_overridable, private :: vector_3D_to_centers_extended
     procedure, non_overridable, private :: vector_3D_dot_vector
-    procedure, non_overridable, private :: vector_3D_postmultiply_scalar
-    procedure, non_overridable, private, pass(vector_3D) :: vector_3D_premultiply_scalar
+    procedure, non_overridable, private :: vector_3D_postmultiply_scalar_3D
+    procedure, non_overridable, private, pass(vector_3D) :: vector_3D_premultiply_scalar_3D
   end type
 
   interface vector_3D_t
@@ -418,7 +418,7 @@ module tensors_3D_m
       type(divergence_3D_t) divergence_3D
     end function
 
-    pure module function vector_3D_postmultiply_scalar(vector_3D, scalar_3D) result(vector_x_scalar)
+    pure module function vector_3D_postmultiply_scalar_3D(vector_3D, scalar_3D) result(vector_x_scalar)
       !! Result is product of the 3D vector and scalar arguments
       implicit none
       class(vector_3D_t), intent(in) :: vector_3D
@@ -426,7 +426,7 @@ module tensors_3D_m
       type(vector_3D_t) vector_x_scalar
     end function
 
-    pure module function vector_3D_premultiply_scalar(scalar_3D, vector_3D) result(scalar_x_vector)
+    pure module function vector_3D_premultiply_scalar_3D(scalar_3D, vector_3D) result(scalar_x_vector)
       !! Result is product of the 3D vector and scalar arguments
       implicit none
       class(vector_3D_t), intent(in) :: vector_3D

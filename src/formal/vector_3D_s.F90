@@ -186,7 +186,7 @@ contains
 
   end procedure
 
-  module procedure vector_3D_postmultiply_scalar
+  module procedure vector_3D_postmultiply_scalar_3D
 
     call_julienne_assert(vector_3D%conformable(scalar_3D))
 
@@ -221,7 +221,7 @@ contains
 
   end procedure
 
-  module procedure vector_3D_premultiply_scalar
+  module procedure vector_3D_premultiply_scalar_3D
     scalar_x_vector = vector_3D * scalar_3D
   end procedure
 
