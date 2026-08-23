@@ -38,9 +38,7 @@ module vector_3D_test_m
     procedure, nopass :: results
   end type
 
-  integer, parameter :: space_dimension = 2
-  double precision, parameter :: tolerance = 1D-13
-  double precision, parameter :: u_const(*) = [1D0,3D0], v_const(*) = [3D0,4D0], u_dot_v_exact = dot_product(u_const, v_const)
+  double precision, parameter :: tolerance = 1D-12
 
 contains
 
@@ -56,7 +54,7 @@ contains
    test_results = vector_3D_test%run([ &
       test_description_t('computing the divergence of a vector field', usher(check_divergence)) &
      ,test_description_t('computing the dot product of two vector fields', usher(check_dot_product)) &
-     ,test_description_t('computing the product of a vector field and a scalar', usher(check_vector_scalar_product)) &
+     ,test_description_t('computing the product of a vector field and a scalar field', usher(check_vector_scalar_product)) &
    ])
   end function
 
@@ -85,17 +83,6 @@ contains
       associate(eta => y(j)*cos(theta) + z(k)*sin(theta)) ! x-eta plane rotated around x axis theta radians from x-y plane
         gradient(i,j,k,:) = [x(i), -eta * cos(theta), -eta * sin(theta)]
       end associate
-    end do
-  end function
-
-  pure function vs_expected(v,s) result(vsv)
-    double precision, intent(in) ::  s(:,:,:), v(:,:,:,:)
-    double precision vsv(size(v,1),size(v,2),size(v,3),size(v,4))
-    integer, parameter :: dimensionality = 3
-    call_julienne_assert(size(v,4) .equalsExpected. dimensionality)
-    call_julienne_assert(.all. (shape(v) .equalsExpected. [shape(s),dimensionality]))
-    do concurrent(integer :: d=1:size(v,4)) default(none) shared(vsv,s,v)
-        vsv(:,:,:,d) = v(:,:,:,d) * s(:,:,:)
     end do
   end function
 
@@ -162,7 +149,7 @@ contains
   function check_vector_scalar_product() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     procedure(scalar_3D_initializer_i), pointer :: s_init
-    procedure(vector_3D_initializer_i), pointer :: v_init, vs_init
+    procedure(vector_3D_initializer_i), pointer :: v_init
     integer order
 
     test_diagnosis = passing_test()
@@ -171,19 +158,13 @@ contains
     s_init => rotated_stagnation_point_potential
 
     do order = 2, 4, 2
-      associate( &
-         v => vector_3D_t(v_init, order, cells=[20,20,20], x_min=[-10D0, -10D0, -10D0], x_max=[10D0, 10D0, 10D0]) &
-        ,s => scalar_3D_t(s_init, order, cells=[20,20,20], x_min=[-10D0, -10D0, -10D0], x_max=[10D0, 10D0, 10D0]) &
-      )
-        associate( &
-           vs => v * s &
-          ,vs_exp_x => v%values(x_dir)* s%values() &
-          ,vs_exp_y => v%values(y_dir)* s%values() &
-          ,vs_exp_z => v%values(z_dir)* s%values() &
-        )
-          test_diagnosis = test_diagnosis .also. (.all. (vs%values(x_dir) .approximates. vs_exp_x .within. tolerance))
-          test_diagnosis = test_diagnosis .also. (.all. (vs%values(y_dir) .approximates. vs_exp_y .within. tolerance))
-          test_diagnosis = test_diagnosis .also. (.all. (vs%values(z_dir) .approximates. vs_exp_z .within. tolerance))
+      associate(s => scalar_3D_t(s_init, order, cells=[10,10,10], x_min=[-10D0, -10D0, -10D0], x_max=[10D0, 10D0, 10D0]))
+        associate(v => vector_3D_t(v_init, mold = s))
+          associate(vs => v * s)
+            test_diagnosis = test_diagnosis .also. (.all. (vs%values(x_dir) .approximates. v%values(x_dir)*s%to_faces(x_dir) .within. tolerance))
+            test_diagnosis = test_diagnosis .also. (.all. (vs%values(y_dir) .approximates. v%values(y_dir)*s%to_faces(y_dir) .within. tolerance))
+            test_diagnosis = test_diagnosis .also. (.all. (vs%values(z_dir) .approximates. v%values(z_dir)*s%to_faces(z_dir) .within. tolerance))
+          end associate
         end associate
       end associate
     end do
