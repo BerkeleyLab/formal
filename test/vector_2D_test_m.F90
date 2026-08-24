@@ -52,7 +52,7 @@ contains
    test_results = vector_2D_test%run([ &
       test_description_t('computing the divergence of a vector field', usher(check_divergence)) &
      ,test_description_t('computing the dot product of two vector fields', usher(check_dot_product)) &
-     ,test_description_t('computing the product of a vector field and a scalar', usher(check_vector_scalar_product)) &
+     ,test_description_t('computing the product of a vector field and a scalar field', usher(check_vector_scalar_product)) &
    ])
   end function
 
