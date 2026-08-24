@@ -19,15 +19,19 @@ Formal supports research on mimetic software abstractions for vector calculus by
 - Derived types that mimic vector and tensor fields and
 - Differential and integral operators for writing vector and tensor expressions.
 
-Formal's types and operators implement the discrete calculus of [Corbino & Castillo (2020)]:
-mimetic numerical methods that satisfy discrete versions of vector calculus theorems.
+Formal's types and operators implement the discrete calculus of [Corbino & Castillo (2020)] and
+[Dumett & Castillo (2022)]: mimetic numerical methods that satisfy discrete versions of vector
+calculus theorems.
 
-Like the underlying numerical methods, Formal's software abstractions mimic their vector calculus counterparts.
-For example, given scalar and vector fields $f$ and $\vec{v}$ defined over a unit volume $V = [0,1]^3$ bounded
-by a surface area $A$, the program [`example/extended-gauss-divergence.F90`] demonstrates satisfaction of the
-extended Gauss divergence theorem: 
+Mimetic software abstractions use mimetic numerical methods to mimic desirable behaviors of the
+abstractions' vector calculus counterparts.  For example, given scalar and vector fields $f$
+and $\vec{v}$ defined over a unit volume $V = [0,1]^3$ bounded by a surface area $A$, the program 
+[`example/extended-gauss-divergence.F90`] demonstrates satisfaction of the extended Gauss
+divergence theorem: 
 
 $$ \iiint_V (\vec{v} \cdot \nabla f) dV + \iiint_V (f \nabla \cdot \vec{v}) dV = \iint_A f \vec{v} \cdot d\vec{A} $$
+
+which ensures the satisfaction conservation laws such as those for mass, momentum, and energy.
 
 Running the program as follows
 ```fortran
@@ -43,7 +47,7 @@ produces output that includes actual program syntax:
 ----------------------------------------------------
                           sum = -.2220446049250313E-15 (residual)
 ```
-where the small residual of approximately $-.222 \times 10^{-15}$ evidences a highly accurate approximation.
+where the small residual evidences a highly accurate approximation.
 
 **Future work:** Formal lays a foundation for defining a verifiable embedded DSL using type-safe generic programming.
 
@@ -136,6 +140,7 @@ Office of Advanced Scientific Computing Research under contract DE-AC02-05CH1123
 [#1313]: https://github.com/fortran-lang/fpm/issues/1313
 [Corbino & Castillo (2020)]: https://doi.org/10.1016/j.cam.2019.06.042
 [`doc/uml/class-diagram.md`]: ./doc/uml/class-diagram.md
+[Dumett & Castillo (2022)]: https://www.csrc.sdsu.edu/research-reports/
 [`example/extended-gauss-divergence.F90`]: ./example/extended-gauss-divergence.F90
 [`fpm`]: https://github.com/fortran-lang/fpm
 [fpm-0.13.0.F90]: https://github.com/fortran-lang/fpm/releases/download/v0.13.0/fpm-0.13.0.F90
