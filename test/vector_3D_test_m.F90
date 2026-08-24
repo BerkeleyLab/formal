@@ -18,7 +18,7 @@ module vector_3D_test_m
     ,test_diagnosis_t &
     ,test_result_t &
     ,test_t &
-    ,usher 
+    ,usher
   use formal_m, only : &
      scalar_3D_t &
     ,scalar_3D_initializer_i &
@@ -65,7 +65,7 @@ contains
     double precision, parameter :: pi = acos(-1D0)
     do concurrent(integer :: j=1:size(y), k=1:size(z)) default(none) shared(x,y,z,s)
       associate(eta => y(j)*cos(pi/4) + z(k)*sin(pi/4)) ! x-eta plane rotated around x axis pi/4 radians from x-y plane
-        s(:,j,k) = (x**2 - eta**2)/2 
+        s(:,j,k) = (x**2 - eta**2)/2
       end associate
     end do
   end function
@@ -133,7 +133,7 @@ contains
 
     v_init => rotated_stagnation_point_velocity
     v_sq_init => velocity_squared
-  
+
     do order = 2, 4, 2
       associate( &
          v => vector_3D_t(v_init, order, cells=[20,20,20], x_min=[-10D0, -10D0, -10D0], x_max=[10D0, 10D0, 10D0]) &
