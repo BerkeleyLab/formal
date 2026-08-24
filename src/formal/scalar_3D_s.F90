@@ -243,7 +243,7 @@ contains
       ,y => self%grid(y_dir) &
       ,z => self%grid(z_dir) &
     )
-      call_julienne_assert(num_points .equalsExpected. size(x)*size(y))
+      call_julienne_assert(num_points .equalsExpected. size(x)*size(y)*size(z))
 
       associate(num_blank_lines => size(y)-1)
         allocate(lines(size(header) +  num_points + num_blank_lines))
