@@ -19,15 +19,19 @@ Formal supports research on mimetic software abstractions for vector calculus by
 - Derived types that mimic vector and tensor fields and
 - Differential and integral operators for writing vector and tensor expressions.
 
-Formal's types and operators implement the discrete calculus of [Corbino & Castillo (2020)]:
-mimetic numerical methods that satisfy discrete versions of vector calculus theorems.
+Formal's types and operators implement the discrete calculus of [Corbino & Castillo (2020)] and
+[Dumett & Castillo (2022)]: mimetic numerical methods that satisfy discrete versions of vector
+calculus theorems.
 
-Like the underlying numerical methods, Formal's software abstractions mimic their vector calculus counterparts.
-For example, given scalar and vector fields $f$ and $\vec{v}$ defined over a unit volume $V = [0,1]^3$ bounded
-by a surface area $A$, the program [`example/extended-gauss-divergence.F90`] demonstrates satisfaction of the
-extended Gauss divergence theorem: 
+Mimetic software abstractions use mimetic numerical methods to mimic desirable behaviors of the
+abstractions' vector calculus counterparts.  For example, given scalar and vector fields $f$
+and $\vec{v}$ defined over a unit volume $V = [0,1]^3$ bounded by a surface area $A$, the program 
+[`example/extended-gauss-divergence.F90`] demonstrates satisfaction of the extended Gauss
+divergence theorem: 
 
 $$ \iiint_V (\vec{v} \cdot \nabla f) dV + \iiint_V (f \nabla \cdot \vec{v}) dV = \iint_A f \vec{v} \cdot d\vec{A} $$
+
+which ensures the satisfaction conservation laws such as those for mass, momentum, and energy.
 
 Running the program as follows
 ```fortran
@@ -43,29 +47,28 @@ produces output that includes actual program syntax:
 ----------------------------------------------------
                           sum = -.2220446049250313E-15 (residual)
 ```
-where the small residual of approximately $-.222 \times 10^{-15}$ evidences a highly accurate approximation.
+where the small residual evidences a highly accurate approximation.
 
-**Future work:** Formal lays a foundation for defining DSL embedded in Fortran via template requirements,
-a feature of the forthcoming Fortran 2028 standard.
+**Future work:** Formal lays a foundation for defining a verifiable embedded DSL using type-safe generic programming.
 
 Examples
 --------
 ### Highlights
 Formal now supports 2D and 3D operators that compute the gradient (`.grad.`) of
 a scalar field, the divergence (`.div.`) of a vector field, and the arithmetic
-operators required for expressing the advection/diffusion partial differential
-equation (PDE)
+operators required for expressing equations such as the advection/diffusion 
+partial differential equation (PDE):
 
 $$ \partial s / \partial t = \nabla \cdot (D \nabla s) - \nabla \cdot (\vec{v}s)$$
 
-in code as
+which Formal facilitates writing as
 ```
 ds_dt = .div. (D * .grad. s) - .div. (v * s)
 ```
 where `s` is the concentration of a passive scalar quantity, `D` is a molecular diffusion
-coefficient, and `v` is a prescribed, divergence-free velocity field.  The
- 2D-advection-diffusion [example program](./example/2D-advection-diffusion.F90) uses a
-Runge-Kutta scheme to advance the above PDE in time.
+coefficient, and `v` is a prescribed velocity field.  This repository's 2D-advection-diffusion
+[program](./example/2D-advection-diffusion.F90), for example, demonstrates how to advance the
+above equation in time using a Runge-Kutta scheme.
 
 ### Other example programs
 See this repository's [example](./example) subdirectory for additional demonstrations of
@@ -83,34 +86,36 @@ Prerequisite
 Building and testing Formal requires the Fortran Package Manager  ([`fpm`]),
 which can be obtained via a package manager (e.g., `brew install fpm` on macOS)
 or by compiling the single-file concatenation of the `fpm` source that is
-included among the release assets.  For the `fpm` 0.12.0 release, for example,
-compiling [fpm-0.12.0.F90] and placing the resulting executable file in your
+included among the release assets.  For the `fpm` 0.13.0 release, for example,
+compiling [fpm-0.13.0.F90] and placing the resulting executable file in your
 `PATH` suffices.
 
 Building and testing
 --------------------
- Vendor   | Compiler    | Version(s) Tested | Build/Test Command
-----------|-------------|-------------------|-------------------
- LFortran | `lfortran`  | latest            | `fpm test --compiler lfortran --flag "--cpp --realloc-lhs-arrays --separate-compilation"`
- LLVM     | `flang`     | 20-22             | `fpm test --compiler flang --profile release`
- LLVM     | `flang`     | 19                | `fpm test --compiler flang --profile release --flag "-mmlir -allow-assumed-rank"`
- GCC      | `gfortran`  | 16.1.1, 17.0.0    | `fpm test --compiler gfortran --profile release`
+### Supported Compilers
 
-GCC 16.1.1 and 17.0.0 are unreleased development versions. GCC 16.2.0 will be the first release
-that supports the latest versions of Formal.
+ Vendor  | Compiler  | Version(s)| Build/Test Command
+---------|-----------|-----------|-------------------
+ LFortran| `lfortran`| 0.64      | `fpm test --compiler lfortran --flag "--cpp --realloc-lhs-arrays --separate-compilation"`
+ LLVM    | `flang`   | 20-23     | `fpm test --compiler flang --profile release`
+ LLVM    | `flang`   | 19        | `fpm test --compiler flang --profile release --flag "-mmlir -allow-assumed-rank"`
+ NAG     | `nagfor`  | 7.2       | `fpm test --compiler nagfor --flag "-fpp -O4"`
 
-### `fpm` versions before 0.13.0
-With LLVM, replace the `flang` with `flang-new` and delete `--profile release` from the above commands. 
+#### LLVM
+With `fpm` Versions before 0.13.0, replace  `flang` with `flang-new` and delete `--profile release` in the tabulated commands above.
 
-Unsupported Compilers
+#### NAG 
+Building with `nagfor` requires an `fpm` version that contains pull request [#1312] and/or that fixes issue [#1313].
+
+### Unsupported Compilers
 ---------------------
-Recent commits broke support for these compilers due primarily to compiler bugs.
-Once appropriately patched versions of these compilers have been released, this section's content will be moved back up to the previous section of this README.md.
+Recent commits exposed issues with the Intel `ifx` and `gfortran` compilers that block building Formal.
+Once the issues have been addressed, the corresponding compiler's content will be moved back up to [Supported Compilers] table.
 
- Vendor   | Compiler    | Version(s) Tested     | Build/Test Command
-----------|-------------|-----------------------|-------------------
- Intel    | `ifx`       | 2025.2.0              | `FOR_COARRAY_NUM_IMAGES=1 fpm test --compiler ifx --flag "-fpp -O3 -coarray" --profile release`
- NAG      | `nagfor`    | 7.2                   | `fpm test --compiler nagfor --flag "-O3 -fpp"`
+ Vendor| Compiler  |Version |Build/Test Command
+-------|-----------|--------|------------------
+ Intel | `ifx`     |2026.1.0|`FOR_COARRAY_NUM_IMAGES=1 fpm test --compiler ifx --flag "-fpp -O3 -coarray" --profile release`
+ GCC   | `gfortran`|16.2.0  |`fpm test --compiler gfortran --profile release`
 
 Documentation
 -------------
@@ -131,11 +136,15 @@ Formal is a software artifact of research funded by the Competitive Portfolios f
 Scientific Computing Research Program of the U.S. Department of Energy, Office of Science,
 Office of Advanced Scientific Computing Research under contract DE-AC02-05CH11231.
 
-[`fpm`]: https://github.com/fortran-lang/fpm
-[fpm-0.12.0.F90]: https://github.com/fortran-lang/fpm/releases/download/v0.12.0/fpm-0.12.0.F90
+[#1312]: https://github.com/fortran-lang/fpm/pull/1312
+[#1313]: https://github.com/fortran-lang/fpm/issues/1313
+[Corbino & Castillo (2020)]: https://doi.org/10.1016/j.cam.2019.06.042
 [`doc/uml/class-diagram.md`]: ./doc/uml/class-diagram.md
-[Corbino & Castillo (2020)]: https://doi.org/10.1016/j.cam.2019.06.042 
+[Dumett & Castillo (2022)]: https://www.csrc.sdsu.edu/research-reports/
 [`example/extended-gauss-divergence.F90`]: ./example/extended-gauss-divergence.F90
+[`fpm`]: https://github.com/fortran-lang/fpm
+[fpm-0.13.0.F90]: https://github.com/fortran-lang/fpm/releases/download/v0.13.0/fpm-0.13.0.F90
 [issue]: https://github.com/berkeleylab/formal/issues
-[pull request]: https://github.com/berkeleylab/formal/pulls
 [LICENSE.txt]: ./LICENSE.txt
+[pull request]: https://github.com/berkeleylab/formal/pulls
+[Supported Compilers]: #supported-compilers
