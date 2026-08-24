@@ -51,9 +51,10 @@ a feature of the forthcoming Fortran 2028 standard.
 Examples
 --------
 ### Highlights
-Formal now supports two-dimensional (2D) operators that compute the gradient (`.grad.`) of a
-scalar field, the divergence (`.div.`) of vector field, and the arithmetic operators required 
-for expressing the advection/diffusion partial differential equation (PDE)
+Formal now supports 2D and 3D operators that compute the gradient (`.grad.`) of
+a scalar field, the divergence (`.div.`) of a vector field, and the arithmetic
+operators required for expressing the advection/diffusion partial differential
+equation (PDE)
 
 $$ \partial s / \partial t = \nabla \cdot (D \nabla s) - \nabla \cdot (\vec{v}s)$$
 
