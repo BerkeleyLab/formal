@@ -119,10 +119,9 @@ Once the issues have been addressed, the corresponding compiler's content will b
 
 Documentation
 -------------
-The [`doc/uml/class-diagram.md`] file contains a Mermaid script that generates a
-Unified Modeling Language (UML) class diagram depicting many Formal derived
-types and their interrelationships.  GitHub's web servers render the diagram
-graphically when viewed in a web browser.
+The [`doc/uml`] folder contains Mermaid scripts that generate Unified Modeling Language (UML)
+class diagrams depicting many Formal derived types and their interrelationships.  GitHub's web
+servers render the diagram graphically when viewed in a web browser.
 
 Support and Licensing
 ---------------------
@@ -139,7 +138,7 @@ Office of Advanced Scientific Computing Research under contract DE-AC02-05CH1123
 [#1312]: https://github.com/fortran-lang/fpm/pull/1312
 [#1313]: https://github.com/fortran-lang/fpm/issues/1313
 [Corbino & Castillo (2020)]: https://doi.org/10.1016/j.cam.2019.06.042
-[`doc/uml/class-diagram.md`]: ./doc/uml/class-diagram.md
+[`doc/uml`]: ./doc/uml
 [Dumett & Castillo (2022)]: https://www.csrc.sdsu.edu/research-reports/
 [`example/extended-gauss-divergence.F90`]: ./example/extended-gauss-divergence.F90
 [`fpm`]: https://github.com/fortran-lang/fpm
