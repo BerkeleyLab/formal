@@ -105,7 +105,7 @@ Building and testing
 With `fpm` Versions before 0.13.0, replace  `flang` with `flang-new` and delete `--profile release` in the tabulated commands above.
 
 #### NAG 
-Building with `nagfor` requires an `fpm` version that contains pull request [#1312] and/or that fixes issue [#1313].
+Building with `nagfor` requires an `fpm` version containing commit 9a4433dd19183b548cd67afbd32992f53dc2b987, which was merged into `fpm`'s main branch on 27 August 2026.
 
 ### Unsupported Compilers
 ---------------------
