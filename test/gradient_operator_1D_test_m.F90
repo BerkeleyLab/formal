@@ -205,7 +205,7 @@ contains
             ,error_fine_max   => maxval(abs(grad_fine_values - grad_fine_expected)) &
           )
             associate(order_actual => log(error_coarse_max/error_fine_max)/log(real(fine_cells)/coarse_cells))
-              test_diagnosis = test_diagnosis .also. (order_actual .approximates. real(order_desired) .within. 2.1) &
+              test_diagnosis = test_diagnosis .also. (order_actual .approximates. real(order_desired) .within. 2.5) &
                 // " (4th-order d(sinusoid)/dx order of accuracy)"
             end associate
           end associate

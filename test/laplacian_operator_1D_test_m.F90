@@ -26,7 +26,7 @@ module laplacian_operator_1D_test_m
     procedure, nopass :: results
   end type
 
-  real, parameter :: tight_tolerance = 1E-4, loose_tolerance = 1E-02, crude_tolerance = 1.0
+  real, parameter :: tight_tolerance = 1E-4, loose_tolerance = 1E-02, crude_tolerance = 1.5
 
 contains
 

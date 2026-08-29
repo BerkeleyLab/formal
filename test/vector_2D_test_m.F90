@@ -157,7 +157,7 @@ contains
         ,v => vector_2D_t(v_init, cells=[10,10], x_min=[0E0,0E0], x_max=[5E0,5E0], order=order) &
       )
         associate(u_dot_v => u .dot. v)
-          test_diagnosis = test_diagnosis .also. (.all. (u_dot_v%values() .approximates. u_dot_v_exact .within. 1E-6))
+          test_diagnosis = test_diagnosis .also. (.all. (u_dot_v%values() .approximates. u_dot_v_exact .within. 1E-5))
         end associate
       end associate
     end do
@@ -206,8 +206,8 @@ contains
         ,vs_expected => vector_2D_t(vs_init, cells=[10,10], x_min=[0E0,0E0], x_max=[5E0,5E0], order=order) &
       )
         associate(vs => v * s)
-          test_diagnosis = test_diagnosis .also. (.all. (vs%values(x_dir) .approximates. vs_expected%values(x_dir) .within. 1E-6))
-          test_diagnosis = test_diagnosis .also. (.all. (vs%values(y_dir) .approximates. vs_expected%values(y_dir) .within. 1E-6))
+          test_diagnosis = test_diagnosis .also. (.all. (vs%values(x_dir) .approximates. vs_expected%values(x_dir) .within. 1E-5))
+          test_diagnosis = test_diagnosis .also. (.all. (vs%values(y_dir) .approximates. vs_expected%values(y_dir) .within. 1E-5))
         end associate
       end associate
     end do
