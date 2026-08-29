@@ -45,21 +45,21 @@ class vector_1D_t{
 }
 
 class gradient_1D_t{
-   - weights : double precision[]
+   - weights : real[]
 }
 
 class mimetic_matrix_1D_t{
- - upper_ :: double precision[]
- - inner_ :: double precision[]
- - lower_ :: double precision[]
+ - upper_ :: real[]
+ - inner_ :: real[]
+ - lower_ :: real[]
 }
 
 class gradient_operator_1D_t{
- + operator(.x.) double precision[]
- + assemble() double precision[] "2D array"
+ + operator(.x.) real[]
+ + assemble() real[] "2D array"
 }
 
 class divergence_operator_1D_t{
- + operator(.x.) double precision[]
- + assemble() double precision[] "2D array"
+ + operator(.x.) real[]
+ + assemble() real[] "2D array"
 }

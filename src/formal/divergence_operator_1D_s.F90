@@ -16,8 +16,8 @@ contains
 
   pure function negate_and_flip(A) result(Ap)
     !! Transform a mimetic matrix upper block into a lower block
-    double precision, intent(in) :: A(:,:)
-    double precision, allocatable :: Ap(:,:)
+    real, intent(in) :: A(:,:)
+    real, allocatable :: Ap(:,:)
     integer row, column
 
     allocate(Ap, mold=A)
@@ -38,7 +38,7 @@ contains
  
   module procedure construct_1D_divergence_operator
 
-    double precision, allocatable :: Ap(:,:)
+    real, allocatable :: Ap(:,:)
 
     call_julienne_assert(cells .isAtLeast. 2*k+1)
 
@@ -59,17 +59,17 @@ contains
     pure function A_block(k, dx) result(matrix_block)
       !! Compute the upper block submatrix "A" of the Corbino & Castillo (2020) mimetic divergence operator
       integer, intent(in) :: k
-      double precision, intent(in) :: dx
-      double precision, allocatable :: matrix_block(:,:)
+      real, intent(in) :: dx
+      real, allocatable :: matrix_block(:,:)
 
       order_of_accuracy: &
       select case(k)
       case(2)
-        matrix_block = reshape([ double precision :: &
+        matrix_block = reshape([ real :: &
         ], shape=[0,0])
       case(4)
         matrix_block = reshape([ &
-          -11/12D0, 17/24D0, 3/8D0, -5/24D0,  1/24D0 &
+          -11/12E0, 17/24E0, 3/8E0, -5/24E0,  1/24E0 &
         ], shape=[1,5], order=[2,1]) / dx
       case default
         associate(string_k => string_t(k))
@@ -82,15 +82,15 @@ contains
     pure function M(k, dx) result(row)
       !! Compute the middle block submatrix "M" of the Corbino & Castillo (2020) mimetic divergence operator
       integer, intent(in) :: k
-      double precision, intent(in) :: dx
-      double precision, allocatable :: row(:)
+      real, intent(in) :: dx
+      real, allocatable :: row(:)
 
       order_of_accuracy: &
       select case(k)
       case(2)
-        row = [-1D0, 1D0]/ dx        
+        row = [-1E0, 1E0]/ dx        
       case(4)
-        row = [1D0/24D0, -9D0/8D0, 9D0/8D0, -1D0/24D0] / dx        
+        row = [1E0/24E0, -9E0/8E0, 9E0/8E0, -1E0/24E0] / dx        
       case default
         associate(string_k => string_t(k))
           error stop "M (divergence_operator_1D_s): unsupported order of accuracy: " // string_k%string()
@@ -108,7 +108,7 @@ contains
 
   module procedure divergence_matrix_multiply
 
-    double precision, allocatable :: product_inner(:)
+    real, allocatable :: product_inner(:)
 
     associate( &
        upper_rows => size(self%upper_,1) &
@@ -142,11 +142,11 @@ contains
       ,lower_columns => size(self%lower_,2) &
     )
       matvec_product = [ &
-         0D0 &
+         0E0 &
         ,matmul(self%upper_, vec(1 : upper_columns )) &
         ,product_inner &
         ,matmul(self%lower_, vec(size(vec) - lower_columns + 1 : )) &
-        ,0D0 &
+        ,0E0 &
       ]
       call_julienne_assert(size(matvec_product) .equalsExpected. self%m_ + 2)
     end associate
@@ -178,10 +178,10 @@ contains
     pure function e(dir, length) result(unit_vector)
       !! Result is the dir-th column of the len x len identity matrix
       integer, intent(in) :: dir, length
-      double precision :: unit_vector(length)
-      unit_vector(1:dir-1) = 0D0
-      unit_vector(dir)     = 1D0
-      unit_vector(dir+1:)  = 0D0
+      real :: unit_vector(length)
+      unit_vector(1:dir-1) = 0E0
+      unit_vector(dir)     = 1E0
+      unit_vector(dir+1:)  = 0E0
     end function
 
   end procedure

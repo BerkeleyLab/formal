@@ -114,7 +114,7 @@ contains
      
   module procedure vector_2D_divergence
 
-    double precision, dimension(self%cells_(x_dir)+2, self%cells_(y_dir)+2) :: div_x_term, div_y_term
+    real, dimension(self%cells_(x_dir)+2, self%cells_(y_dir)+2) :: div_x_term, div_y_term
 
     call_julienne_assert(self%consistent())
 

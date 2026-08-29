@@ -14,11 +14,11 @@ module interpolator_1D_m
     !! Encapsulate a staggered-grid interpolation matrix with a corresponding matrix-vector product operator
     private
     integer order_, cells_, dx_
-    double precision                 first_
-    double precision, allocatable :: upper_(:,:) 
-    double precision, allocatable :: inner_(:)
-    double precision, allocatable :: lower_(:,:)
-    double precision                 final_
+    real                 first_
+    real, allocatable :: upper_(:,:) 
+    real, allocatable :: inner_(:)
+    real, allocatable :: lower_(:,:)
+    real                 final_
   end type
 
   type, extends(interpolator_1D_t) :: centers_to_faces_1D_t
@@ -37,7 +37,7 @@ module interpolator_1D_m
       !! Construct centers-to-faces interpolation operator
       implicit none
       integer, intent(in) :: order, cells
-      double precision, intent(in) :: dx
+      real, intent(in) :: dx
       type(centers_to_faces_1D_t) centers_to_faces_1D
     end function
 
@@ -49,7 +49,7 @@ module interpolator_1D_m
       !! Construct centers-to-faces interpolation operator
       implicit none
       integer, intent(in) :: order, cells
-      double precision, intent(in) :: dx
+      real, intent(in) :: dx
       type(faces_to_centers_1D_t) faces_to_centers_1D
     end function
 
@@ -61,16 +61,16 @@ module interpolator_1D_m
       !! Interpolate cell-centered values to face-centered values
       implicit none
       class(centers_to_faces_1D_t), intent(in) :: self
-      double precision, intent(in) :: centers_extended(:)
-      double precision, allocatable :: faces(:)
+      real, intent(in) :: centers_extended(:)
+      real, allocatable :: faces(:)
     end function
 
     pure module function center_values_extended(self, faces) result(centers_extended)
       !! Interpolate face-centered values to cell-centered values
       implicit none
       class(faces_to_centers_1D_t), intent(in) :: self
-      double precision, intent(in) :: faces(:)
-      double precision, allocatable :: centers_extended(:)
+      real, intent(in) :: faces(:)
+      real, allocatable :: centers_extended(:)
     end function
 
   end interface

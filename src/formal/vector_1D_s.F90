@@ -18,7 +18,7 @@ submodule(tensors_1D_m) vector_1D_s
     ,operator(.within.)
   implicit none
 
-   double precision, parameter :: double_equivalence = 2D-4
+   real, parameter :: real_equivalence = 2E-4
 
 contains
 
@@ -68,10 +68,10 @@ contains
       associate( &
          q  => divergence_1D%weights() &
         ,dx => (self%x_max_ - self%x_min_)/self%cells_ &
-        ,b => [-1D0, [(0D0, center = 1, self%cells_-1)], 1D0] &
+        ,b => [-1E0, [(0E0, center = 1, self%cells_-1)], 1E0] &
       )
         call_julienne_assert(.all. ([size(Dv), size(q)] .equalsExpected. self%cells_+2))
-        call_julienne_assert((.all. (matmul(transpose(self%divergence_operator_1D_%assemble()), q) .approximates. b/dx .within. double_equivalence)))
+        call_julienne_assert((.all. (matmul(transpose(self%divergence_operator_1D_%assemble()), q) .approximates. b/dx .within. real_equivalence)))
           ! Check D^T * a = b_{m+1},  Eq. (19), Corbino & Castillo (2020)
       end associate
 #endif
@@ -93,8 +93,8 @@ contains
     call_julienne_assert(size(vector_1D%values_) .equalsExpected. size(scalar_1D%values_)-1)
     call_julienne_assert(     vector_1D%cells_   .equalsExpected.       scalar_1D%cells_ )
     call_julienne_assert(     vector_1D%order_   .equalsExpected.       scalar_1D%order_ )
-    call_julienne_assert(vector_1D%x_min_ .approximates. scalar_1D%x_min_ .within. double_equivalence)
-    call_julienne_assert(vector_1D%x_max_ .approximates. scalar_1D%x_max_ .within. double_equivalence)
+    call_julienne_assert(vector_1D%x_min_ .approximates. scalar_1D%x_min_ .within. real_equivalence)
+    call_julienne_assert(vector_1D%x_max_ .approximates. scalar_1D%x_max_ .within. real_equivalence)
 
     associate( &
       q => vector_1D%divergence_1D_weights() &
@@ -121,8 +121,8 @@ contains
   contains
 
     pure function premultiply_diagonal(d,A) result(DA)
-      double precision, intent(in) :: d(:), A(:,:)
-      double precision, allocatable :: DA(:,:)
+      real, intent(in) :: d(:), A(:,:)
+      real, allocatable :: DA(:,:)
 
       call_julienne_assert(size(d) .equalsExpected. size(A,1))
 
@@ -144,8 +144,8 @@ contains
     end function
 
     pure function postmultiply_diagonal(A,d) result(AD)
-      double precision, intent(in) :: A(:,:), d(:)
-      double precision, allocatable :: AD(:,:)
+      real, intent(in) :: A(:,:), d(:)
+      real, allocatable :: AD(:,:)
 
       call_julienne_assert(size(d) .equalsExpected. size(A,2))
 
@@ -169,7 +169,7 @@ contains
   end procedure
 
   module procedure dA
-    dA = 1D0
+    dA = 1E0
   end procedure
 
 end submodule vector_1D_s

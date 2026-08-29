@@ -9,10 +9,10 @@ module fields_m
 contains
 
   pure function scalar_field(x,y) result(gaussian)
-    double precision, intent(in) :: x(:), y(:)
-    double precision gaussian(size(x),size(y))
-    double precision, parameter :: pi = acos(-1D0)
-    double precision, parameter :: x0 = -pi/2, y0 = -pi/2, sigma = pi/8
+    real, intent(in) :: x(:), y(:)
+    real gaussian(size(x),size(y))
+    real, parameter :: pi = acos(-1E0)
+    real, parameter :: x0 = -pi/2, y0 = -pi/2, sigma = pi/8
     do concurrent(integer :: j=1:size(y)) default(none) shared(x,y,gaussian)
       associate(r => sqrt((x-x0)**2 + (y(j)-y0)**2))
         gaussian(:,j) = exp(-(r**2)/(2*sigma**2))
@@ -21,8 +21,8 @@ contains
   end function
 
   pure function taylor_green_velocity(x,y) result(velocity)
-    double precision, intent(in) :: x(:), y(:)
-    double precision velocity(size(x),size(y),space_dimension)
+    real, intent(in) :: x(:), y(:)
+    real velocity(size(x),size(y),space_dimension)
     do concurrent(integer :: i=1:size(x), j=1:size(y))
       velocity(i,j,:) = [10*sin(x(i))*cos(y(j)), -10*cos(x(i))*sin(y(j))]
     end do
@@ -41,7 +41,7 @@ program advection_diffusion_2D
   procedure(scalar_2D_initializer_i), pointer :: scalar_2D_initializer
   procedure(vector_2D_initializer_i), pointer :: velocity_2D_initializer
   type(scalar_2D_t) s
-  double precision, parameter :: pi = acos(-1D0)
+  real, parameter :: pi = acos(-1E0)
 
   scalar_2D_initializer => scalar_field
   velocity_2D_initializer => taylor_green_velocity
@@ -60,7 +60,7 @@ program advection_diffusion_2D
 
     advance_time: &
     block
-      double precision :: dt = 1D-4
+      real :: dt = 1E-4
       integer step
 
       do step = 1, 500
@@ -88,7 +88,7 @@ contains
     type(scalar_2D_t), intent(in) :: s
     type(vector_2D_t), intent(in) :: v
     type(scalar_2D_t) ds_dt
-    double precision, parameter :: D = 0.5D0
+    real, parameter :: D = 0.5E0
     ds_dt = .div. (D * .grad. s) - .div. (v * s)
   end function
 

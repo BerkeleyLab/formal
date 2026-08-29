@@ -25,7 +25,7 @@ module scalar_3D_test_m
     procedure, nopass :: results
   end type
 
-  double precision, parameter :: tolerance = 1D-8
+  real, parameter :: tolerance = 1E-3
   integer, parameter :: dimensionality = 3
 
 contains
@@ -46,9 +46,9 @@ contains
 
   pure function rotated_stagnation_point_potential(x,y,z) result(s)
     !! Define a stagnation-point scalar potential in a plane tilted 45 deg from the x-y plane
-    double precision, intent(in), dimension(:) :: x, y, z
-    double precision s(size(x),size(y),size(z))
-    double precision, parameter :: pi = acos(-1D0)
+    real, intent(in), dimension(:) :: x, y, z
+    real s(size(x),size(y),size(z))
+    real, parameter :: pi = acos(-1E0)
     do concurrent(integer :: j=1:size(y), k=1:size(z)) default(none) shared(x,y,z,s)
       associate(eta => y(j)*cos(pi/4) + z(k)*sin(pi/4)) ! x-eta plane rotated around x axis pi/4 radians from x-y plane
         s(:,j,k) = (x**2 - eta**2)/2 
@@ -61,9 +61,9 @@ contains
     !! gradient(x,eta) = [ds/dx,              ds/dy,              ds/dz]
     !!                 = [    x, (ds/deta)(deta/dy), (ds/deta)(deta/dz)]
     !!                 = [    x,   -eta * cos(pi/4),   -eta * sin(pi/4)]
-    double precision, intent(in), dimension(:) :: x, y, z
-    double precision gradient(size(x),size(y),size(z),dimensionality)
-    double precision, parameter :: pi = acos(-1D0)
+    real, intent(in), dimension(:) :: x, y, z
+    real gradient(size(x),size(y),size(z),dimensionality)
+    real, parameter :: pi = acos(-1E0)
     do concurrent(integer :: i=1:size(x), j=1:size(y), k=1:size(z)) default(none) shared(gradient,x,y,z)
       associate(eta => y(j)*cos(pi/4) + z(k)*sin(pi/4)) ! x-eta plane rotated around x axis pi/4 radians from x-y plane
         gradient(i,j,k,:) = [x(i), -eta * cos(pi/4), -eta * sin(pi/4)]
@@ -82,7 +82,7 @@ contains
     test_diagnosis = passing_test()
 
     do order = 2, 4, 2
-      associate(scalar_3D => scalar_3D_t(scalar_3D_initializer, order=order, cells=[20,20,20], x_min=[-10D0,-10D0,-10D0], x_max=[10D0,10D0,10D0]))
+      associate(scalar_3D => scalar_3D_t(scalar_3D_initializer, order=order, cells=[20,20,20], x_min=[-10E0,-10E0,-10E0], x_max=[10E0,10E0,10E0]))
         associate( &
            grad_scalar => .grad. scalar_3D &
           ,expected_gradient => vector_3D_t(expected_gradient_initializer, mold=scalar_3D) &

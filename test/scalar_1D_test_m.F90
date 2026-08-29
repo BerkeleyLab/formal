@@ -26,7 +26,7 @@ module scalar_1D_test_m
     procedure, nopass :: results
   end type
 
-  double precision, parameter :: tolerance = 1D-11
+  real, parameter :: tolerance = 1E-3
 
 contains
 
@@ -48,8 +48,8 @@ contains
   end function
 
   pure function line(x) result(y)
-    double precision, intent(in) :: x(:)
-    double precision, allocatable :: y(:)
+    real, intent(in) :: x(:)
+    real, allocatable :: y(:)
     y = x
   end function
 
@@ -62,7 +62,7 @@ contains
     test_diagnosis = passing_test()
 
     do order = 2, 4, 2
-      associate(scalar_1D => scalar_1D_t(scalar_1D_initializer, order=order, cells=10, x_min=0D0, x_max=10D0) )
+      associate(scalar_1D => scalar_1D_t(scalar_1D_initializer, order=order, cells=10, x_min=0E0, x_max=10E0) )
         associate(cube => scalar_1D**3 )
           test_diagnosis = test_diagnosis .also. .all. &
             (cube%values() .approximates. scalar_1D%values()**3 .within. tolerance) &
@@ -82,7 +82,7 @@ contains
     test_diagnosis = passing_test()
 
     do order = 2, 4, 2
-      associate(scalar_1D => scalar_1D_t(scalar_1D_initializer, order=order, cells=10, x_min=0D0, x_max=10D0) )
+      associate(scalar_1D => scalar_1D_t(scalar_1D_initializer, order=order, cells=10, x_min=0E0, x_max=10E0) )
         associate( half => scalar_1D/2 )
           test_diagnosis = test_diagnosis .also. .all. (half%values() .approximates. scalar_1D%values()/2 .within. tolerance) &
                            // string_t(" for order ") // string_t(order)
@@ -93,22 +93,22 @@ contains
   end function
 
   pure function parabola(x) result(y)
-    double precision, intent(in) :: x(:)
-    double precision, allocatable :: y(:)
-    y = 7*x**2 + 3*x + 5D0
+    real, intent(in) :: x(:)
+    real, allocatable :: y(:)
+    y = 7*x**2 + 3*x + 5E0
   end function
 
   pure function d_parabola_dx(x) result(y)
-    double precision, intent(in) :: x(:)
-    double precision, allocatable :: y(:)
-    y = 14*x + 3D0
+    real, intent(in) :: x(:)
+    real, allocatable :: y(:)
+    y = 14*x + 3E0
   end function
 
   pure function d2_parabola_dx2(x) result(y)
-    double precision, intent(in) :: x(:)
-    double precision, allocatable :: y(:)
+    real, intent(in) :: x(:)
+    real, allocatable :: y(:)
     allocate(y(size(x)))
-    y = 14D0
+    y = 14E0
   end function
 
   function check_derivative() result(test_diagnosis)
@@ -120,7 +120,7 @@ contains
     test_diagnosis = passing_test()
 
     do order = 2, 4, 2
-      associate(scalar_1D => scalar_1D_t(scalar_1D_initializer, order=order, cells=10, x_min=0D0, x_max=10D0) )
+      associate(scalar_1D => scalar_1D_t(scalar_1D_initializer, order=order, cells=10, x_min=0E0, x_max=10E0) )
         associate( d_scalar_1D_dx => d_dx(scalar_1D))
           test_diagnosis = test_diagnosis .also. .all. &
             (d_scalar_1D_dx%values() .approximates. d_parabola_dx(scalar_1D%grid()) .within. tolerance) &
@@ -140,7 +140,7 @@ contains
     test_diagnosis = passing_test()
 
     do order = 2, 4, 2
-      associate(scalar_1D => scalar_1D_t(scalar_1D_initializer, order=order, cells=10, x_min=0D0, x_max=10D0) )
+      associate(scalar_1D => scalar_1D_t(scalar_1D_initializer, order=order, cells=10, x_min=0E0, x_max=10E0) )
         associate(d2_scalar_1D_dx2 => d2_dx2(scalar_1D))
           test_diagnosis = test_diagnosis .also. .all. &
             (d2_scalar_1D_dx2%values() .approximates. d2_parabola_dx2(scalar_1D%grid()) .within. tolerance) &

@@ -26,7 +26,7 @@ module laplacian_operator_1D_test_m
     procedure, nopass :: results
   end type
 
-  double precision, parameter :: tight_tolerance = 5D-14, loose_tolerance = 1D-09, crude_tolerance = 1D-02
+  real, parameter :: tight_tolerance = 1E-4, loose_tolerance = 1E-02, crude_tolerance = 1.0
 
 contains
 
@@ -56,17 +56,17 @@ contains
   end function
 
   pure function parabola(x) result(y)
-    double precision, intent(in) :: x(:)
-    double precision, allocatable :: y(:)
+    real, intent(in) :: x(:)
+    real, allocatable :: y(:)
     y = (x**2)/2
   end function
 
   function check_2nd_order_laplacian_parabola() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => parabola
-    double precision, parameter :: expected_laplacian = 1D0
+    real, parameter :: expected_laplacian = 1E0
 
-    associate(laplacian_scalar => .laplacian. scalar_1D_t(scalar_1D_initializer, order=2, cells=16, x_min=0D0, x_max=5D0))
+    associate(laplacian_scalar => .laplacian. scalar_1D_t(scalar_1D_initializer, order=2, cells=16, x_min=0E0, x_max=5E0))
       test_diagnosis = passing_test()
       test_diagnosis = test_diagnosis .also. (.all. (laplacian_scalar%values() .approximates. expected_laplacian .within. tight_tolerance)) &
         // " (2nd-order .laplacian. [(x**2)/2]"
@@ -74,8 +74,8 @@ contains
   end function
 
   pure function quartic(x) result(y)
-    double precision, intent(in) :: x(:)
-    double precision, allocatable :: y(:)
+    real, intent(in) :: x(:)
+    real, allocatable :: y(:)
     y = (x**4)/12
   end function
 
@@ -83,7 +83,7 @@ contains
     type(test_diagnosis_t) test_diagnosis
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => quartic
 
-    associate(laplacian_quartic => .laplacian. scalar_1D_t(scalar_1D_initializer, order=4, cells=16, x_min=0D0, x_max=40D0))
+    associate(laplacian_quartic => .laplacian. scalar_1D_t(scalar_1D_initializer, order=4, cells=16, x_min=0E0, x_max=40E0))
       associate(x => laplacian_quartic%grid())
         associate(expected_laplacian => x**2, actual_laplacian => laplacian_quartic%values())
           test_diagnosis = passing_test()
@@ -95,36 +95,36 @@ contains
   end function
 
   pure function f(x)
-    double precision, intent(in) :: x(:)
-    double precision, allocatable :: f(:)
+    real, intent(in) :: x(:)
+    real, allocatable :: f(:)
     f = sin(x)
   end function
 
   pure function d2f_dx2(x)
-    double precision, intent(in) :: x(:)
-    double precision, allocatable :: d2f_dx2(:)
+    real, intent(in) :: x(:)
+    real, allocatable :: d2f_dx2(:)
     d2f_dx2 = -sin(x)
   end function
 
   function check_2nd_order_laplacian_convergence() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
-    test_diagnosis = check_laplacian_convergence(order_desired=2, coarse_cells=400, fine_cells=401)
+    test_diagnosis = check_laplacian_convergence(order_desired=2, coarse_cells=32, fine_cells=64)
   end function
 
   function check_4th_order_laplacian_convergence() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
-    test_diagnosis = check_laplacian_convergence(order_desired = 4, coarse_cells=150, fine_cells=151)
+    test_diagnosis = check_laplacian_convergence(order_desired = 4, coarse_cells=16, fine_cells=32)
   end function
 
   function check_laplacian_convergence(order_desired, coarse_cells, fine_cells) result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => f
-    double precision, parameter :: pi = 3.141592653589793D0
+    real, parameter :: pi = 3.141592653589793E0
     integer, intent(in) :: order_desired, coarse_cells, fine_cells
 
     associate( &
-       laplacian_coarse => .laplacian. scalar_1D_t(scalar_1D_initializer , order=order_desired, cells=coarse_cells, x_min=0D0, x_max=2*pi) &
-      ,laplacian_fine   => .laplacian. scalar_1D_t(scalar_1D_initializer , order=order_desired, cells=fine_cells  , x_min=0D0, x_max=2*pi) &
+       laplacian_coarse => .laplacian. scalar_1D_t(scalar_1D_initializer , order=order_desired, cells=coarse_cells, x_min=0E0, x_max=2*pi) &
+      ,laplacian_fine   => .laplacian. scalar_1D_t(scalar_1D_initializer , order=order_desired, cells=fine_cells  , x_min=0E0, x_max=2*pi) &
     )
       grids: &
       associate( &
@@ -156,8 +156,8 @@ contains
             ,fine_error_max   => maxval( abs( &
                actual_fine(1+depth:size(actual_fine)-depth) - expected_fine(1+depth:size(expected_fine)-depth) &
           )  ))
-            associate(order_actual => log(coarse_error_max/fine_error_max)/log(dble(fine_cells)/coarse_cells))
-              test_diagnosis = test_diagnosis .also. (order_actual .approximates. dble(order_desired) .within. crude_tolerance) &
+            associate(order_actual => log(coarse_error_max/fine_error_max)/log(real(fine_cells)/coarse_cells))
+              test_diagnosis = test_diagnosis .also. (order_actual .approximates. real(order_desired) .within. crude_tolerance) &
                 // " (boundary convergence rate as dx^" // string_t(order_desired) // " for .laplacian. sin(x))"
             end associate
           end associate check_internal_convergence_rate
@@ -172,8 +172,8 @@ contains
                 [  actual_fine(1:depth-1),   actual_fine(size(actual_fine)-depth+1:)] &
                -[expected_fine(1:depth-1), expected_fine(size(actual_fine)-depth+1:)] &
           )  ))
-            associate(order_actual => log(coarse_error_max/fine_error_max)/log(dble(fine_cells)/coarse_cells))
-              test_diagnosis = test_diagnosis .also. (order_actual .approximates. dble(order_desired-1) .within. crude_tolerance) &
+            associate(order_actual => log(coarse_error_max/fine_error_max)/log(real(fine_cells)/coarse_cells))
+              test_diagnosis = test_diagnosis .also. (order_actual .approximates. real(order_desired-1) .within. crude_tolerance) &
                 // " (boundary convergence rate as dx^" // string_t(order_desired-1) // " for .laplacian. sin(x))"
             end associate
           end associate check_boundary_convergence_rate

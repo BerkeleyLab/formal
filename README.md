@@ -41,11 +41,11 @@ produces output that includes actual program syntax:
 ```fortran
     f = (x**2)/2 ! <-- scalar function
     v = x        ! <-- vector function
-.SSS. (v .dot. .grad. f) * dV =  .3333333330205934
-.SSS. (     f * .div. v) * dV =  .16666666739857125
-   -.SS. (f .x. (v .dot. dA)) = -.5000000004191649
+.SSS. (v .dot. .grad. f) * dV =  .33333322
+.SSS. (     f * .div. v) * dV =  .16666671
+   -.SS. (f .x. (v .dot. dA)) = -.4999999
 ----------------------------------------------------
-                          sum = -.2220446049250313E-15 (residual)
+                          sum = .29802323E-7 (residual)
 ```
 where the small residual evidences a highly accurate approximation.
 

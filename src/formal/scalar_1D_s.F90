@@ -58,7 +58,7 @@ contains
     type(scalar_1D_t), intent(in) :: lhs, rhs
     call_julienne_assert(size(lhs%values_) .equalsExpected. size(rhs%values_))
     call_julienne_assert(.all.([lhs%cells_,lhs%order_] .equalsExpected. [rhs%cells_,rhs%order_]))
-    call_julienne_assert(.all.([lhs%x_min_,lhs%x_max_] .approximates. [rhs%x_min_,rhs%x_max_] .within. 1D-08))
+    call_julienne_assert(.all.([lhs%x_min_,lhs%x_max_] .approximates. [rhs%x_min_,rhs%x_max_] .within. 1E-5))
     conformable = .true.
   end function
 
@@ -83,7 +83,7 @@ contains
       tensor_1D_t(values =  lhs%values_ + rhs%values_, x_min = rhs%x_min_, x_max = rhs%x_max_, cells = rhs%cells_, order = rhs%order_)
   end procedure
 
-  module procedure premultiply_double
+  module procedure premultiply_real
     lhs_x_rhs%gradient_operator_1D_ = rhs%gradient_operator_1D_
     lhs_x_rhs%tensor_1D_t = &
       tensor_1D_t(values = lhs*rhs%values_, x_min = rhs%x_min_, x_max = rhs%x_max_, cells = rhs%cells_, order = rhs%order_)
@@ -95,7 +95,7 @@ contains
       tensor_1D_t(values = lhs*rhs%values_, x_min = rhs%x_min_, x_max = rhs%x_max_, cells = rhs%cells_, order = rhs%order_)
   end procedure
 
-  module procedure postmultiply_double
+  module procedure postmultiply_real
     lhs_x_rhs%gradient_operator_1D_ = lhs%gradient_operator_1D_
     lhs_x_rhs%tensor_1D_t = &
       tensor_1D_t(values = rhs*lhs%values_, x_min = lhs%x_min_, x_max = lhs%x_max_, cells = lhs%cells_, order = lhs%order_)
@@ -136,8 +136,8 @@ contains
       gradient_1D%tensor_1D_t = tensor_1D_t(self%gradient_operator_1D_ .x. self%values_, self%x_min_, self%x_max_, cells=self%cells_, order=self%order_)
       gradient_1D%divergence_operator_1D_ = divergence_operator_1D_t(self%order_, dx, self%cells_)
       check_corbino_castillo_eq_17: &
-      associate(p => gradient_1D%weights(), b => [-1D0, [(0D0, c = 1, self%cells_)], 1D0])
-        call_julienne_assert((.all. (matmul(transpose(self%gradient_operator_1D_%assemble()), p) .approximates. b/dx .within. 2D-3)))
+      associate(p => gradient_1D%weights(), b => [-1E0, [(0E0, c = 1, self%cells_)], 1E0])
+        call_julienne_assert((.all. (matmul(transpose(self%gradient_operator_1D_%assemble()), p) .approximates. b/dx .within. 2E-3)))
       end associate check_corbino_castillo_eq_17
     end associate
 

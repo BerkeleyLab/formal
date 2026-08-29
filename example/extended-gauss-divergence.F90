@@ -6,14 +6,14 @@ module integrand_operands_m
 contains
 
   pure function scalar(x) result(f)
-    double precision, intent(in) :: x(:)
-    double precision, allocatable :: f(:)
+    real, intent(in) :: x(:)
+    real, allocatable :: f(:)
     f = (x**2)/2 ! <-- scalar function
   end function
 
   pure function vector(x) result(v)
-    double precision, intent(in) :: x(:)
-    double precision, allocatable :: v(:)
+    real, intent(in) :: x(:)
+    real, allocatable :: v(:)
     v = x        ! <-- vector function
   end function
 
@@ -36,7 +36,7 @@ program extended_gauss_divergence
     !! Define default initializations that can be overridden with the command-line arguments
     !! detailed by the usage information below
     integer :: cells_=200, order_=4
-    double precision :: x_min_=0D0, x_max_=1D0
+    real :: x_min_=0E0, x_max_=1E0
   end type
 
   type text_flags_t
@@ -44,7 +44,7 @@ program extended_gauss_divergence
   end type
 
   type(command_line_t) command_line
-  double precision SSS_v_dot_grad_f_dV, SSS_f_div_v_dV, SS_f_v_dot_dA
+  real SSS_v_dot_grad_f_dV, SSS_f_div_v_dV, SS_f_v_dot_dA
 
   if (command_line%argument_present([character(len=len("--help")) :: ("--help"), "-h"])) then
     stop                              new_line('') // new_line('') &
@@ -53,7 +53,7 @@ program extended_gauss_divergence
       // '  --example extended-gauss-divergence \' // new_line('') &
       // '  --compiler flang-new \'                // new_line('') &
       // '  --flag "-O3" \'                        // new_line('') &
-      // '  -- [--help|-h] | [[--cells <integer>] [--order <integer>] [--xmin <double precision>] [--xmax <double precision>] [--div|d] [--grad|g] [--vf|f]]' &
+      // '  -- [--help|-h] | [[--cells <integer>] [--order <integer>] [--xmin <real>] [--xmax <real>] [--div|d] [--grad|g] [--vf|f]]' &
       //                              new_line('') // new_line('') &
       // 'where pipes (|) separate square-bracketed optional arguments and angular brackets indicate user input values.' // new_line('')
   end if
