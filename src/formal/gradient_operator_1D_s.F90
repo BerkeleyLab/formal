@@ -17,8 +17,8 @@ contains
 
   pure function negate_and_flip(A) result(Ap)
     !! Transform a mimetic matrix upper block into a lower block
-    double precision, intent(in) :: A(:,:)
-    double precision, allocatable :: Ap(:,:)
+    real, intent(in) :: A(:,:)
+    real, allocatable :: Ap(:,:)
     integer row, column
 
     allocate(Ap, mold=A)
@@ -52,17 +52,17 @@ contains
 
     pure function corbino_castillo_A(k, dx) result(matrix_block)
       integer, intent(in) :: k
-      double precision, intent(in) :: dx
-      double precision, allocatable :: matrix_block(:,:)
+      real, intent(in) :: dx
+      real, allocatable :: matrix_block(:,:)
 
       order_of_accuracy: &
       select case(k)
       case(2)
-        matrix_block = reshape([-8D0/3D0, 3D0, -1D0/3D0] , shape=[1,3]) / dx
+        matrix_block = reshape([-8E0/3E0, 3E0, -1E0/3E0] , shape=[1,3]) / dx
       case(4)
         matrix_block = reshape([ &
-           -352D0/105D0,  35D0/ 8D0, -35D0/24D0, 21D0/40D0, -5D0/ 56D0 &
-          ,  16D0/105D0, -31D0/24D0,  29D0/24D0, -3D0/40D0,  1D0/168D0 &
+           -352E0/105E0,  35E0/ 8E0, -35E0/24E0, 21E0/40E0, -5E0/ 56E0 &
+          ,  16E0/105E0, -31E0/24E0,  29E0/24E0, -3E0/40E0,  1E0/168E0 &
         ], shape=[2,5], order=[2,1]) / dx
       case default
         associate(string_k => string_t(k))
@@ -74,15 +74,15 @@ contains
 
     pure function corbino_castillo_M(k, dx) result(row)
       integer, intent(in) :: k
-      double precision, intent(in) :: dx
-      double precision, allocatable :: row(:)
+      real, intent(in) :: dx
+      real, allocatable :: row(:)
 
       order_of_accuracy: &
       select case(k)
       case(2)
-        row = [-1D0, 1D0]/ dx        
+        row = [-1E0, 1E0]/ dx        
       case(4)
-        row = [1D0/24D0, -9D0/8D0, 9D0/8D0, -1D0/24D0] / dx        
+        row = [1E0/24E0, -9E0/8E0, 9E0/8E0, -1E0/24E0] / dx        
       case default
         associate(string_k => string_t(k))
           error stop "corbino_castillo_A: unsupported order of accuracy: " // string_k%string()
@@ -95,7 +95,7 @@ contains
 
   module procedure gradient_matrix_multiply
 
-    double precision, allocatable :: product_inner(:)
+    real, allocatable :: product_inner(:)
 
     associate( &
        upper_rows => size(self%upper_,1) &
@@ -139,7 +139,7 @@ contains
 
     associate(rows => self%m_ + 1, cols => self%m_ + 2)
 
-      allocate(G(rows, cols), source = 0D0)
+      allocate(G(rows, cols), source = 0E0)
 
 #if HAVE_DO_CONCURRENT_TYPE_SPEC_SUPPORT && HAVE_LOCALITY_SPECIFIER_SUPPORT
       do concurrent(integer :: col=1:cols) default(none) shared(G, self, cols)
@@ -160,10 +160,10 @@ contains
     pure function e(dir, length) result(unit_vector)
       !! Result is the dir-th column of the len x len identity matrix
       integer, intent(in) :: dir, length
-      double precision :: unit_vector(length)
-      unit_vector(1:dir-1) = 0D0
-      unit_vector(dir)     = 1D0
-      unit_vector(dir+1:)  = 0D0
+      real :: unit_vector(length)
+      unit_vector(1:dir-1) = 0E0
+      unit_vector(dir)     = 1E0
+      unit_vector(dir+1:)  = 0E0
     end function
 
   end procedure

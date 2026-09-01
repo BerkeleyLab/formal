@@ -28,7 +28,7 @@ module interpolator_1D_test_m
     procedure, nopass :: results
   end type
 
-  double precision, parameter :: tolerance = 1D-11
+  real, parameter :: tolerance = 1E-5
 
 contains
 
@@ -48,14 +48,14 @@ contains
   end function
 
   pure function line(x) result(y)
-    double precision, intent(in) :: x(:)
-    double precision, allocatable :: y(:)
+    real, intent(in) :: x(:)
+    real, allocatable :: y(:)
     y = x
   end function
 
   pure function cubic(x) result(y)
-    double precision, intent(in) :: x(:)
-    double precision, allocatable :: y(:)
+    real, intent(in) :: x(:)
+    real, allocatable :: y(:)
     y = 7*x**3 + 4*x**2 + x + 2
   end function
 
@@ -63,7 +63,7 @@ contains
     type(test_diagnosis_t) test_diagnosis
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => null()
     procedure(vector_1D_initializer_i), pointer :: vector_1D_initializer => line
-    double precision, parameter :: x_min = 0D0, x_max = 20D0
+    real, parameter :: x_min = 0E0, x_max = 20E0
     integer order, cells
 
     test_diagnosis = passing_test()
@@ -99,7 +99,7 @@ contains
     type(test_diagnosis_t) test_diagnosis
     procedure(vector_1D_initializer_i), pointer :: vector_1D_initializer => null()
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => line
-    double precision, parameter :: x_min = 0D0, x_max = 20D0
+    real, parameter :: x_min = 0E0, x_max = 20E0
     integer order, cells
 
     test_diagnosis = passing_test()

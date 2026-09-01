@@ -40,19 +40,19 @@ contains
   module procedure divergence_1D_weights
       integer c 
 
-      double precision, allocatable :: skin(:)
+      real, allocatable :: skin(:)
 
       select case(self%order_)
       case(2)
-        skin = [double precision::]
+        skin = [real::]
       case(4)
-        skin = [1D0, 2186/1943D0, 1992/2651D0, 1993/1715D0, 649/674D0, 699/700D0, 18170/18171D0, 471744/471745D0]
+        skin = [1E0, 2186/1943E0, 1992/2651E0, 1993/1715E0, 649/674E0, 699/700E0, 18170/18171E0, 471744/471745E0]
       case default
         error stop "unsupported order"
       end select
 
       associate(depth => size(skin))
-        weights = [skin, [(1D0, c = depth+1, self%cells_+2-depth)], skin(depth:1:-1) ] ! m+2 values, where m = self%cells_
+        weights = [skin, [(1E0, c = depth+1, self%cells_+2-depth)], skin(depth:1:-1) ] ! m+2 values, where m = self%cells_
       end associate                                                                    ! cf. Corbino & Castillo (2020) Eqs. 14-15 & 19
 
       call_julienne_assert(self%cells_ .isAtLeast. 2*size(skin))

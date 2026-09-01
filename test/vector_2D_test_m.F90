@@ -35,8 +35,8 @@ module vector_2D_test_m
   end type
 
   integer, parameter :: space_dimension = 2
-  double precision, parameter :: tolerance = 1D-2
-  double precision, parameter :: u_const(*) = [1D0,2D0], v_const(*) = [3D0,4D0], u_dot_v_exact = dot_product(u_const, v_const)
+  real, parameter :: tolerance = 1E-2
+  real, parameter :: u_const(*) = [1E0,2E0], v_const(*) = [3E0,4E0], u_dot_v_exact = dot_product(u_const, v_const)
 
 contains
 
@@ -57,8 +57,8 @@ contains
   end function
 
   pure function biquadratic(x,y) result(z)
-    double precision, intent(in) :: x(:), y(:)
-    double precision z(size(x),size(y),space_dimension)
+    real, intent(in) :: x(:), y(:)
+    real z(size(x),size(y),space_dimension)
     do concurrent(integer :: i=1:size(x), j=1:size(y)) default(none) shared(x,y,z)
       z(i,j,:) = [ &
          1 - 2*x(i) + 3*x(i)**2 - x(i)*y(j)/5 + 3*y(j)**2 - 2*y(j) &
@@ -68,16 +68,16 @@ contains
   end function
 
   pure function biquadratic_divergence(x,y) result(divergence)
-    double precision, intent(in) :: x(:), y(:)
-    double precision divergence(size(x),size(y))
+    real, intent(in) :: x(:), y(:)
+    real divergence(size(x),size(y))
     do concurrent(integer :: i=1:size(x), j=1:size(y)) default(none) shared(divergence,x,y)
       divergence(i,j) = (-2 + 6*x(i) - y(j)/5) + (-2 + 6*y(j) - x(i)/5)
     end do
   end function
 
   pure function cubic(x,y) result(z)
-    double precision, intent(in) :: x(:), y(:)
-    double precision z(size(x),size(y),space_dimension)
+    real, intent(in) :: x(:), y(:)
+    real z(size(x),size(y),space_dimension)
     do concurrent(integer :: i=1:size(x), j=1:size(y)) default(none) shared(x,y,z)
       z(i,j,:) = [ &
          1 - 2*x(i) + 3*x(i)**3 - x(i)*y(j)/5 + 3*y(j)**3 - 2*y(j) &
@@ -87,8 +87,8 @@ contains
   end function
 
   pure function cubic_divergence(x,y) result(divergence)
-    double precision, intent(in) :: x(:), y(:)
-    double precision divergence(size(x),size(y))
+    real, intent(in) :: x(:), y(:)
+    real divergence(size(x),size(y))
     do concurrent(integer :: i=1:size(x), j=1:size(y)) default(none) shared(divergence,x,y)
       divergence(i,j) = (-2 + 9*x(i)**2 - y(j)/5) + (-2 + 9*y(j)**2 - x(i)/5)
     end do
@@ -113,7 +113,7 @@ contains
       case default
         error stop "check_divergence(vector_2D_test_m): unsupported order"
       end select
-      associate(vector_2D => vector_2D_t(vector_2D_initializer, order=order, cells=[40,30], x_min=[0D0,0D0], x_max=[2D0,1D0]))
+      associate(vector_2D => vector_2D_t(vector_2D_initializer, order=order, cells=[40,30], x_min=[0E0,0E0], x_max=[2E0,1E0]))
         associate(div_vector => .div. vector_2D)
           associate(expected_divergence => divergence_2D_t(expected_divergence_initializer, mold=vector_2D))
             test_diagnosis = test_diagnosis .also. &
@@ -126,16 +126,16 @@ contains
   end function
 
   pure function u_field(x,y) result(u)
-    double precision, intent(in) :: x(:), y(:)
-    double precision u(size(x),size(y),space_dimension)
+    real, intent(in) :: x(:), y(:)
+    real u(size(x),size(y),space_dimension)
     do concurrent(integer :: i=1:size(x), j=1:size(y))
       u(i,j,:) = u_const
     end do
   end function
 
   pure function v_field(x,y) result(v)
-    double precision, intent(in) :: x(:), y(:)
-    double precision v(size(x),size(y),space_dimension)
+    real, intent(in) :: x(:), y(:)
+    real v(size(x),size(y),space_dimension)
     do concurrent(integer :: i=1:size(x), j=1:size(y))
       v(i,j,:) = v_const
     end do
@@ -153,35 +153,35 @@ contains
 
     do order = 2, 4, 2
       associate( &
-         u => vector_2D_t(u_init, cells=[10,10], x_min=[0D0,0D0], x_max=[5D0,5D0], order=order) &
-        ,v => vector_2D_t(v_init, cells=[10,10], x_min=[0D0,0D0], x_max=[5D0,5D0], order=order) &
+         u => vector_2D_t(u_init, cells=[10,10], x_min=[0E0,0E0], x_max=[5E0,5E0], order=order) &
+        ,v => vector_2D_t(v_init, cells=[10,10], x_min=[0E0,0E0], x_max=[5E0,5E0], order=order) &
       )
         associate(u_dot_v => u .dot. v)
-          test_diagnosis = test_diagnosis .also. (.all. (u_dot_v%values() .approximates. u_dot_v_exact .within. 1D-6))
+          test_diagnosis = test_diagnosis .also. (.all. (u_dot_v%values() .approximates. u_dot_v_exact .within. 1E-5))
         end associate
       end associate
     end do
   end function
 
   pure function scalar_field(x,y) result(s)
-    double precision, intent(in) :: x(:), y(:)
-    double precision s(size(x),size(y))
+    real, intent(in) :: x(:), y(:)
+    real s(size(x),size(y))
     do concurrent(integer :: i=1:size(x), j=1:size(y))
       s(i,j) = x(i)
     end do
   end function
 
   pure function vector_field(x,y) result(v)
-    double precision, intent(in) :: x(:), y(:)
-    double precision v(size(x),size(y),space_dimension)
+    real, intent(in) :: x(:), y(:)
+    real v(size(x),size(y),space_dimension)
     do concurrent(integer :: i=1:size(x), j=1:size(y))
       v(i,j,:) = y(j)
     end do
   end function
 
   pure function scalar_vector_product(x,y) result(u)
-    double precision, intent(in) :: x(:), y(:)
-    double precision u(size(x),size(y),space_dimension)
+    real, intent(in) :: x(:), y(:)
+    real u(size(x),size(y),space_dimension)
     do concurrent(integer :: i=1:size(x), j=1:size(y))
       u(i,j,:) = x(i)*y(j)
     end do
@@ -201,13 +201,13 @@ contains
 
     do order = 2, 4, 2
       associate( &
-         s => scalar_2D_t(s_init, cells=[10,10], x_min=[0D0,0D0], x_max=[5D0,5D0], order=order) &
-        ,v => vector_2D_t(v_init, cells=[10,10], x_min=[0D0,0D0], x_max=[5D0,5D0], order=order) &
-        ,vs_expected => vector_2D_t(vs_init, cells=[10,10], x_min=[0D0,0D0], x_max=[5D0,5D0], order=order) &
+         s => scalar_2D_t(s_init, cells=[10,10], x_min=[0E0,0E0], x_max=[5E0,5E0], order=order) &
+        ,v => vector_2D_t(v_init, cells=[10,10], x_min=[0E0,0E0], x_max=[5E0,5E0], order=order) &
+        ,vs_expected => vector_2D_t(vs_init, cells=[10,10], x_min=[0E0,0E0], x_max=[5E0,5E0], order=order) &
       )
         associate(vs => v * s)
-          test_diagnosis = test_diagnosis .also. (.all. (vs%values(x_dir) .approximates. vs_expected%values(x_dir) .within. 1D-6))
-          test_diagnosis = test_diagnosis .also. (.all. (vs%values(y_dir) .approximates. vs_expected%values(y_dir) .within. 1D-6))
+          test_diagnosis = test_diagnosis .also. (.all. (vs%values(x_dir) .approximates. vs_expected%values(x_dir) .within. 1E-5))
+          test_diagnosis = test_diagnosis .also. (.all. (vs%values(y_dir) .approximates. vs_expected%values(y_dir) .within. 1E-5))
         end associate
       end associate
     end do

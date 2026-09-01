@@ -33,10 +33,10 @@ program print_assembled_1D_operators
     default_usage: &
     associate(print_all => .not. any([gradient, divergence, len(order)/=0]))
 
-      if (print_all .or. (gradient   .and. len(order)==0) .or. (gradient   .and. order=="2")) call print_gradient_operator(  k=2, dx=1D0, m=16)
-      if (print_all .or. (divergence .and. len(order)==0) .or. (divergence .and. order=="2")) call print_divergence_operator(k=2, dx=1D0, m=16)
-      if (print_all .or. (gradient   .and. len(order)==0) .or. (gradient   .and. order=="4")) call print_gradient_operator(  k=4, dx=1D0, m=16)
-      if (print_all .or. (divergence .and. len(order)==0) .or. (divergence .and. order=="4")) call print_divergence_operator(k=4, dx=1D0, m=16)
+      if (print_all .or. (gradient   .and. len(order)==0) .or. (gradient   .and. order=="2")) call print_gradient_operator(  k=2, dx=1E0, m=16)
+      if (print_all .or. (divergence .and. len(order)==0) .or. (divergence .and. order=="2")) call print_divergence_operator(k=2, dx=1E0, m=16)
+      if (print_all .or. (gradient   .and. len(order)==0) .or. (gradient   .and. order=="4")) call print_gradient_operator(  k=4, dx=1E0, m=16)
+      if (print_all .or. (divergence .and. len(order)==0) .or. (divergence .and. order=="4")) call print_divergence_operator(k=4, dx=1E0, m=16)
 
     end associate default_usage
   end associate command_line_settings
@@ -45,7 +45,7 @@ contains
 
   subroutine print_gradient_operator(k, dx, m)
     integer, intent(in) :: k, m 
-    double precision, intent(in) :: dx
+    real, intent(in) :: dx
     integer row
 
     print *, new_line(""), "Gradient operator: order = ", k, " | cells = ", m, " | dx = ", dx
@@ -64,7 +64,7 @@ contains
 
   subroutine print_divergence_operator(k, dx, m)
     integer, intent(in) :: k, m 
-    double precision, intent(in) :: dx
+    real, intent(in) :: dx
     integer row
 
     print *, new_line(""), "Divergence operator: order = ", k, " | cells = ", m, " | dx = ", dx

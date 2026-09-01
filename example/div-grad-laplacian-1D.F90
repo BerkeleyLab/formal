@@ -8,25 +8,25 @@ contains
 
   pure function f(x)
     !! Function for differentiation
-    double precision, intent(in) :: x(:)
-    double precision, allocatable :: f(:)
+    real, intent(in) :: x(:)
+    real, allocatable :: f(:)
     f = (x**3)/6 + (x**2)/2 + 1
     ! To change functions, edit only the right-hand-side (RHS) expression. 
     ! Please keep the rest place for proper display of the function at runtime.
   end function
 
-  double precision elemental function df_dx(x)
+  real elemental function df_dx(x)
     !! 1st-derivative function
-    double precision, intent(in) :: x
+    real, intent(in) :: x
     df_dx = (x**2)/2 + x
     ! To change derivative functions, edit only the RHS.
     ! Please keep the rest place for proper display of the function at runtime.
     ! Also, ensure the new RHS expresses the first derivative of f above.
   end function
 
-  double precision elemental function d2f_dx2(x)
+  real elemental function d2f_dx2(x)
     !! 2nd-derivative function
-    double precision, intent(in) :: x
+    real, intent(in) :: x
     d2f_dx2 = x + 1
     ! To edit the above function, edit only the right-hand side expression,
     ! Please keep the rest place for proper display of the function at runtime.
@@ -93,7 +93,7 @@ contains
   subroutine output(order)
     integer, intent(in) :: order
   
-    associate(   s           => scalar_1D_t(scalar_1D_initializer, order=order, cells=20, x_min=0D0, x_max=20D0))
+    associate(   s           => scalar_1D_t(scalar_1D_initializer, order=order, cells=20, x_min=0E0, x_max=20E0))
       associate( grad_s      => .grad. s &
                 ,laplacian_s => .laplacian. s)
         associate( s_grid           => s%grid()      &
@@ -136,7 +136,7 @@ contains
   end subroutine
 
   pure function tabulate(headings, abscissa, expected, actual) result(file)
-    double precision, intent(in), dimension(:) :: abscissa, expected, actual
+    real, intent(in), dimension(:) :: abscissa, expected, actual
     type(string_t), intent(in) :: headings(:)
     type(file_t) file
     integer line

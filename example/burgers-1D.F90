@@ -10,8 +10,8 @@ contains
 
   pure function initial_condition(x)
     !! Initial solution to Burgers equation
-    double precision, intent(in) :: x(:)
-    double precision, allocatable :: initial_condition(:)
+    real, intent(in) :: x(:)
+    real, allocatable :: initial_condition(:)
     initial_condition = 10*sin(x)
     ! To change this function, please edit only the right-hand-side (RHS) expression,
     ! keeping the rest in place for proper display of the function at runtime.
@@ -66,14 +66,14 @@ program burgers_1D
 
   block
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer
-    double precision, parameter :: pi = acos(-1D0), nu=1D0, t_final=0.6D0
-    double precision, allocatable :: u_surface(:,:)
-    double precision dt
+    real, parameter :: pi = acos(-1E0), nu=1E0, t_final=0.6E0
+    real, allocatable :: u_surface(:,:)
+    real dt
     type(scalar_1D_t) u
     integer step, n
 
     scalar_1D_initializer => initial_condition
-    u = scalar_1D_t(scalar_1D_initializer, order, x_min=0D0, x_max=2*pi, cells=199)
+    u = scalar_1D_t(scalar_1D_initializer, order, x_min=0E0, x_max=2*pi, cells=199)
     dt = diffusion_stability_limit(nu, u%dx(), order)
 
     associate(steps => ceiling(t_final/dt))
@@ -148,17 +148,17 @@ contains
 
   pure function d_dt(u, nu) result(du_dt)
     type(scalar_1D_t), intent(in) :: u
-    double precision, intent(in) :: nu
+    real, intent(in) :: nu
     type(scalar_1D_t) du_dt
     du_dt = nu*d2_dx2(u) - d_dx((u**2)/2)
   end function
 
   pure function diffusion_stability_limit(diffusivity,delta_x,order_of_accuracy)  result(stable_time_step)
-    double precision, intent(in) :: diffusivity, delta_x
+    real, intent(in) :: diffusivity, delta_x
     integer, intent(in) :: order_of_accuracy
-    double precision stable_time_step
-    double precision, parameter, dimension(*) :: stability_limit=[2.,2.,2.5,2.79] ! third value needs to be checked
-    double precision, parameter :: safety_factor = 0.9
+    real stable_time_step
+    real, parameter, dimension(*) :: stability_limit=[2.,2.,2.5,2.79] ! third value needs to be checked
+    real, parameter :: safety_factor = 0.9
     ! See Moin, P. (2010) Fundamentals of Engineering Numerical Analysis, 2nd ed., pp. 111-116.
     stable_time_step = safety_factor*stability_limit(order_of_accuracy)*(delta_x**2)/(4*diffusivity)
   end function

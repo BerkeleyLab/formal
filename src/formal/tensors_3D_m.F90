@@ -26,29 +26,29 @@ module tensors_3D_m
     pure function scalar_3D_initializer_i(x,y,z) result(f)
       !! Sampling function for initializing a scalar_3D_t object
       implicit none
-      double precision, intent(in) :: x(:), y(:), z(:)
-      double precision f(size(x),size(y),size(z))
+      real, intent(in) :: x(:), y(:), z(:)
+      real f(size(x),size(y),size(z))
     end function
 
     pure function divergence_3D_initializer_i(x,y,z) result(f)
       !! Sampling function for initializing a divergence_3D_t object
       implicit none
-      double precision, intent(in) :: x(:), y(:), z(:)
-      double precision f(size(x),size(y),size(z))
+      real, intent(in) :: x(:), y(:), z(:)
+      real f(size(x),size(y),size(z))
     end function
 
     pure function vector_3D_initializer_i(x,y,z) result(v)
       !! Sampling function for initializing a vector_3D_t object
       import space_dimension
       implicit none
-      double precision, intent(in) :: x(:), y(:), z(:)
-      double precision v(size(x),size(y),size(z),space_dimension)
+      real, intent(in) :: x(:), y(:), z(:)
+      real v(size(x),size(y),size(z),space_dimension)
     end function
 
   end interface
 
   type points_3D_t
-    double precision, allocatable :: values_(:,:,:) !! tensor component values at 3D locations
+    real, allocatable :: values_(:,:,:) !! tensor component values at 3D locations
   end type
 
   type tensor_3D_t
@@ -57,8 +57,8 @@ module tensors_3D_m
     !! gradient (.grad.) for scalars and divergence (.div.) for vectors.
     private
     type(points_3D_t), allocatable :: points_(:,:,:,:) !! tensor values indexable up to rank 4
-    double precision x_min_(space_dimension) !! domain lower boundary
-    double precision x_max_(space_dimension) !! domain upper boundary
+    real x_min_(space_dimension) !! domain lower boundary
+    real x_max_(space_dimension) !! domain upper boundary
     integer cells_(space_dimension) !! number of grid cells spanning the domain
     integer order_ !! order of accuracy of mimetic discretization
   contains
@@ -73,8 +73,8 @@ module tensors_3D_m
     pure module function construct_3D_tensor_from_components(points, cells, x_min, x_max, order) result(tensor_3D)
       implicit none
       type(points_3D_t), intent(in) :: points(:,:,:,:) !! tensor values at 3D spatial locations
-      double precision, intent(in) :: x_min(:) !! domain lower boundary
-      double precision, intent(in) :: x_max(:) !! domain upper boundary
+      real, intent(in) :: x_min(:) !! domain lower boundary
+      real, intent(in) :: x_max(:) !! domain upper boundary
       integer, intent(in) :: cells(:) !! number of grid cells spanning the domain
       integer, intent(in) :: order !! order of accuracy of mimetic discretization
       type(tensor_3D_t) tensor_3D
@@ -89,7 +89,7 @@ module tensors_3D_m
   contains
     generic :: assignment(=) => scalar_3D_assign_divergence
     generic :: operator(.grad.) => scalar_3D_gradient
-    generic :: operator(*) => scalar_3D_postmultiply_double, scalar_3D_premultiply_double &
+    generic :: operator(*) => scalar_3D_postmultiply_real, scalar_3D_premultiply_real &
                              ,scalar_3D_postmultiply_integer, scalar_3D_premultiply_integer
     generic :: operator(+) => scalar_3D_plus_scalar
     generic :: values => scalar_3D_values
@@ -104,9 +104,9 @@ module tensors_3D_m
     procedure, non_overridable, private :: scalar_3D_values
     procedure, non_overridable, private :: scalar_3D_grid
     procedure, non_overridable, private :: scalar_3D_consistent
-    procedure, non_overridable, private :: scalar_3D_postmultiply_double, scalar_3D_postmultiply_integer
+    procedure, non_overridable, private :: scalar_3D_postmultiply_real, scalar_3D_postmultiply_integer
     procedure, non_overridable, private :: scalar_3D_plus_scalar
-    procedure, non_overridable, private, pass(rhs) :: scalar_3D_premultiply_double, scalar_3D_premultiply_integer
+    procedure, non_overridable, private, pass(rhs) :: scalar_3D_premultiply_real, scalar_3D_premultiply_integer
   end type
 
   interface scalar_3D_t
@@ -117,8 +117,8 @@ module tensors_3D_m
       procedure(scalar_3D_initializer_i), pointer :: initializer
       integer, intent(in) :: order !! order of accuracy
       integer, intent(in) :: cells(:) !! number of grid cells spanning each spatial direction
-      double precision, intent(in) :: x_min(:) !! grid location minima
-      double precision, intent(in) :: x_max(:) !! grid location maxima
+      real, intent(in) :: x_min(:) !! grid location minima
+      real, intent(in) :: x_max(:) !! grid location maxima
       type(scalar_3D_t) scalar_3D
     end function
 
@@ -181,8 +181,8 @@ module tensors_3D_m
       procedure(vector_3D_initializer_i), pointer :: initializer
       integer, intent(in) :: order !! order of accuracy
       integer, intent(in) :: cells(:) !! number of grid cells spanning each spatial direction
-      double precision, intent(in) :: x_min(:) !! grid location minima
-      double precision, intent(in) :: x_max(:) !! grid location maxima
+      real, intent(in) :: x_min(:) !! grid location minima
+      real, intent(in) :: x_max(:) !! grid location maxima
       type(vector_3D_t) vector_3D
     end function
 
@@ -252,8 +252,8 @@ module tensors_3D_m
       procedure(scalar_3D_initializer_i), pointer, intent(in) :: initializer
       integer, intent(in) :: order !! order of accuracy
       integer, intent(in) :: cells(:) !! number of grid cells spanning each spatial direction
-      double precision, intent(in) :: x_min(:) !! grid location minima
-      double precision, intent(in) :: x_max(:) !! grid location maxima
+      real, intent(in) :: x_min(:) !! grid location minima
+      real, intent(in) :: x_max(:) !! grid location maxima
       type(divergence_3D_t) divergence_3D
     end function
 
@@ -302,14 +302,14 @@ module tensors_3D_m
       implicit none
       class(scalar_3D_t), intent(in) :: self
       integer, intent(in) :: direction
-      double precision, allocatable :: scalars(:,:,:)
+      real, allocatable :: scalars(:,:,:)
     end function
 
     pure module function scalar_3D_values(self) result(values)
       !! Scalar values getter
       implicit none
       class(scalar_3D_t), intent(in) :: self
-      double precision, allocatable :: values(:,:,:)
+      real, allocatable :: values(:,:,:)
     end function
 
     pure module function scalar_3D_grid(self, direction) result(scalar_grid_1D)
@@ -317,35 +317,35 @@ module tensors_3D_m
       implicit none
       class(scalar_3D_t), intent(in) :: self
       integer, intent(in) :: direction
-      double precision, allocatable :: scalar_grid_1D(:)
+      real, allocatable :: scalar_grid_1D(:)
     end function
 
-    pure module function scalar_3D_postmultiply_double(lhs, rhs) result(lhs_x_rhs)
-      !! Result is product of the scalar_3D_t lhs and double-precision (constant) rhs
+    pure module function scalar_3D_postmultiply_real(lhs, rhs) result(lhs_x_rhs)
+      !! Result is product of the scalar_3D_t lhs and real (constant) rhs
       implicit none
       class(scalar_3D_t), intent(in) :: lhs
-      double precision, intent(in) :: rhs
+      real, intent(in) :: rhs
       type(scalar_3D_t) lhs_x_rhs
     end function
 
     pure module function scalar_3D_postmultiply_integer(lhs, rhs) result(lhs_x_rhs)
-      !! Result is product of the scalar_3D_t lhs and double-precision (constant) rhs
+      !! Result is product of the scalar_3D_t lhs and real (constant) rhs
       implicit none
       class(scalar_3D_t), intent(in) :: lhs
       integer, intent(in) :: rhs
       type(scalar_3D_t) lhs_x_rhs
     end function
 
-    pure module function scalar_3D_premultiply_double(lhs, rhs) result(lhs_x_rhs)
-      !! Result is product of the scalar_3D_t rhs and double-precision (constant) lhs
+    pure module function scalar_3D_premultiply_real(lhs, rhs) result(lhs_x_rhs)
+      !! Result is product of the scalar_3D_t rhs and real (constant) lhs
       implicit none
       class(scalar_3D_t), intent(in) :: rhs
-      double precision, intent(in) :: lhs
+      real, intent(in) :: lhs
       type(scalar_3D_t) lhs_x_rhs
     end function
 
     pure module function scalar_3D_premultiply_integer(lhs, rhs) result(lhs_x_rhs)
-      !! Result is product of the scalar_3D_t rhs and double-precision (constant) lhs
+      !! Result is product of the scalar_3D_t rhs and real (constant) lhs
       implicit none
       class(scalar_3D_t), intent(in) :: rhs
       integer, intent(in) :: lhs
@@ -353,7 +353,7 @@ module tensors_3D_m
     end function
 
     pure module function scalar_3D_plus_scalar(lhs, rhs) result(lhs_plus_rhs)
-      !! Result is product of the scalar_3D_t lhs and double-precision (constant) rhs
+      !! Result is product of the scalar_3D_t lhs and real (constant) rhs
       implicit none
       class(scalar_3D_t), intent(in) :: lhs, rhs
       type(scalar_3D_t) lhs_plus_rhs
@@ -364,7 +364,7 @@ module tensors_3D_m
       implicit none
       class(vector_3D_t), intent(in) :: self
       integer, intent(in) :: component, coordinate
-      double precision, allocatable :: vector_grid_1D(:) !! grid points along the requested coordinate direction
+      real, allocatable :: vector_grid_1D(:) !! grid points along the requested coordinate direction
     end function
 
     pure module function vector_3D_values(self, direction) result(vector_values)
@@ -372,7 +372,7 @@ module tensors_3D_m
       implicit none
       class(vector_3D_t), intent(in) :: self
       integer, intent(in) :: direction
-      double precision, allocatable :: vector_values(:,:,:) 
+      real, allocatable :: vector_values(:,:,:) 
     end function
 
     pure module function divergence_3D_grid(self, direction) result(divergence_grid_1D)
@@ -380,14 +380,14 @@ module tensors_3D_m
       implicit none
       class(divergence_3D_t), intent(in) :: self
       integer, intent(in) :: direction
-      double precision, allocatable :: divergence_grid_1D(:) !! grid points along the requested coordinate direction
+      real, allocatable :: divergence_grid_1D(:) !! grid points along the requested coordinate direction
     end function
 
     pure module function vector_3D_to_centers_extended(self) result(vectors)
       !! Vector values getter
       implicit none
       class(vector_3D_t), intent(in) :: self
-      double precision, allocatable :: vectors(:,:,:,:)
+      real, allocatable :: vectors(:,:,:,:)
     end function
 
     pure module function vector_3D_consistent(self) result(self_consistent)
@@ -401,7 +401,7 @@ module tensors_3D_m
       !! Vector values getter
       implicit none
       class(divergence_3D_t), intent(in) :: self
-      double precision, allocatable :: divergences(:,:,:)
+      real, allocatable :: divergences(:,:,:)
     end function
 
     pure module function scalar_3D_gradient(self) result(gradient_3D)
@@ -445,7 +445,7 @@ module tensors_3D_m
       !! Result is product of the gradient_3D_t lhs and the constant rhs
       implicit none
       class(gradient_3D_t), intent(in) :: lhs
-      double precision, intent(in) :: rhs
+      real, intent(in) :: rhs
       type(gradient_3D_t) product
     end function
 
@@ -453,7 +453,7 @@ module tensors_3D_m
       !! Result is product of the gradient_3D_t rhs and the constant lhs
       implicit none
       class(gradient_3D_t), intent(in) :: rhs
-      double precision, intent(in) :: lhs
+      real, intent(in) :: lhs
       type(gradient_3D_t) product
     end function
 
@@ -461,7 +461,7 @@ module tensors_3D_m
       !! Result is product of the divergence_3D_t lhs and the constant rhs
       implicit none
       class(divergence_3D_t), intent(in) :: lhs
-      double precision, intent(in) :: rhs
+      real, intent(in) :: rhs
       type(divergence_3D_t) lhs_x_rhs
     end function
 
@@ -469,7 +469,7 @@ module tensors_3D_m
       !! Result is product of the constant rhs and the lhs divergence_3D_t
       implicit none
       class(divergence_3D_t), intent(in) :: rhs
-      double precision, intent(in) :: lhs
+      real, intent(in) :: lhs
       type(divergence_3D_t) lhs_x_rhs
     end function
 

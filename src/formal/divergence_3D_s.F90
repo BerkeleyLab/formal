@@ -28,7 +28,7 @@ contains
 
     construct_prototype: &
     associate(divergence_1D => divergence_1D_t( &
-       constant = 0D0 &
+       constant = 0E0 &
       ,cells = self%cells_(direction) &
       ,x_min = self%x_min_(direction) &
       ,x_max = self%x_max_(direction) &

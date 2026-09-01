@@ -9,16 +9,16 @@ module velocity_potential_m
 contains
 
   pure function potential(x,y) result(phi)
-    double precision, intent(in) :: x(:), y(:)
-    double precision phi(size(x),size(y))
+    real, intent(in) :: x(:), y(:)
+    real phi(size(x),size(y))
     do concurrent(integer :: j=1:size(y)) default(none) shared(x,y,phi)
       phi(:,j) = (x**2 - y(j)**2)/2
     end do
   end function
 
   pure function potential_gradient(x,y) result(grad_phi)
-    double precision, intent(in) :: x(:), y(:)
-    double precision grad_phi(size(x),size(y),space_dimension)
+    real, intent(in) :: x(:), y(:)
+    real grad_phi(size(x),size(y),space_dimension)
     do concurrent(integer :: i=1:size(x), j=1:size(y))
       grad_phi(i,j,:) = [x(i), -y(j)]
     end do
@@ -38,7 +38,7 @@ program stagnation_point_2D
   vector_2D_initializer => potential_gradient
 
   associate( &
-    phi => scalar_2D_t(scalar_2D_initializer, order=4, cells=[20,20], x_min=[-2D0,-2D0], x_max=[2D0,2D0]) &
+    phi => scalar_2D_t(scalar_2D_initializer, order=4, cells=[20,20], x_min=[-2E0,-2E0], x_max=[2E0,2E0]) &
   )
     associate( &
        v => .grad. phi &

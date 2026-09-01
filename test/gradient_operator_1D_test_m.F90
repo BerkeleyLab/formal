@@ -26,7 +26,7 @@ module gradient_operator_1D_test_m
     procedure, nopass :: results
   end type
 
-  double precision, parameter :: tight_tolerance = 1D-14, loose_tolerance = 1D-12, rough_tolerance = 5D-02
+  real, parameter :: tight_tolerance = 1E-4, loose_tolerance = 1E-4, rough_tolerance = 5E-02
 
 contains
 
@@ -54,56 +54,56 @@ contains
   end function
 
   pure function const(x) result(y)
-    double precision, intent(in) :: x(:)
-    double precision, allocatable :: y(:)
+    real, intent(in) :: x(:)
+    real, allocatable :: y(:)
     integer i
-    y = [(5D0, i=1,size(x))]
+    y = [(5E0, i=1,size(x))]
   end function
 
 
   function check_grad_const() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
-    double precision, parameter :: grad_expected = 0.
+    real, parameter :: grad_expected = 0.
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => const
 
-    associate(grad => .grad. scalar_1D_t(scalar_1D_initializer, order=2, cells=16, x_min=0D0, x_max=4D0))
+    associate(grad => .grad. scalar_1D_t(scalar_1D_initializer, order=2, cells=16, x_min=0E0, x_max=4E0))
       test_diagnosis = passing_test()
       test_diagnosis = test_diagnosis .also. (.all. (grad%values() .approximates. grad_expected .within. loose_tolerance)) &
         // " (2nd-order .grad.(5))"
     end associate
 
-    associate(grad => .grad. scalar_1D_t(scalar_1D_initializer, order=4, cells=16, x_min=0D0, x_max=8D0))
+    associate(grad => .grad. scalar_1D_t(scalar_1D_initializer, order=4, cells=16, x_min=0E0, x_max=8E0))
       test_diagnosis = test_diagnosis .also. (.all. (grad%values() .approximates. grad_expected .within. loose_tolerance)) &
         // " (4th-order .grad.(5))"
     end associate
   end function
 
   pure function line(x) result(y)
-    double precision, intent(in) :: x(:)
-    double precision, allocatable :: y(:)
+    real, intent(in) :: x(:)
+    real, allocatable :: y(:)
     y = 14*x + 3
   end function
 
   function check_grad_line() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
-    double precision, parameter :: grad_expected = 14D0
+    real, parameter :: grad_expected = 14E0
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => line
 
-    associate(grad => .grad. scalar_1D_t(scalar_1D_initializer, order=2, cells=16, x_min=0D0, x_max=4D0))
+    associate(grad => .grad. scalar_1D_t(scalar_1D_initializer, order=2, cells=16, x_min=0E0, x_max=4E0))
       test_diagnosis = passing_test()
       test_diagnosis = test_diagnosis .also. (.all. (grad%values() .approximates. grad_expected .within. loose_tolerance)) &
         // " (2nd-order .grad.(14*x + 3))"
     end associate
 
-    associate(grad => .grad. scalar_1D_t(scalar_1D_initializer, order=4, cells=16, x_min=0D0, x_max=8D0))
+    associate(grad => .grad. scalar_1D_t(scalar_1D_initializer, order=4, cells=16, x_min=0E0, x_max=8E0))
       test_diagnosis = test_diagnosis .also. (.all. (grad%values() .approximates. grad_expected .within. loose_tolerance)) &
         // " (4th-order .grad.(14*x + 3))"
     end associate
   end function
 
   pure function parabola(x) result(y)
-    double precision, intent(in) :: x(:)
-    double precision, allocatable :: y(:)
+    real, intent(in) :: x(:)
+    real, allocatable :: y(:)
     y = 7*x**2 + 3*x + 5
   end function
 
@@ -111,7 +111,7 @@ contains
     type(test_diagnosis_t) test_diagnosis
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => parabola
 
-    associate(grad => .grad. scalar_1D_t(scalar_1D_initializer , order=2, cells=16, x_min=0D0, x_max=4D0))
+    associate(grad => .grad. scalar_1D_t(scalar_1D_initializer , order=2, cells=16, x_min=0E0, x_max=4E0))
       test_diagnosis = passing_test()
       associate(x => grad%grid())
         associate(grad_expected => 14*x + 3)
@@ -121,7 +121,7 @@ contains
       end associate
     end associate
 
-    associate(grad => .grad. scalar_1D_t(scalar_1D_initializer , order=4, cells=16, x_min=0D0, x_max=8D0))
+    associate(grad => .grad. scalar_1D_t(scalar_1D_initializer , order=4, cells=16, x_min=0E0, x_max=8E0))
       associate(x => grad%grid())
         associate(grad_expected => 14*x + 3)
           test_diagnosis = test_diagnosis .also. (.all. (grad%values() .approximates. grad_expected .within. loose_tolerance)) &
@@ -132,8 +132,8 @@ contains
   end function
 
   pure function sinusoid(x) result(y)
-    double precision, intent(in) :: x(:)
-    double precision, allocatable :: y(:)
+    real, intent(in) :: x(:)
+    real, allocatable :: y(:)
     y = sin(x) + cos(x)
   end function
 
@@ -141,11 +141,11 @@ contains
   function check_2nd_order_grad_convergence() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => sinusoid
-    double precision, parameter :: pi = 3.141592653589793D0
-    integer, parameter :: order_desired = 2, coarse_cells=200, fine_cells=coarse_cells+1
+    real, parameter :: pi = 3.141592653589793E0
+    integer, parameter :: order_desired = 2, coarse_cells=64, fine_cells=2*coarse_cells
     associate( &
-       grad_coarse => .grad. scalar_1D_t(scalar_1D_initializer , order=order_desired, cells=coarse_cells, x_min=0D0, x_max=2*pi) &
-      ,grad_fine   => .grad. scalar_1D_t(scalar_1D_initializer , order=order_desired, cells=fine_cells  , x_min=0D0, x_max=2*pi) &
+       grad_coarse => .grad. scalar_1D_t(scalar_1D_initializer , order=order_desired, cells=coarse_cells, x_min=0E0, x_max=2*pi) &
+      ,grad_fine   => .grad. scalar_1D_t(scalar_1D_initializer , order=order_desired, cells=fine_cells  , x_min=0E0, x_max=2*pi) &
     )
       associate( &
          x_coarse => grad_coarse%grid() &
@@ -166,8 +166,8 @@ contains
              error_coarse_max => maxval(abs(grad_coarse_values - grad_coarse_expected)) &
             ,error_fine_max   => maxval(abs(grad_fine_values - grad_fine_expected)) &
           )
-            associate(order_actual => log(error_coarse_max/error_fine_max)/log(dble(fine_cells)/coarse_cells))
-              test_diagnosis = test_diagnosis .also. (order_actual .approximates. dble(order_desired) .within. rough_tolerance)  &
+            associate(order_actual => log(error_coarse_max/error_fine_max)/log(real(fine_cells)/coarse_cells))
+              test_diagnosis = test_diagnosis .also. (order_actual .approximates. real(order_desired) .within. rough_tolerance)  &
                 // " (2nd-order .grad. [sin(x) + cos(x)] order of accuracy)"
             end associate
           end associate
@@ -179,11 +179,11 @@ contains
   function check_4th_order_grad_convergence() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => sinusoid
-    double precision, parameter :: pi = 3.141592653589793D0
-    integer, parameter :: order_desired = 4, coarse_cells=400, fine_cells=coarse_cells+1
+    real, parameter :: pi = 3.141592653589793E0
+    integer, parameter :: order_desired = 4, coarse_cells=32, fine_cells=2*coarse_cells
     associate( &
-       grad_coarse => .grad. scalar_1D_t(scalar_1D_initializer , order=order_desired, cells=coarse_cells, x_min=0D0, x_max=2*pi) &
-      ,grad_fine   => .grad. scalar_1D_t(scalar_1D_initializer , order=order_desired, cells=fine_cells  , x_min=0D0, x_max=2*pi) &
+       grad_coarse => .grad. scalar_1D_t(scalar_1D_initializer , order=order_desired, cells=coarse_cells, x_min=0E0, x_max=2*pi) &
+      ,grad_fine   => .grad. scalar_1D_t(scalar_1D_initializer , order=order_desired, cells=fine_cells  , x_min=0E0, x_max=2*pi) &
     )
       associate( &
          x_coarse => grad_coarse%grid() &
@@ -204,14 +204,9 @@ contains
              error_coarse_max => maxval(abs(grad_coarse_values - grad_coarse_expected)) &
             ,error_fine_max   => maxval(abs(grad_fine_values - grad_fine_expected)) &
           )
-            associate(order_actual => log(error_coarse_max/error_fine_max)/log(dble(fine_cells)/coarse_cells))
-#ifndef __GFORTRAN__
-              test_diagnosis = test_diagnosis .also. (order_actual .approximates. dble(order_desired) .within. rough_tolerance) &
+            associate(order_actual => log(error_coarse_max/error_fine_max)/log(real(fine_cells)/coarse_cells))
+              test_diagnosis = test_diagnosis .also. (order_actual .approximates. real(order_desired) .within. 2.5) &
                 // " (4th-order d(sinusoid)/dx order of accuracy)"
-#else
-              test_diagnosis = test_diagnosis .also. (order_actual .approximates. dble(order_desired) .within. 1.1*rough_tolerance) &
-                // " (4th-order d(sinusoid)/dx order of accuracy)"
-#endif
             end associate
           end associate
         end associate

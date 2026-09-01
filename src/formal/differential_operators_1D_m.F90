@@ -16,9 +16,9 @@ module differential_operators_1D_m
   type differential_operator_matrix_1D_t
     !! Encapsulate a mimetic matrix
     private
-    double precision, allocatable :: upper_(:,:) !! A  submatrix block (cf. Corbino & Castillo, 2020)
-    double precision, allocatable :: inner_(:)   !! M  submatrix row   (cf. Corbino & Castillo, 2020)
-    double precision, allocatable :: lower_(:,:) !! A' submatrix block (cf. Corbino & Castillo, 2020)
+    real, allocatable :: upper_(:,:) !! A  submatrix block (cf. Corbino & Castillo, 2020)
+    real, allocatable :: inner_(:)   !! M  submatrix row   (cf. Corbino & Castillo, 2020)
+    real, allocatable :: lower_(:,:) !! A' submatrix block (cf. Corbino & Castillo, 2020)
   contains
     procedure, non_overridable :: to_file_t
   end type
@@ -28,9 +28,9 @@ module differential_operators_1D_m
     pure module function construct_matrix_operator(upper, inner, lower) result(differential_operator_matrix_1D)
       !! Construct discrete operator from matrix blocks
       implicit none
-      double precision, intent(in) :: upper(:,:) !! A  submatrix block (cf. Corbino & Castillo, 2020)
-      double precision, intent(in) :: inner(:)   !! M  submatrix row   (cf. Corbino & Castillo, 2020)
-      double precision, intent(in) :: lower(:,:) !! A' submatrix block (cf. Corbino & Castillo, 2020)
+      real, intent(in) :: upper(:,:) !! A  submatrix block (cf. Corbino & Castillo, 2020)
+      real, intent(in) :: inner(:)   !! M  submatrix row   (cf. Corbino & Castillo, 2020)
+      real, intent(in) :: lower(:,:) !! A' submatrix block (cf. Corbino & Castillo, 2020)
       type(differential_operator_matrix_1D_t) differential_operator_matrix_1D
     end function
 
@@ -41,7 +41,7 @@ module differential_operators_1D_m
     private
     integer k_ !! order of accuracy
     integer m_ !! number of cells
-    double precision dx_ !! cell width
+    real dx_ !! cell width
   contains
     generic :: operator(.x.) => gradient_matrix_multiply
     procedure, non_overridable, private :: gradient_matrix_multiply
@@ -55,7 +55,7 @@ module differential_operators_1D_m
       !! Construct a mimetic gradient operator
       implicit none
       integer, intent(in) :: k !! order of accuracy
-      double precision, intent(in) :: dx !! step size
+      real, intent(in) :: dx !! step size
       integer, intent(in) :: cells !! number of grid cells
       type(gradient_operator_1D_t) gradient_operator_1D
     end function
@@ -66,7 +66,7 @@ module differential_operators_1D_m
     !! Encapsulate kth-order mimetic divergence operator on m_ cells of width dx
     private
     integer k_, m_
-    double precision dx_
+    real dx_
   contains
     generic :: operator(.x.) => divergence_matrix_multiply
     procedure, non_overridable, private :: divergence_matrix_multiply
@@ -81,7 +81,7 @@ module differential_operators_1D_m
       !! Construct a mimetic gradient operator
       implicit none
       integer, intent(in) :: k !! order of accuracy
-      double precision, intent(in) :: dx !! step size
+      real, intent(in) :: dx !! step size
       integer, intent(in) :: cells !! number of grid cells
       type(divergence_operator_1D_t) divergence_operator_1D
     end function
@@ -101,30 +101,30 @@ module differential_operators_1D_m
       !! Result is mimetic gradient vector
       implicit none
       class(gradient_operator_1D_t), intent(in) :: self
-      double precision, intent(in) :: vec(:)
-      double precision, allocatable :: matvec_product(:)
+      real, intent(in) :: vec(:)
+      real, allocatable :: matvec_product(:)
     end function
 
     pure module function assemble_gradient(self) result(G)
       !! Result is the assembled 1D mimetic gradient operator matrix
        implicit none
        class(gradient_operator_1D_t), intent(in) :: self
-       double precision, allocatable :: G(:,:)
+       real, allocatable :: G(:,:)
     end function
 
     pure module function assemble_divergence(self) result(D)
       !! Result is the assembled 1D mimetic divergence operator matrix
        implicit none
        class(divergence_operator_1D_t), intent(in) :: self
-       double precision, allocatable :: D(:,:)
+       real, allocatable :: D(:,:)
      end function
 
     pure module function divergence_matrix_multiply(self, vec) result(matvec_product)
       !! Result is mimetic divergence defined at cell centers
       implicit none
       class(divergence_operator_1D_t), intent(in) :: self
-      double precision, intent(in) :: vec(:)
-      double precision, allocatable :: matvec_product(:)
+      real, intent(in) :: vec(:)
+      real, allocatable :: matvec_product(:)
     end function
 
      pure module function to_file_t(self) result(file)
@@ -141,8 +141,8 @@ contains
 
   pure function negate_and_flip(A) result(Ap)
     !! Transform a mimetic matrix upper block into a lower block
-    double precision, intent(in) :: A(:,:)
-    double precision, allocatable :: Ap(:,:)
+    real, intent(in) :: A(:,:)
+    real, allocatable :: Ap(:,:)
 
     allocate(Ap, mold=A)
 

@@ -46,7 +46,7 @@ contains
   module procedure scalar_2D_grid
     call_julienne_assert(self%consistent())
     associate(scalar_1D => scalar_1D_t( &
-       constant = 0D0 &
+       constant = 0E0 &
       ,cells = self%cells_(direction) &
       ,x_min = self%x_min_(direction) &
       ,x_max = self%x_max_(direction) &
@@ -56,7 +56,7 @@ contains
     end associate
   end procedure
 
-  module procedure scalar_2D_postmultiply_double
+  module procedure scalar_2D_postmultiply_real
 
     call_julienne_assert(lhs%consistent())
 
@@ -98,7 +98,7 @@ contains
     call_julienne_assert(lhs_x_rhs%consistent())
   end procedure
 
-  module procedure scalar_2D_premultiply_double
+  module procedure scalar_2D_premultiply_real
     lhs_x_rhs =  rhs * lhs
   end procedure
 
@@ -176,8 +176,8 @@ contains
       gradient_2D%divergence_operator_1D_ = divergence_operator_1D_t(self%order_, dx, self%cells_)
 
      !check_corbino_castillo_eq_17: &
-     !associate(p => gradient_1D%weights(), b => [-1D0, [(0D0, c = 1, self%cells_)], 1D0])
-     !  call_julienne_assert((.all. (matmul(transpose(self%gradient_operator_1D_%assemble()), p) .approximates. b/dx .within. 2D-3)))
+     !associate(p => gradient_1D%weights(), b => [-1E0, [(0E0, c = 1, self%cells_)], 1E0])
+     !  call_julienne_assert((.all. (matmul(transpose(self%gradient_operator_1D_%assemble()), p) .approximates. b/dx .within. 2E-3)))
      !end associate check_corbino_castillo_eq_17
     end associate
 
@@ -199,10 +199,10 @@ contains
        ,y_last => size(rhs%points_(1,1,1,1)%values_,y_dir) - 1 &
      )
        lhs%points_(1,1,1,1)%values_(2:x_last-1, 2:y_last-1) = rhs%points_(1,1,1,1)%values_(2:x_last-1, 2:y_last-1) ! internal points
-       lhs%points_(1,1,1,1)%values_(1         ,  :        ) = 0D0 ! x_min boundary
-       lhs%points_(1,1,1,1)%values_(  x_last  ,  :        ) = 0D0 ! x_max boundary
-       lhs%points_(1,1,1,1)%values_( :        , 1         ) = 0D0 ! y_min boundary
-       lhs%points_(1,1,1,1)%values_( :        ,   y_last  ) = 0D0 ! y_max boundary
+       lhs%points_(1,1,1,1)%values_(1         ,  :        ) = 0E0 ! x_min boundary
+       lhs%points_(1,1,1,1)%values_(  x_last  ,  :        ) = 0E0 ! x_max boundary
+       lhs%points_(1,1,1,1)%values_( :        , 1         ) = 0E0 ! y_min boundary
+       lhs%points_(1,1,1,1)%values_( :        ,   y_last  ) = 0E0 ! y_max boundary
      end associate
 
      lhs%cells_ = rhs%cells_

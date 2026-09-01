@@ -75,8 +75,8 @@ contains
     call_julienne_assert(.all. (shape(self%x_max_) .equalsExpected. shape(tensor_3D%x_max_)))
     call_julienne_assert(.all. (self%cells_ .equalsExpected. tensor_3D%cells_))
     call_julienne_assert(.all. (self%order_ .equalsExpected. tensor_3D%order_))
-    call_julienne_assert(.all. (self%x_min_ .approximates.   tensor_3D%x_min_ .within. 0D0))
-    call_julienne_assert(.all. (self%x_max_ .approximates.   tensor_3D%x_max_ .within. 0D0))
+    call_julienne_assert(.all. (self%x_min_ .approximates.   tensor_3D%x_min_ .within. 0E0))
+    call_julienne_assert(.all. (self%x_max_ .approximates.   tensor_3D%x_max_ .within. 0E0))
     conformable = .true.
   end procedure
 

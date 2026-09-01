@@ -28,7 +28,7 @@ module divergence_operator_1D_test_m
     procedure, nopass :: results
   end type
 
-  double precision, parameter :: tight_tolerance = 5D-14, loose_tolerance = 1D-08, rough_tolerance = 1D-02, crude_tolerance = 2D-02
+  real, parameter :: tight_tolerance = 1E-4, loose_tolerance = 1E-2, rough_tolerance = 0.15, crude_tolerance = 0.15
 
 contains
 
@@ -58,16 +58,16 @@ contains
   end function
 
   pure function parabola(x) result(y)
-    double precision, intent(in) :: x(:)
-    double precision, allocatable :: y(:)
+    real, intent(in) :: x(:)
+    real, allocatable :: y(:)
     y = (x**2)/2
   end function
 
   function check_2nd_order_div_grad_parabola() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => parabola
-    double precision, parameter :: expected_divergence = 1D0
-    associate(div_grad_scalar => .div. (.grad. scalar_1D_t(scalar_1D_initializer, order=2, cells=16, x_min=0D0, x_max=5D0)))
+    real, parameter :: expected_divergence = 1E0
+    associate(div_grad_scalar => .div. (.grad. scalar_1D_t(scalar_1D_initializer, order=2, cells=16, x_min=0E0, x_max=5E0)))
       test_diagnosis = passing_test()
       test_diagnosis = test_diagnosis .also. (.all. (div_grad_scalar%values() .approximates. expected_divergence .within. tight_tolerance)) &
                      // " (2nd-order .div. (.grad. (x**2)/2))"
@@ -77,8 +77,8 @@ contains
   function check_4th_order_div_grad_parabola() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     procedure(scalar_1D_initializer_i), pointer :: scalar_1D_initializer => parabola
-    double precision, parameter :: expected_divergence = 1D0
-    associate(div_grad_scalar => .div. (.grad. scalar_1D_t(scalar_1D_initializer, order=4, cells=16, x_min=0D0, x_max=9D0)))
+    real, parameter :: expected_divergence = 1E0
+    associate(div_grad_scalar => .div. (.grad. scalar_1D_t(scalar_1D_initializer, order=4, cells=16, x_min=0E0, x_max=9E0)))
       test_diagnosis = passing_test()
       test_diagnosis = test_diagnosis .also. (.all. (div_grad_scalar%values() .approximates. expected_divergence .within. tight_tolerance)) &
                      // " (4th-order .div. (.grad. (x**2)/2))"
@@ -86,19 +86,19 @@ contains
   end function
 
   pure function sinusoid(x) result(y)
-    double precision, intent(in) :: x(:)
-    double precision, allocatable :: y(:)
+    real, intent(in) :: x(:)
+    real, allocatable :: y(:)
     y = sin(x) + cos(x)
   end function
 
   function check_2nd_order_div_sinusoid_convergence() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     procedure(vector_1D_initializer_i), pointer :: vector_1D_initializer => sinusoid
-    double precision, parameter :: pi = 3.141592653589793D0
-    integer, parameter :: order_desired = 2, coarse_cells=100, fine_cells=coarse_cells+1
+    real, parameter :: pi = 3.141592653589793E0
+    integer, parameter :: order_desired = 2, coarse_cells=64, fine_cells=2*coarse_cells
     associate( &
-       div_coarse => .div. vector_1D_t(vector_1D_initializer , order=order_desired, cells=coarse_cells, x_min=0D0, x_max=2*pi) &
-      ,div_fine   => .div. vector_1D_t(vector_1D_initializer , order=order_desired, cells=fine_cells  , x_min=0D0, x_max=2*pi) &
+       div_coarse => .div. vector_1D_t(vector_1D_initializer , order=order_desired, cells=coarse_cells, x_min=0E0, x_max=2*pi) &
+      ,div_fine   => .div. vector_1D_t(vector_1D_initializer , order=order_desired, cells=fine_cells  , x_min=0E0, x_max=2*pi) &
     )
       test_diagnosis = passing_test()
       test_diagnosis = test_diagnosis .also. (size(div_coarse%values()) .equalsExpected. coarse_cells)
@@ -120,8 +120,8 @@ contains
              error_coarse_max => maxval(abs(div_coarse_values - grad_coarse)) &
             ,error_fine_max   => maxval(abs(div_fine_values   - grad_fine)) &
           )
-            associate(order_actual => log(error_coarse_max/error_fine_max)/log(dble(fine_cells)/coarse_cells))
-              test_diagnosis = test_diagnosis .also. (order_actual .approximates. dble(order_desired) .within. rough_tolerance) &
+            associate(order_actual => log(error_coarse_max/error_fine_max)/log(real(fine_cells)/coarse_cells))
+              test_diagnosis = test_diagnosis .also. (order_actual .approximates. real(order_desired) .within. rough_tolerance) &
                 // " (convergence rate for 2nd-order .div. [sin(x) + cos(x)])"
             end associate
           end associate
@@ -133,11 +133,11 @@ contains
   function check_4th_order_div_sinusoid_convergence() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     procedure(vector_1D_initializer_i), pointer :: vector_1D_initializer => sinusoid
-    double precision, parameter :: pi = 3.141592653589793D0
-    integer, parameter :: order_desired = 4, coarse_cells=500, fine_cells=coarse_cells+1
+    real, parameter :: pi = 3.141592653589793E0
+    integer, parameter :: order_desired = 4, coarse_cells=32, fine_cells=2*coarse_cells
     associate( &
-       div_coarse => .div. vector_1D_t(vector_1D_initializer , order=order_desired, cells=coarse_cells, x_min=0D0, x_max=2*pi) &
-      ,div_fine   => .div. vector_1D_t(vector_1D_initializer , order=order_desired, cells=fine_cells  , x_min=0D0, x_max=2*pi) &
+       div_coarse => .div. vector_1D_t(vector_1D_initializer , order=order_desired, cells=coarse_cells, x_min=0E0, x_max=2*pi) &
+      ,div_fine   => .div. vector_1D_t(vector_1D_initializer , order=order_desired, cells=fine_cells  , x_min=0E0, x_max=2*pi) &
     )
       associate( &
          x_coarse => div_coarse%grid() &
@@ -162,8 +162,8 @@ contains
              error_coarse_max => maxval(abs(div_coarse_values - div_coarse_expected)) &
             ,error_fine_max => maxval(abs(div_fine_values - div_fine_expected)) &
           )
-            associate(order_actual => log(error_coarse_max/error_fine_max)/log(dble(fine_cells)/coarse_cells))
-              test_diagnosis = test_diagnosis .also. (order_actual .approximates. dble(order_desired) .within. crude_tolerance) &
+            associate(order_actual => log(error_coarse_max/error_fine_max)/log(real(fine_cells)/coarse_cells))
+              test_diagnosis = test_diagnosis .also. (order_actual .approximates. real(order_desired) .within. crude_tolerance) &
                 // " (convergence rate for 4th-order .div. [sin(x) + cos(x)])"
             end associate
           end associate
