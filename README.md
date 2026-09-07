@@ -94,12 +94,16 @@ Building and testing
 --------------------
 ### Supported Compilers
 
- Vendor  | Compiler  | Version(s)| Build/Test Command
----------|-----------|-----------|-------------------
- LFortran| `lfortran`| 0.64      | `fpm test --compiler lfortran --flag "--cpp --realloc-lhs-arrays --separate-compilation"`
- LLVM    | `flang`   | 20-23     | `fpm test --compiler flang --profile release`
- LLVM    | `flang`   | 19        | `fpm test --compiler flang --profile release --flag "-mmlir -allow-assumed-rank"`
- NAG     | `nagfor`  | 7.2       | `fpm test --compiler nagfor --flag "-fpp -O4"`
+ Vendor  |Compiler  | Tested Version(s)  |Build/Test Command
+---------|----------|--------------|------------------
+ GCC     |`gfortran`|16.3.0, 17.0.0|`fpm test --compiler gfortran --profile release`
+ LFortran|`lfortran`|0.64          |`fpm test --compiler lfortran --flag "--cpp --realloc-lhs-arrays --separate-compilation"`
+ LLVM    |`flang`   |20-23         |`fpm test --compiler flang --profile release`
+ LLVM    |`flang`   |19            |`fpm test --compiler flang --profile release --flag "-mmlir -allow-assumed-rank"`
+ NAG     |`nagfor`  |7.2 Build 7244|`fpm test --compiler nagfor --flag "-fpp -O4"`
+
+#### GCC
+GCC 16.3.0 and 17.0.0 are pre-release versions that include fixes required by Formal.
 
 #### LLVM
 With `fpm` Versions before 0.13.0, replace  `flang` with `flang-new` and delete `--profile release` in the tabulated commands above.
@@ -109,13 +113,12 @@ Building with `nagfor` requires an `fpm` version containing commit 9a4433d, whic
 
 ### Unsupported Compilers
 ---------------------
-Recent commits exposed issues with the Intel `ifx` and `gfortran` compilers that block building Formal.
-Once the issues have been addressed, the corresponding compiler's content will be moved back up to [Supported Compilers] table.
+Recent commits exposed issues with the Intel `ifx` compiler that block building Formal.
+Once the issues have been addressed, the `ifx` entry below will be moved back up to [Supported Compilers] table.
 
  Vendor| Compiler  |Version |Build/Test Command
 -------|-----------|--------|------------------
  Intel | `ifx`     |2026.1.0|`FOR_COARRAY_NUM_IMAGES=1 fpm test --compiler ifx --flag "-fpp -O3 -coarray" --profile release`
- GCC   | `gfortran`|16.2.0  |`fpm test --compiler gfortran --profile release`
 
 Documentation
 -------------
