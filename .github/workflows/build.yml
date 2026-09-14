@@ -69,6 +69,11 @@ jobs:
             container: snowstep/llvm:ubuntu-22.04-latest
 
           # https://hub.docker.com/r/phhargrove/llvm-flang/tags
+          - os: ubuntu-24.04-arm
+            compiler: flang
+            version: 23
+            container: phhargrove/llvm-flang:23.1.0-latest-arm64
+
           - os: ubuntu-24.04
             compiler: flang
             version: 23
@@ -141,6 +146,10 @@ jobs:
             compiler: lfortran
             version: 0.65.0
             container: ghcr.io/lfortran/lfortran:v0.65.0
+          - os: ubuntu-22.04
+            compiler: lfortran
+            version: 0.66.0
+            container: ghcr.io/lfortran/lfortran:v0.66.0
           - os: ubuntu-22.04
             compiler: lfortran
             version: latest
@@ -267,10 +276,11 @@ jobs:
       if: ${{ runner.os == 'Linux' && runner.arch == 'ARM64' }}
       run: |
         export FPM_VERSION=0.13.0
+        mkdir -p fpm-temp/bin
+        cd fpm-temp
         curl --retry 5 -LOsS https://github.com/fortran-lang/fpm/releases/download/v$FPM_VERSION/fpm-$FPM_VERSION.F90
-        mkdir fpm-temp
-        gfortran-14 -o fpm-temp/fpm fpm-$FPM_VERSION.F90
-        echo "PATH=`pwd`/fpm-temp:${PATH}" >> "$GITHUB_ENV"
+        gfortran-14 -o bin/fpm fpm-$FPM_VERSION.F90
+        echo "PATH=$PWD/bin:${PATH}" >> "$GITHUB_ENV"
 
     - name: Version info
       run: |
