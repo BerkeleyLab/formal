@@ -23,4 +23,12 @@
 #  endif
 #endif
 
+#ifndef HAVE_TEMPLATE_SUPPORT
+#  if defined(__LFORTRAN__)
+#    define HAVE_TEMPLATE_SUPPORT 1
+#  else
+#    define HAVE_TEMPLATE_SUPPORT 0
+#  endif
+#endif
+
 #endif
