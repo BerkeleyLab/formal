@@ -71,8 +71,8 @@ module time_integration_m
     pure function step(s, v, dt) result(s_next)
       type(TFA), intent(in) :: s
       type(TFD), intent(in) :: v
-      type(TFA), intent(in) :: s_next
       type(R),   intent(in) :: dt
+      type(TFA) s_next
  
       associate(k1 => rhs(s, v)) 
         associate(k2 => rhs(s + (dt/2)*k1, v)) 
