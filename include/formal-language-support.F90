@@ -25,7 +25,7 @@
 
 #ifndef HAVE_TEMPLATE_SUPPORT
 #  if defined(__LFORTRAN__)
-#    define HAVE_TEMPLATE_SUPPORT 1
+#    define HAVE_TEMPLATE_SUPPORT 0
 #  else
 #    define HAVE_TEMPLATE_SUPPORT 0
 #  endif
