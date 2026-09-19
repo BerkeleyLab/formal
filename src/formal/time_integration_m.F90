@@ -5,30 +5,24 @@ module time_integration_m
   logical prevent_empty_module
 #else
 
-  requirement unary_op_r(op, T, U)
+  private
+  public :: runge_kutta_4th_order_t
+  public :: binary_operator_r
 
-    type, deferred :: T
-    type, deferred :: U
+  requirement binary_operator_r(T, U, V, op)
 
-    !deferred interface
-    interface
-      function op(x) result(y)
-        type(T), intent(in) :: x
-        type(U) :: y
-      end function
-    end interface
-
-  end requirement
-
-  requirement binary_op_r(op, T, U, V)
-
+#if defined(__LFORTRAN__) && (__lfortran_major__ < 1) && (__lfortran_minor__ < 67)
     type, deferred :: T
     type, deferred :: U
     type, deferred :: V
 
-    !deferred interface
     interface
-      function op(x,y) result(z)
+#else
+    deferred type :: T, U, V
+
+    deferred interface
+#endif
+      pure function op(x,y) result(z)
         type(T), intent(in) :: x
         type(U), intent(in) :: y
         type(V) :: z
@@ -37,21 +31,30 @@ module time_integration_m
 
   end requirement
 
-  template runge_kutta_4th_order_t(    &
-     TFA, TFB, TFC, TFD     & ! types
-    ,tmult, rtmult, taplus, tcplus, rhs & ! functions
-  )
+#if defined(__LFORTRAN__) && (__lfortran_major__ < 1) && (__lfortran_minor__ < 67)
+  template runge_kutta_4th_order_t( &
+     TFA, TFB, TFC, TFD, R                    & ! types
+    ,tmult, rtmult, taplus, tcplus, rhs, rdiv & ! functions
+   )
      type, deferred :: TFA
      type, deferred :: TFB
      type, deferred :: TFC
      type, deferred :: TFD
+     type, deferred :: R
+#else
+  template runge_kutta_4th_order_t{ &
+     TFA, TFB, TFC, TFD, R                    & ! types
+    ,tmult, rtmult, taplus, tcplus, rhs, rdiv & ! functions
+   }
+     deferred type :: TFA, TFB, TFC, TFD, R
+#endif
 
-     require :: binary_op_r(integer,     TFC, TFC, tmult) ! report lfortran bug on intrinsic types
-     require :: binary_op_r(    TFC,       R, TFB, rtmult)
-     require :: binary_op_r(    TFA,     TFB, TFA, taplus)
-     require :: binary_op_r(    TFC,     TFC, TFC, tcplus)
-     require :: binary_op_r(    TFA,     TFD, TFC, rhs)
-     require :: binary_op_r(      R, integer,   R, rdiv)
+     require :: binary_operator_r(integer,     TFC, TFC, tmult)
+     require :: binary_operator_r(    TFC,       R, TFB, rtmult)
+     require :: binary_operator_r(    TFA,     TFB, TFA, taplus)
+     require :: binary_operator_r(    TFC,     TFC, TFC, tcplus)
+     require :: binary_operator_r(    TFA,     TFD, TFC, rhs)
+     require :: binary_operator_r(      R, integer,   R, rdiv)
 
      interface operator(+)
        module procedure taplus, tcplus
@@ -78,7 +81,6 @@ module time_integration_m
       associate(k3 => rhs(s + k2*(dt/2), v))
       associate(k4 => rhs(s + k3* dt, v))
         s_next = s + (k1 + 2*k2 + 2*k3 + k4) * (dt/6)
-       !s_next = s + k1*(dt/6) + k2*(dt/3) + k3*(dt/3) + k4*(dt/6)
       end associate; end associate; end associate; end associate
     end function
 
