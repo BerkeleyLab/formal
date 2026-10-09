@@ -165,6 +165,14 @@ jobs:
             version: latest
             container: ghcr.io/lfortran/lfortran:latest
 
+          # https://github.com/fortran-lang/homebrew-fortran
+          - os: macos-15
+            compiler: lfortran
+            version: 0.67.0
+          - os: macos-26
+            compiler: lfortran
+            version: 0.67.0
+
     container:
       image: ${{ matrix.container }}
 
@@ -263,6 +271,10 @@ jobs:
             2>&1 | perl -pe "$BREW_WARNING_FILTER" ; test ${PIPESTATUS[0]} = 0
         if [[ ${{ matrix.compiler }} == 'gfortran' && ${COMPILER_VERSION} -gt 15 ]] ; then
           retry brew install gcc@${COMPILER_VERSION} \
+            2>&1 | perl -pe "$BREW_WARNING_FILTER" ; test ${PIPESTATUS[0]} = 0
+        fi
+        if [[ ${{ matrix.compiler }} == 'lfortran' ]] ; then
+          retry brew install fortran-lang/fortran/lfortran \
             2>&1 | perl -pe "$BREW_WARNING_FILTER" ; test ${PIPESTATUS[0]} = 0
         fi
 
