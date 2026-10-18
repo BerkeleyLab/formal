@@ -19,8 +19,17 @@ accumulator is updated in the same `k1 + 2*k2 + 2*k3 + k4` order.
 
 ## Build and run
 
-The wrappers use the LFortran `llvm11` Pixi environment.  They accept an
-explicit `LFORTRAN_ROOT`; otherwise they look for a sibling checkout at
+The optional benchmark tooling uses two managed environments:
+
+- an already-built LFortran checkout's `llvm11` environment for its compiler,
+  Python and GFortran;
+- [`../pixi.toml`](../pixi.toml) and [`../pixi.lock`](../pixi.lock) for
+  **FPM 0.13.0** and its runtime dependencies. Clean LFortran main does not
+  declare FPM. This small, Apple-Silicon-only benchmark environment does not
+  change ordinary Formal/FPM library use or the supported-compiler CI matrix.
+
+Install Pixi and the real Xcode Command Line Tools first. The wrappers accept
+an explicit `LFORTRAN_ROOT`; otherwise they look for a sibling checkout at
 `../lfortran` and fail with an actionable message if it is absent:
 
 ```bash
@@ -28,10 +37,17 @@ LFORTRAN_ROOT=/path/to/lfortran \
   bash benchmarks/2d-advection-metal/run.sh
 ```
 
-The wrapper re-enters Pixi with
-`pixi run --manifest-path "$LFORTRAN_ROOT/pixi.toml" -e llvm11`, selects the
-configured macOS SDK compiler with `xcrun`, and builds
-`build/formal_advection`.  With no arguments it runs a small CPU smoke case.
+The wrappers re-enter
+`pixi run --locked --manifest-path "$LFORTRAN_ROOT/pixi.toml" -e llvm11`.
+Their shared [`../toolchain.sh`](../toolchain.sh) selects the **real SDK
+compiler after activation**, through a child-process `PATH`, `CC`, and
+linker settings. This matters on clean LLVM 11 main: its Metal runtime invokes
+`clang` through `PATH`; setting `CC` alone leaves Pixi's old Clang compiling
+new Foundation headers and fails. There is no fake clang wrapper, compiler
+patch, or change to the LFortran manifest.
+
+The native wrapper builds `build/formal_advection`; it does not need FPM.
+With no arguments it runs a small CPU smoke case.
 The native executable reads `formal_advection.metal` from its current working
 directory; `run.sh` changes to this directory before invoking it, so it cannot
 accidentally load a stale shader.
@@ -41,7 +57,7 @@ Metal is opt-in and doubly guarded:
 ```bash
 FA_ALLOW_METAL=1 LFORTRAN_ROOT=/path/to/lfortran \
   bash benchmarks/2d-advection-metal/run.sh \
-  --mode metal --cells 257,257 --steps 30000
+  --mode metal --cells 17,13 --steps 9 --index-mode 2d --tg 128,1
 ```
 
 Metal runs invoke the existing LFortran
@@ -67,30 +83,49 @@ That wrapper rejects missing permission or an unsupported platform before
 compilation. It defaults to 2048 x 2048 cells and 1000 steps, compiles
 `example/2D-advection-diffusion.F90` with LFortran, checks Metal linkage, and
 uses the same guarded launch path.  It does not add native sources to FPM.
+It installs the locked benchmark FPM environment automatically (or run
+`pixi install --locked --manifest-path benchmarks/pixi.toml` explicitly).
+FPM and Fortran are invoked by absolute managed paths, so selecting the SDK
+does not accidentally select host FPM/Fortran copies. The default compiler is
+`$LFORTRAN_ROOT/build/llvm11/src/bin/lfortran`; an explicit
+`LFORTRAN_COMPILER` must be an absolute path. The build log records its version,
+SHA-256, FPM path/version and SDK compiler. Julienne 4.1.1 is still fetched
+through the unchanged `fpm.toml`.
 See [`PERFORMANCE.md`](./PERFORMANCE.md#reproduction) for the paired
 shared-input recipe and the explicit native launch geometry used in the
 historical comparison.
 
+Clean-main compile/link and CPU checks have now passed with this tooling.
+GPU runtime validation and timings from that clean compiler are still
+pending; a successful Metal link is not a GPU execution result. See the
+[controlled CPU measurements](./PERFORMANCE.md#controlled-cpu-measurements)
+for the measured, workload-specific coefficient and workspace effects.
+
 ## Known Fortran compiler limitations
 
 The standalone C/Metal reference is independent of the Fortran compiler.
-The Fortran example has two known compiler-version failures in
-[branch CI](https://github.com/certik/formal/actions/runs/39102014517):
+The Fortran example has known compiler-version failures in
+[the combined draft's initial CI](https://github.com/BerkeleyLab/formal/actions/runs/39135296334):
 
 - CI's Flang 21 crashes while lowering `do concurrent ... local(rhs, total)`.
-- LFortran 0.64 fails LLVM type verification for `numerical_arguments_t`
+- LFortran 0.64–0.66 fail LLVM type verification for `numerical_arguments_t`
   while compiling the example's argument and raw-input helpers.
 
-Both failures occur before the solver runs. Current LFortran builds and the
-other completed Flang configurations compile the portable example; real GPU
-comparisons verify evolved full fields and unchanged boundaries. These older
+Both failures occur before the solver runs. Current Linux LFortran builds and
+the other completed Flang configurations compile the portable example;
+historical real GPU comparisons verified evolved full fields and unchanged
+boundaries. Fresh clean-main GPU execution remains pending. These older
 compiler limitations are recorded without changing the numerical method or
 disabling their CI checks.
 
-That CI run also failed to build the Z3 dependency on macOS 14. The two Intel
-macOS jobs were cancelled during LLVM installation, without a more specific
-reported reason. None of these three jobs reached Formal compilation or tests;
-they do not provide validation of those platforms.
+The initial combined-draft CI passes 11 of 17 compiler checks, plus its
+metadata check. Its macOS 15/26 LFortran 0.67 bottles require
+`libz3.5.1.dylib`, but the installed Z3 is 5.3.1: even `lfortran --version`
+fails, before Formal compilation. Linux LFortran 0.67/current and the other
+Flang checks pass. These packaging failures, the older branch's macOS 14 Z3
+build failure, and its Intel macOS jobs cancelled during LLVM installation
+do not validate those platforms. All remain document-only limitations:
+no version drops, workflow repairs, test skips, or numerical workarounds.
 
 ## Provenance and licensing
 

@@ -98,6 +98,10 @@ The native wrapper defaults to a CPU smoke case; the Formal wrapper defaults
 to the 2048 x 2048, 1000-step GPU case. Both Metal entry points require an
 Apple Silicon Mac and explicit `FA_ALLOW_METAL=1` permission. See the benchmark
 README for the exact provenance, source guard, and reproducibility contract.
+The optional benchmark wrappers provision their own locked FPM 0.13.0
+environment from `benchmarks/pixi.toml`, reuse the selected LFortran
+checkout's managed tools, and select the real macOS SDK compiler after Pixi
+activation. Ordinary FPM users and the compiler support matrix are unchanged.
 
 ### Other example programs
 See this repository's [example](./example) subdirectory for additional demonstrations of
