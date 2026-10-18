@@ -122,8 +122,7 @@ def load_and_validate(reference_path: Path, observed_path: Path):
     return reference, observed
 
 
-def run_comparison(reference_path: Path, observed_path: Path, rtol: float, atol: float, evolution: bool):
-    reference, observed = load_and_validate(reference_path, observed_path)
+def report_comparison(reference, observed, rtol: float, atol: float, evolution: bool):
     if evolution:
         max_abs_diff, max_rel_diff, relative_l2, changed = summarize_field_differences(reference, observed)
     else:
@@ -134,6 +133,12 @@ def run_comparison(reference_path: Path, observed_path: Path, rtol: float, atol:
     print(f"changed={str(changed).lower()}")
     if evolution and not changed:
         raise SystemExit("field did not change")
+    return max_abs_diff, max_rel_diff, relative_l2, changed
+
+
+def run_comparison(reference_path: Path, observed_path: Path, rtol: float, atol: float, evolution: bool):
+    reference, observed = load_and_validate(reference_path, observed_path)
+    report_comparison(reference, observed, rtol, atol, evolution)
 
 
 def write_csv(path: Path, xs, ys, func):

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import math
 import struct
 import subprocess
 import sys
@@ -11,14 +12,18 @@ from compare_2d_fields import run_comparison as compare_csv
 
 
 def parse_col_major_payload(payload: bytes, nx: int, ny: int):
+    if nx < 1 or ny < 1:
+        raise SystemExit("raw field dimensions must be positive")
     count = (nx + 2) * (ny + 2)
     if len(payload) != count * 4:
         raise SystemExit(f"unexpected raw payload size: expected {count * 4} bytes")
     values = struct.unpack(f"<{count}f", payload)
+    if not all(math.isfinite(value) for value in values):
+        raise SystemExit("non-finite raw scalar field")
     return [[values[i + j * (nx + 2)] for j in range(ny + 2)] for i in range(nx + 2)]
 
 
-def parse_raw_headered(path: Path):
+def parse_raw_headered(path: Path, *, expected_mode=None):
     with path.open("rb") as handle:
         header = handle.readline().decode("ascii").strip()
         if header != "FADV2D1":
@@ -27,11 +32,28 @@ def parse_raw_headered(path: Path):
         if len(dims) != 4:
             raise SystemExit(f"{path}: invalid dimensions line")
         nx, ny, steps = map(int, dims[:3])
-        dt = float(dims[3])
+        try:
+            dt = struct.unpack("<f", struct.pack("<f", float(dims[3])))[0]
+        except (ValueError, OverflowError) as exc:
+            raise SystemExit(f"{path}: invalid FP32 timestep") from exc
+        if nx < 1 or ny < 1 or steps < 0:
+            raise SystemExit(f"{path}: invalid grid or step count")
+        if not math.isfinite(dt) or dt <= 0:
+            raise SystemExit(f"{path}: timestep must be finite and positive")
         mode = handle.readline().decode("ascii").strip()
         if mode not in {"mode raw-final", "mode raw"}:
             raise SystemExit(f"{path}: invalid mode {mode!r}")
+        if expected_mode is not None and mode != f"mode {expected_mode}":
+            raise SystemExit(f"{path}: expected mode {expected_mode}, got {mode!r}")
         payload = handle.read()
+    if mode == "mode raw":
+        scalar_bytes = (nx + 2) * (ny + 2) * 4
+        velocity_bytes = ((nx + 1) * (ny + 2) + (nx + 2) * (ny + 1)) * 4
+        if len(payload) != scalar_bytes + velocity_bytes:
+            raise SystemExit(f"{path}: unexpected raw input payload size")
+        if not all(math.isfinite(value) for value, in struct.iter_unpack("<f", payload[scalar_bytes:])):
+            raise SystemExit(f"{path}: non-finite raw velocity field")
+        payload = payload[:scalar_bytes]
     return nx, ny, steps, dt, parse_col_major_payload(payload, nx, ny)
 
 

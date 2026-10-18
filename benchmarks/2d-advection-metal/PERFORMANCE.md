@@ -38,13 +38,14 @@ set -euo pipefail
 export LFORTRAN_ROOT=/path/to/lfortran
 export FA_ALLOW_METAL=1 GPU_TIMEOUT=30 GPU_MAXMEM_MB=4096
 nx=2048
+ny=2048
 steps=1000
-pair_dir="$PWD/benchmarks/2d-advection-metal/build/paired-${nx}-${steps}"
+pair_dir="$PWD/benchmarks/2d-advection-metal/build/paired-${nx}x${ny}-${steps}"
 mkdir -p "$pair_dir"
 
 pixi run --manifest-path "$LFORTRAN_ROOT/pixi.toml" -e llvm11 \
   bash benchmarks/2d-advection-metal/run_formal.sh \
-  --solver workspace --order 4 --cells "$nx,$nx" --steps "$steps" --no-csv \
+  --solver workspace --order 4 --cells "$nx,$ny" --steps "$steps" --no-csv \
   --dump-input "$pair_dir/input.fadv2d" \
   --dump-final-raw "$pair_dir/formal-final.fadv2d" \
   > "$pair_dir/formal.log" 2>&1
@@ -71,46 +72,50 @@ Check that Formal reports `gpu_timing_available=T` and positive
 `tg=128,1`, and positive `gpu_busy`. These solve timings exclude compilation,
 initialization, warmup/JIT, and field I/O. Neither command writes CSV.
 
-For a bounded command-wiring check, change only `nx=17` and `steps=9` above.
+For a bounded non-square command-wiring check, use `nx=17`, `ny=13`, and
+`steps=9` above.
 That is a reduced check, not a reproduction of the historical timings.
 
-To compare the complete FP32 final fields, including fixed boundaries, use
-the same shell variables. Formal's final file has a three-line FADV2D1
-header; native's binary has only the scalar payload. This check rejects
-incorrect element counts and non-finite fields before computing errors:
+To validate the complete FP32 fields, use the same shell variables and the
+shared raw/field comparator below. It reads the initial scalar and velocity
+payloads as well as both finals, checks their sizes and finiteness, and
+requires matching grid, step count, and FP32 timestep metadata. Fixed scalar
+boundaries must equal the initial values exactly. Final-field agreement uses
+the workspace validator's tolerances (`rtol=1e-6`, `atol=1e-8`) at every point,
+including boundaries, and reports the relative L2 error.
+
+For this nonstationary Gaussian, **keep `--evolution`**: both final fields
+must be nonzero and must differ meaningfully from the shared initial field.
+The maximum change must exceed `atol + rtol * max(abs(initial))`, and the
+relative L2 change must exceed `rtol`. This rejects unchanged initial fields,
+zeroed finals, and roundoff-only changes even when the two finals agree.
+The option is deliberately not a requirement for legitimate stationary or
+zero-state tests. Positive GPU time establishes execution, not numerical
+correctness; both telemetry and field validation are required.
 
 ```bash
 pixi run --manifest-path "$LFORTRAN_ROOT/pixi.toml" -e llvm11 \
-  python - "$pair_dir" "$nx" "$steps" > "$pair_dir/compare.log" 2>&1 <<'PY'
-import math
-from pathlib import Path
-import sys
-import numpy as np
-
-pair_dir = Path(sys.argv[1])
-nx, steps = map(int, sys.argv[2:])
-with (pair_dir / "formal-final.fadv2d").open("rb") as stream:
-    assert stream.readline().strip() == b"FADV2D1", "invalid Formal header"
-    x, y, n, dt = stream.readline().split()
-    assert (int(x), int(y), int(n)) == (nx, nx, steps), "configuration mismatch"
-    assert math.isfinite(float(dt)) and float(dt) > 0, "invalid timestep"
-    assert stream.readline().strip() == b"mode raw-final", "invalid final mode"
-    formal = np.frombuffer(stream.read(), dtype="<f4").astype(np.float64)
-native = np.frombuffer(
-    (pair_dir / "native-final.bin").read_bytes(), dtype="<f4"
-).astype(np.float64)
-expected = (nx + 2) ** 2
-assert formal.size == native.size == expected, "incorrect FP32 element count"
-assert np.isfinite(formal).all() and np.isfinite(native).all(), "non-finite field"
-delta = native - formal
-norm = np.linalg.norm(formal)
-error = np.linalg.norm(delta)
-relative_l2 = error / norm if norm else (0.0 if error == 0 else math.inf)
-print(f"elements={expected} max_abs={np.max(np.abs(delta)):.16e}")
-print(f"relative_l2={relative_l2:.16e}")
-PY
+  python example/scripts/compare_2d_raw_fields.py \
+  "$pair_dir/input.fadv2d" "$pair_dir/formal-final.fadv2d" \
+  "$pair_dir/native-final.bin" --cells "$nx,$ny" --steps "$steps" \
+  --rtol 1e-6 --atol 1e-8 --evolution > "$pair_dir/compare.log" 2>&1
 cat "$pair_dir/compare.log"
 ```
+
+For small cases, `--cpu-final <native-CPU-payload>` additionally checks both
+finals against the retained native CPU oracle, with the same tolerances,
+evolution requirement, and fixed-boundary checks. Comparator regressions can
+be checked without a GPU:
+
+```bash
+mkdir -p benchmarks/2d-advection-metal/build
+pixi run --manifest-path "$LFORTRAN_ROOT/pixi.toml" -e llvm11 \
+  python example/scripts/compare_2d_raw_fields.py --self-test \
+  > benchmarks/2d-advection-metal/build/compare-selftest.log 2>&1
+cat benchmarks/2d-advection-metal/build/compare-selftest.log
+```
+
+These synthetic comparator tests are not solver validation.
 
 ## Historical paired results
 
