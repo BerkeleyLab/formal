@@ -61,6 +61,20 @@ contains
     end do
   end function
 
+  pure function expected_pattern_a(x, y) result(values)
+    real, intent(in) :: x(:), y(:)
+    real values(size(x), size(y))
+    values = 0E0
+    values(2:size(x)-1, 2:size(y)-1) = pattern_a(x(2:size(x)-1), y(2:size(y)-1))
+  end function
+
+  pure function expected_pattern_b(x, y) result(values)
+    real, intent(in) :: x(:), y(:)
+    real values(size(x), size(y))
+    values = 0E0
+    values(2:size(x)-1, 2:size(y)-1) = pattern_b(x(2:size(x)-1), y(2:size(y)-1))
+  end function
+
   function check_divergence_assignment() result(test_diagnosis)
     type(test_diagnosis_t) test_diagnosis
     test_diagnosis = passing_test()
@@ -73,25 +87,22 @@ contains
     real, intent(in) :: x_min(2), x_max(2)
     type(test_diagnosis_t) test_diagnosis
     procedure(scalar_2D_initializer_i), pointer :: initializer_a, initializer_b
+    procedure(scalar_2D_initializer_i), pointer :: expected_initializer_a, expected_initializer_b
     type(divergence_2D_t) rhs_a, rhs_b
     type(scalar_2D_t) lhs, expected_a, expected_b
     type(gradient_2D_t) grad_lhs, grad_expected
     real, allocatable :: lhs_values(:,:), rhs_values(:,:)
-    real, allocatable :: expected_values(:,:)
 
     test_diagnosis = passing_test()
     initializer_a => pattern_a
     initializer_b => pattern_b
+    expected_initializer_a => expected_pattern_a
+    expected_initializer_b => expected_pattern_b
 
     rhs_a = divergence_2D_t(initializer_a, order=order, cells=cells, x_min=x_min, x_max=x_max)
     rhs_b = divergence_2D_t(initializer_b, order=order, cells=cells, x_min=x_min, x_max=x_max)
-    allocate(expected_values(cells(1)+2, cells(2)+2))
-    expected_values = 0E0
-    expected_values(2:size(expected_values,1)-1, 2:size(expected_values,2)-1) = rhs_a%values()
-    expected_a = scalar_2D_t(expected_initializer, order=order, cells=cells, x_min=x_min, x_max=x_max)
-    expected_values = 0E0
-    expected_values(2:size(expected_values,1)-1, 2:size(expected_values,2)-1) = rhs_b%values()
-    expected_b = scalar_2D_t(expected_initializer, order=order, cells=cells, x_min=x_min, x_max=x_max)
+    expected_a = scalar_2D_t(expected_initializer_a, order=order, cells=cells, x_min=x_min, x_max=x_max)
+    expected_b = scalar_2D_t(expected_initializer_b, order=order, cells=cells, x_min=x_min, x_max=x_max)
 
     lhs = rhs_a
     lhs_values = lhs%values()
@@ -109,12 +120,6 @@ contains
     test_diagnosis = test_diagnosis .also. (check_shape(lhs_values)) .also. (check_contents(lhs_values, rhs_values)) .also. (check_gradient(lhs, expected_a))
 
   contains
-
-    pure function expected_initializer(x, y) result(values)
-      real, intent(in) :: x(:), y(:)
-      real values(size(x), size(y))
-      values = expected_values
-    end function
 
     function check_shape(values) result(diagnosis)
       real, intent(in) :: values(:,:)
