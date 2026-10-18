@@ -69,6 +69,39 @@ where `s` is the concentration of a passive scalar quantity, `D` is a molecular 
 coefficient, and `v` is a prescribed velocity field.  This repository's 2D-advection-diffusion
 [program](./example/2D-advection-diffusion.F90), for example, demonstrates how to advance the
 above equation in time using a Runge-Kutta scheme.
+It accepts `--solver workspace|operators`, `--cells`, `--steps`, `--dt`, and
+`--order` flags for benchmarking; without arguments it retains the 51×51,
+500-step, `dt=1e-4` regression case, and when `--cells` changes without `--dt`
+the default time step is scaled by the square of the grid refinement factor.
+Use `--benchmark` for the 257×257, 30000-step preset, `--no-csv` to suppress
+CSV output on large runs, `--dump-input <path>` to write the native FADV2D1 raw
+input snapshot before warmup/timing, and `--dump-final-raw <path>` for binary
+final-field output.  The tracked comparison helper lives at
+[`example/scripts/compare_2d_fields.py`](./example/scripts/compare_2d_fields.py).
+For GPU benchmarking, compile with `-DFORMAL_ENABLE_GPU_BENCHMARK`, pass
+`--gpu-profile`, and set `LFORTRAN_GPU_PROFILE=1` to collect Metal telemetry
+through the runtime snapshot shim.
+
+The native C + Metal reference benchmark is kept outside FPM's automatic
+example discovery under
+[`benchmarks/2d-advection-metal`](./benchmarks/2d-advection-metal).  It does
+not add an Objective-C `main` to the ordinary Formal examples or tests.
+After building LFortran with Pixi, run the native reference or the actual
+Formal GPU example through its wrappers:
+```bash
+export LFORTRAN_ROOT=/path/to/lfortran
+bash benchmarks/2d-advection-metal/run.sh
+# or:
+FA_ALLOW_METAL=1 bash benchmarks/2d-advection-metal/run_formal.sh
+```
+The native wrapper defaults to a CPU smoke case; the Formal wrapper defaults
+to the 2048 x 2048, 1000-step GPU case. Both Metal entry points require an
+Apple Silicon Mac and explicit `FA_ALLOW_METAL=1` permission. See the benchmark
+README for the exact provenance, source guard, and reproducibility contract.
+The optional benchmark wrappers provision their own locked FPM 0.13.0
+environment from `benchmarks/pixi.toml`, reuse the selected LFortran
+checkout's managed tools, and select the real macOS SDK compiler after Pixi
+activation. Ordinary FPM users and the compiler support matrix are unchanged.
 
 ### Other example programs
 See this repository's [example](./example) subdirectory for additional demonstrations of

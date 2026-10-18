@@ -1,0 +1,8 @@
+[workspace]
+name = "formal-benchmarks"
+description = "FPM for the optional Apple Silicon advection benchmarks"
+channels = ["conda-forge"]
+platforms = ["osx-arm64"]
+
+[dependencies]
+fpm = "==0.13.0"

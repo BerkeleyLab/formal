@@ -19,19 +19,9 @@ contains
     !! Transform a mimetic matrix upper block into a lower block
     real, intent(in) :: A(:,:)
     real, allocatable :: Ap(:,:)
-    integer row, column
 
     allocate(Ap, mold=A)
-
-    reverse_elements_within_rows_and_flip_sign: &
-    do concurrent(row = 1:size(Ap,1))
-      Ap(row,:) = -A(row,size(A,2):1:-1)
-    end do reverse_elements_within_rows_and_flip_sign
-
-    reverse_elements_within_columns: &
-    do concurrent(column = 1 : size(Ap,2))
-      Ap(:,column) = Ap(size(Ap,1):1:-1,column)
-    end do reverse_elements_within_columns
+    Ap = -A(size(A,1):1:-1,size(A,2):1:-1)
 
   end function
 
