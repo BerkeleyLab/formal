@@ -87,6 +87,11 @@ comparisons verify evolved full fields and unchanged boundaries. These older
 compiler limitations are recorded without changing the numerical method or
 disabling their CI checks.
 
+That CI run also failed to build the Z3 dependency on macOS 14. The two Intel
+macOS jobs were cancelled during LLVM installation, without a more specific
+reported reason. None of these three jobs reached Formal compilation or tests;
+they do not provide validation of those platforms.
+
 ## Provenance and licensing
 
 The numerical algorithm, FP32 CPU oracle, Metal kernels, two-deep scheduling,
