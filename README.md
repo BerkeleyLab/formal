@@ -82,17 +82,22 @@ For GPU benchmarking, compile with `-DFORMAL_ENABLE_GPU_BENCHMARK`, pass
 `--gpu-profile`, and set `LFORTRAN_GPU_PROFILE=1` to collect Metal telemetry
 through the runtime snapshot shim.
 
-Build LFortran with Pixi, then run its application benchmark entry point.
-It supplies the C-shim flags, checks the actual Metal executable, and runs
-it under the GPU guard:
+The native C + Metal reference benchmark is kept outside FPM's automatic
+example discovery under
+[`benchmarks/2d-advection-metal`](./benchmarks/2d-advection-metal).  It does
+not add an Objective-C `main` to the ordinary Formal examples or tests.
+After building LFortran with Pixi, run the native reference or the actual
+Formal GPU example through its wrappers:
 ```bash
-export FORMAL_ROOT=/path/to/formal
-cd /path/to/lfortran
-pixi run -e llvm11 bash examples/formal_advection/run_formal.sh
+export LFORTRAN_ROOT=/path/to/lfortran
+bash benchmarks/2d-advection-metal/run.sh
+# or:
+bash benchmarks/2d-advection-metal/run_formal.sh
 ```
-The default is the measured 2048 x 2048, 1000-step case; append example
-arguments to select another workload. Build directories are keyed by the
-compiler binary hash to avoid stale kernels after compiler changes.
+The native wrapper defaults to a CPU smoke case; Metal is explicitly guarded
+and the measured 2048 x 2048, 1000-step case is selected by passing its
+arguments.  See the benchmark README for the exact provenance, source guard,
+and reproducibility contract.
 
 ### Other example programs
 See this repository's [example](./example) subdirectory for additional demonstrations of
