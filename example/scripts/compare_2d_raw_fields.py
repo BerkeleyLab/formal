@@ -3,14 +3,89 @@ from __future__ import annotations
 
 import argparse
 import math
+import struct
 import sys
 from pathlib import Path
 
-from compare_2d_fields import report_comparison
-from validate_2d_advection_workspace import parse_raw_headered, parse_raw_headerless
+from compare_2d_fields import report_comparison, validate_fields, validate_tolerances
+
+
+def parse_col_major_payload(payload: bytes, nx: int, ny: int):
+    if nx < 1 or ny < 1:
+        raise SystemExit("raw field dimensions must be positive")
+    count = (nx + 2) * (ny + 2)
+    if len(payload) != count * 4:
+        raise SystemExit(f"unexpected raw payload size: expected {count * 4} bytes")
+    values = struct.unpack(f"<{count}f", payload)
+    if not all(math.isfinite(value) for value in values):
+        raise SystemExit("non-finite raw scalar field")
+    return [[values[i + j * (nx + 2)] for j in range(ny + 2)] for i in range(nx + 2)]
+
+
+def fp32_timestep(raw, label):
+    try:
+        dt = struct.unpack("<f", struct.pack("<f", float(raw)))[0]
+    except (ValueError, OverflowError) as exc:
+        raise SystemExit(f"{label}: invalid FP32 timestep") from exc
+    if not math.isfinite(dt) or dt <= 0:
+        raise SystemExit(f"{label}: timestep must be finite and positive")
+    return dt
+
+
+def parse_raw_headered(path: Path, *, expected_mode=None):
+    with path.open("rb") as handle:
+        header = handle.readline().decode("ascii").strip()
+        if header != "FADV2D1":
+            raise SystemExit(f"{path}: invalid header")
+        dims = handle.readline().decode("ascii").strip().split()
+        if len(dims) != 4:
+            raise SystemExit(f"{path}: invalid dimensions line")
+        try:
+            nx, ny, steps = map(int, dims[:3])
+        except ValueError as exc:
+            raise SystemExit(f"{path}: invalid dimensions line") from exc
+        if nx < 1 or ny < 1 or steps < 0:
+            raise SystemExit(f"{path}: invalid grid or step count")
+        dt = fp32_timestep(dims[3], path)
+        mode = handle.readline().decode("ascii").strip()
+        if mode not in {"mode raw-final", "mode raw"}:
+            raise SystemExit(f"{path}: invalid mode {mode!r}")
+        if expected_mode is not None and mode != f"mode {expected_mode}":
+            raise SystemExit(f"{path}: expected mode {expected_mode}, got {mode!r}")
+        payload = handle.read()
+    if mode == "mode raw":
+        scalar_bytes = (nx + 2) * (ny + 2) * 4
+        velocity_bytes = ((nx + 1) * (ny + 2) + (nx + 2) * (ny + 1)) * 4
+        if len(payload) != scalar_bytes + velocity_bytes:
+            raise SystemExit(f"{path}: unexpected raw input payload size")
+        if not all(math.isfinite(value) for value, in struct.iter_unpack("<f", payload[scalar_bytes:])):
+            raise SystemExit(f"{path}: non-finite raw velocity field")
+        payload = payload[:scalar_bytes]
+    return nx, ny, steps, dt, parse_col_major_payload(payload, nx, ny)
+
+
+def parse_raw_headerless(path: Path, nx: int, ny: int):
+    return parse_col_major_payload(path.read_bytes(), nx, ny)
+
+
+def check_initial_configuration(snapshot, cells, steps, dt=None):
+    if len(cells) != 2 or min(cells) < 9 or steps <= 0:
+        raise SystemExit("expected order-4 cells >= 9 and a positive step count")
+    if snapshot[:3] != (*cells, steps):
+        raise SystemExit("initial configuration mismatch")
+    if dt is not None and snapshot[3] != fp32_timestep(dt, "expected dt"):
+        raise SystemExit("initial timestep differs from expected dt")
+
+
+def read_matching_final(path, initial_snapshot, label):
+    snapshot = parse_raw_headered(path, expected_mode="raw-final")
+    if snapshot[:4] != initial_snapshot[:4]:
+        raise SystemExit(f"{label} configuration differs from shared input")
+    return snapshot[4]
 
 
 def check_boundaries(initial, final, label):
+    validate_fields(initial, final)
     nx, ny = len(initial) - 2, len(initial[0]) - 2
     boundary = [(i, j) for i in range(nx + 2) for j in (0, ny + 1)]
     boundary += [(i, j) for i in (0, nx + 1) for j in range(1, ny + 1)]
@@ -19,38 +94,38 @@ def check_boundaries(initial, final, label):
             raise SystemExit(f"{label}: fixed boundary changed at ({i},{j})")
 
 
+def check_final_field(initial, final, label, rtol, atol, evolution=False):
+    validate_tolerances(rtol, atol)
+    validate_fields(initial, final)
+    if evolution:
+        initial_scale = max(abs(value) for row in initial for value in row)
+        if initial_scale == 0:
+            raise SystemExit("--evolution requires a nonzero initial field")
+        if not any(value != 0 for row in final for value in row):
+            raise SystemExit(f"{label}: zero final field from nonzero input")
+    check_boundaries(initial, final, label)
+    if evolution:
+        print(f"{label} evolution:")
+        max_abs, _, relative_l2, _ = report_comparison(initial, final, rtol, atol, True)
+        if max_abs <= atol + rtol * initial_scale or relative_l2 <= rtol:
+            raise SystemExit(f"{label}: evolution does not exceed comparison tolerances")
+
+
 def compare_raw_fields(initial_path, formal_path, native_path, cells, steps,
                        rtol=1e-6, atol=1e-8, evolution=False, cpu_path=None):
-    if len(cells) != 2 or min(cells) < 9 or steps <= 0:
-        raise SystemExit("expected order-4 cells >= 9 and a positive step count")
-    if not all(math.isfinite(t) and t >= 0 for t in (rtol, atol)):
-        raise SystemExit("--rtol and --atol must be finite and non-negative")
+    validate_tolerances(rtol, atol)
     initial_snapshot = parse_raw_headered(initial_path, expected_mode="raw")
-    final_snapshot = parse_raw_headered(formal_path, expected_mode="raw-final")
+    check_initial_configuration(initial_snapshot, cells, steps)
     nx, ny, n, dt, initial = initial_snapshot
-    if (nx, ny, n) != (*cells, steps):
-        raise SystemExit("initial configuration mismatch")
-    if final_snapshot[:4] != initial_snapshot[:4]:
-        raise SystemExit("Formal final configuration differs from shared input")
-    formal = final_snapshot[4]
+    formal = read_matching_final(formal_path, initial_snapshot, "Formal final")
     native = parse_raw_headerless(native_path, nx, ny)
     finals = [("Formal", formal), ("native", native)]
     if cpu_path is not None:
         finals.append(("CPU oracle", parse_raw_headerless(cpu_path, nx, ny)))
 
-    initial_scale = max(abs(value) for row in initial for value in row)
-    if evolution and initial_scale == 0:
-        raise SystemExit("--evolution requires a nonzero initial field")
     print(f"cells={nx},{ny} steps={n} dt={dt:.16e} elements={(nx + 2) * (ny + 2)}")
     for label, final in finals:
-        if evolution and not any(value != 0 for row in final for value in row):
-            raise SystemExit(f"{label}: zero final field from nonzero input")
-        check_boundaries(initial, final, label)
-        if evolution:
-            print(f"{label} evolution:")
-            max_abs, _, relative_l2, _ = report_comparison(initial, final, rtol, atol, True)
-            if max_abs <= atol + rtol * initial_scale or relative_l2 <= rtol:
-                raise SystemExit(f"{label}: evolution does not exceed comparison tolerances")
+        check_final_field(initial, final, label, rtol, atol, evolution)
     print("Formal versus native:")
     report_comparison(formal, native, rtol, atol, False)
     if cpu_path is not None:

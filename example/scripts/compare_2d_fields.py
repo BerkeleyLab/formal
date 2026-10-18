@@ -65,9 +65,27 @@ def load_field(path: Path):
     return xs, ys, field
 
 
-def compare_fields(reference, observed, rtol: float, atol: float):
-    if len(reference) != len(observed) or len(reference[0]) != len(observed[0]):
+def validate_tolerances(rtol: float, atol: float):
+    if not all(math.isfinite(t) and t >= 0 for t in (rtol, atol)):
+        raise SystemExit("--rtol and --atol must be finite and non-negative")
+
+
+def validate_fields(reference, observed):
+    if not reference or not observed or not reference[0] or not observed[0]:
+        raise SystemExit("empty field data")
+    if len(reference) != len(observed):
         raise SystemExit("field shapes differ")
+    ny = len(reference[0])
+    for field in (reference, observed):
+        if any(len(row) != ny for row in field):
+            raise SystemExit("field shapes differ")
+        if not all(math.isfinite(value) for row in field for value in row):
+            raise SystemExit("non-finite field data")
+
+
+def compare_fields(reference, observed, rtol: float, atol: float):
+    validate_tolerances(rtol, atol)
+    validate_fields(reference, observed)
 
     max_abs_diff = 0.0
     max_rel_diff = 0.0
@@ -93,8 +111,7 @@ def compare_fields(reference, observed, rtol: float, atol: float):
 
 
 def summarize_field_differences(reference, observed):
-    if len(reference) != len(observed) or len(reference[0]) != len(observed[0]):
-        raise SystemExit("field shapes differ")
+    validate_fields(reference, observed)
 
     max_abs_diff = 0.0
     max_rel_diff = 0.0
@@ -123,6 +140,7 @@ def load_and_validate(reference_path: Path, observed_path: Path):
 
 
 def report_comparison(reference, observed, rtol: float, atol: float, evolution: bool):
+    validate_tolerances(rtol, atol)
     if evolution:
         max_abs_diff, max_rel_diff, relative_l2, changed = summarize_field_differences(reference, observed)
     else:
@@ -215,8 +233,7 @@ def main(argv):
     if args.reference is None or args.candidate is None:
         parser.error("reference and candidate CSV paths are required unless --self-test is used")
 
-    if not math.isfinite(args.rtol) or not math.isfinite(args.atol) or args.rtol < 0.0 or args.atol < 0.0:
-        raise SystemExit("--rtol and --atol must be finite and non-negative")
+    validate_tolerances(args.rtol, args.atol)
 
     run_comparison(Path(args.reference), Path(args.candidate), args.rtol, args.atol, args.evolution)
     return 0
