@@ -115,6 +115,14 @@ static size_t fa_checked_mul_size(size_t a, size_t b, const char *what)
     return a * b;
 }
 
+static size_t fa_checked_add_size(size_t a, size_t b, const char *what)
+{
+    if (b > SIZE_MAX - a) {
+        fa_dief("%s size overflow", what);
+    }
+    return a + b;
+}
+
 static const char *fa_center_coord_text(size_t i, uint32_t n)
 {
     if (n == 51 && i < sizeof(FA_FORMAL_51_COORDS) / sizeof(FA_FORMAL_51_COORDS[0])) {
@@ -288,11 +296,35 @@ static void fa_validate_working_set(const fa_config_t *cfg)
         (size_t)cfg->ny + 2, "x-face field");
     const size_t yface_len = fa_checked_mul_size((size_t)cfg->nx + 2,
         (size_t)cfg->ny + 1, "y-face field");
-    const size_t total_bytes = 4 * scalar_len * sizeof(float) +
-        2 * xface_len * sizeof(float) +
-        2 * yface_len * sizeof(float);
-    if (total_bytes > 512u * 1024u * 1024u) {
-        fa_die("estimated GPU working set exceeds 512 MiB");
+
+    const size_t scalar_bytes = fa_checked_mul_size(scalar_len, sizeof(float),
+        "scalar field bytes");
+    const size_t xface_bytes = fa_checked_mul_size(xface_len, sizeof(float),
+        "x-face field bytes");
+    const size_t yface_bytes = fa_checked_mul_size(yface_len, sizeof(float),
+        "y-face field bytes");
+    const size_t host_fields_bytes = fa_checked_add_size(
+        fa_checked_add_size(
+            fa_checked_mul_size(scalar_bytes, 4, "host scalar buffers"),
+            xface_bytes, "host fields"),
+        yface_bytes, "host fields");
+    const size_t warmup_backups_bytes = fa_checked_mul_size(scalar_bytes, 4,
+        "warmup backups");
+    const size_t metal_buffers_bytes = fa_checked_add_size(
+        fa_checked_add_size(
+            fa_checked_mul_size(scalar_bytes, 4, "metal scalar buffers"),
+            fa_checked_mul_size(xface_bytes, 3, "metal x-face buffers"),
+            "metal buffers"),
+        fa_checked_mul_size(yface_bytes, 3, "metal y-face buffers"),
+        "metal buffers");
+    const size_t total_bytes = fa_checked_add_size(
+        host_fields_bytes,
+        fa_checked_add_size(warmup_backups_bytes, metal_buffers_bytes,
+            "working set"),
+        "working set");
+    const size_t max_bytes = (size_t)512u * 1024u * 1024u;
+    if (total_bytes > max_bytes) {
+        fa_die("estimated working set exceeds 512 MiB");
     }
 }
 

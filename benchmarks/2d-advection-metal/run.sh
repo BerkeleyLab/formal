@@ -46,11 +46,20 @@ if [[ $# -eq 0 ]]; then
 fi
 
 mode=cpu
+mode_seen=0
 for ((i = 1; i <= $#; ++i)); do
-    if [[ "${!i}" == "--mode" && $((i + 1)) -le $# ]]; then
+    if [[ "${!i}" == "--mode" ]]; then
+        if ((i == $#)); then
+            echo "--mode must be followed by cpu or metal" >&2
+            exit 2
+        fi
+        if ((mode_seen)); then
+            echo "--mode may be specified only once" >&2
+            exit 2
+        fi
         j=$((i + 1))
         mode="${!j}"
-        break
+        mode_seen=1
     fi
 done
 if [[ "$mode" != cpu && "$mode" != metal ]]; then
