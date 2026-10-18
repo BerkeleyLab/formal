@@ -71,6 +71,22 @@ See [`PERFORMANCE.md`](./PERFORMANCE.md#reproduction) for the paired
 shared-input recipe and the explicit native launch geometry used in the
 historical comparison.
 
+## Known Fortran compiler limitations
+
+The standalone C/Metal reference is independent of the Fortran compiler.
+The Fortran example has two known compiler-version failures in
+[branch CI](https://github.com/certik/formal/actions/runs/39102014517):
+
+- CI's Flang 21 crashes while lowering `do concurrent ... local(rhs, total)`.
+- LFortran 0.64 fails LLVM type verification for `numerical_arguments_t`
+  while compiling the example's argument and raw-input helpers.
+
+Both failures occur before the solver runs. Current LFortran builds and the
+other completed Flang configurations compile the portable example; real GPU
+comparisons verify evolved full fields and unchanged boundaries. These older
+compiler limitations are recorded without changing the numerical method or
+disabling their CI checks.
+
 ## Provenance and licensing
 
 The numerical algorithm, FP32 CPU oracle, Metal kernels, two-deep scheduling,
