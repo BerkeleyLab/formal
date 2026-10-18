@@ -187,6 +187,9 @@ allocation/copy is still inside the solve.
 observed sample spread; these measurements establish neither a meaningful
 CPU benefit nor a CPU regression. The separate folded-operators/workspace
 ratios were **2.9067×** and **7.1055×**, respectively, on these cases.
+Coefficient folding is CPU-neutral within this sample spread; the workspace
+ratios compare workspace against **folded operators**, not old versus folded
+coefficients.
 Do not compare absolute compiler speeds or CPU/GPU times across their
 different step counts/workloads.
 
@@ -237,31 +240,118 @@ Repeat with `--solver workspace` in the folded executable, interleave the
 three variants and compare the complete exported fields. Neither building
 nor a single wall-clock sample alone reproduces the controlled comparison.
 
-### Clean-main validation status
+### Tooling and CPU validation
 
 The managed native CPU wrapper, missing-permission/dependency/mode
 preflights, raw comparator's 54 checks in both normal Python and `-O`, CSV
 self-test, and the clean LFortran `--fast` FPM suite (**32/32, zero skipped**)
 passed. The actual Formal wrapper compiled and linked a Metal executable
-with the clean compiler and real SDK. Its real guard's invalid-timeout
-preflight was tested **before lock acquisition**, without GPU execution;
-Metal/Foundation linkage and embedded kernels were separately verified.
+with the clean compiler and real SDK. Before runtime validation, its real
+guard's invalid-timeout preflight was tested **before lock acquisition**,
+without GPU execution; Metal/Foundation linkage and embedded kernels were
+separately verified. The subsequent guarded executions are reported below.
 
 Shared-input CPU checks on nonsquare Gaussian 17×13/9 and nonzero, varying
 boundary 13×11/3 cases passed against the unchanged native CPU oracle with
 both managed Fortran compilers, including meaningful evolution and exact
-boundaries. These are **CPU-only** checks. Clean-main GPU correctness,
-completed GPU telemetry, and fresh 2048²/1000 timings remain pending guarded
-execution; the historical table below must not be relabeled as fresh data.
+boundaries. These checks were **CPU-only**; the following section records
+the separate, subsequently completed GPU executions.
+
+## Clean-main paired GPU results
+
+Measured on **18 October 2026**, using Formal source/tooling head
+`70e73ee51f72ebaca16544d834bdfd98a9da66a4` and the unpatched clean LFortran
+`2247d35082ea190408486b93c12ec2ead4771735` / LLVM 11.1.0 compiler identified
+above. The machine was the same M4 Max/macOS 15.8 system: AC power,
+`powermode=0`, no core affinity or clock locking, load averages about
+2.64–2.66. The coordinator ran the prepared procedure successfully; this
+documentation follow-up only audited the saved artifacts, without rerunning
+any solver or benchmark.
+
+All **ten GPU executions** passed the unchanged shared guard, with the
+actual executable immediately after it, a 30 s timeout and 4096 MiB RSS
+limit per executable. The two small Formal/native pairs ran first:
+
+- **Gaussian 17×13/9**, shared raw input: Formal/native maximum difference
+  `2.32830644e-10`; each GPU final agreed with the native CPU oracle to
+  `7.45058060e-9` maximum absolute difference.
+- **Nonzero, varying boundary 13×11/3**: Formal, native GPU and CPU-oracle
+  finals were identical. All three evolved meaningfully, rather than
+  merely returning identical initial fields.
+
+Both small pairs reported positive completed GPU time and passed full-field
+finiteness, evolution and exact fixed-boundary checks at the unchanged
+`rtol=1e-6`, `atol=1e-8`.
+
+The substantial case was the **actual Gaussian, 2048×2048 cells, 1000 steps**,
+with exact FP32 `dt=6.20126741068816e-8`, one shared raw input, and native
+**direct 2D / 128×1** geometry. The first Formal run exported that input;
+the later Formal runs and every native run consumed the same immutable
+snapshot. Three interleaved pairs ran Formal/native, native/Formal,
+Formal/native. Each executable performed an untimed one-step warmup and
+restored its initial state before solve timing.
+
+| Implementation | Median solve wall [min, max], s | Median completed GPU busy [min, max], s |
+|---|---:|---:|
+| Formal + clean-main LFortran workspace | **2.167132** [2.161986, 2.167841] | **2.158323** [2.152374, 2.159060] |
+| Native C + Metal | **2.188441** [2.184408, 2.203517] | **2.187208** [2.183102, 2.202095] |
+
+Native/Formal median ratios are **1.00983× wall** and **1.01338× GPU busy**.
+Both implementations therefore solve this case in about 2.2 s; this is
+workload/toolchain-specific evidence, not a universal speed or occupancy
+limit. Timings exclude compilation, initialization, warmup/JIT and field I/O.
+All six large solves stayed in the specified 1–5 s window.
+
+Every large pair passed the complete field comparison: maximum absolute
+difference **`5.96046448e-8`**, relative L2 difference
+**`5.98075916e-9`**, finite values and exactly preserved initial boundaries.
+Both implementations changed the scalar by about `4.17232513e-4` in max norm
+and `2.8552e-4` in relative L2, well beyond the evolution thresholds.
+Within each implementation, final files were byte-identical across all
+three repetitions; Formal and native finals were not byte-identical to
+each other. The large case was compared between GPU implementations;
+CPU-oracle validation was performed on the two bounded small cases.
+
+Formal reported the following **observed runtime counters in each large
+solve**, not just the expected `8 * steps` stage-kernel count:
+
+| Counter | Per solve |
+|---|---:|
+| Dispatches | 8,003 |
+| Commits / completed command buffers | 126 / 126 |
+| Host syncs / waits | 2 / 124 |
+| Host-to-device / device-to-host memcpy bytes | 201,654,400 / 117,637,200 |
+| Buffer allocations / allocated bytes | 5 / 84,017,200 |
+| JIT time inside solve | 0 s |
+
+These byte counts describe the runtime's logical copies, **not physical
+DRAM traffic measurements**. Five runtime allocations also preclude an
+allocation-free claim.
 
 Native currently reports wall time and completed-command-buffer `gpu_busy`,
 not dynamic dispatch/copy counters. Its unchanged source schedules eight
 dispatches per step, eight steps per commit, and at most two command buffers
-in flight. Any such native counts must be labeled **source-derived**, not
-measured telemetry. Formal's runtime reports actual dispatch, commit,
-completion, synchronization, copy and allocation counters.
+in flight: 8,000 dispatches, 125 commits/waits and a 16,810,000-byte final
+shared-buffer-to-host copy for this case. These native counts are
+**source-derived**, not measured telemetry.
 
-### Performance-portability interpretation
+Identities of the measured artifacts (not guarantees of bit-identical builds
+on other machines):
+
+```text
+Formal Metal binary SHA256:
+3b0f83ac19fb8858cb59863dffd5da2c882ccdcb801430f6007b008943485668
+Native binary SHA256:
+7873f33da20935ab50dae00c5a319d0f43301d1f837d54d37804b9eca2de485d
+Shared 2048x2048/1000 raw input SHA256:
+ad304f4fce24f392965f4bca34f6d74f8a57570da185d2547537db91cdefbfc7
+```
+
+Source/binary/guard/input identities and every reported sample were audited
+against the saved execution and comparison logs. No historical binary or
+old result was substituted.
+
+## Performance-portability interpretation
 
 The coefficient change evaluates `Ap(i,j) = -A(m+1-i,n+1-j)` in one
 assignment instead of two passes. It preserves values, allocation shape and
@@ -271,7 +361,7 @@ reduction. Likewise, LFortran #15506 maps adjacent GPU threads to the
 contiguous subscript without requiring a Fortran array-layout change.
 
 Unmeasured cases include other CPUs/compilers, larger sustained CPU grids,
-isolated constructor costs, and clean-main GPU/native parity. A future
+isolated constructor costs, and GPU/native parity on other workloads. A future
 automatic representation choice would need to preserve storage association,
 array element order, C interoperability and observable layout (`SEQUENCE`,
 `BIND(C)`, `EQUIVALENCE`, `TRANSFER`, C pointers). No such extension,
@@ -298,7 +388,9 @@ The compiler was snapshot `3d4c7941`, which included the now-merged GPU work
 and an **unmerged driver-selection patch**. In particular, 2.195701 s is not
 a fresh result from clean merged main. The earlier coefficient-only GPU
 51²/500 comparison, 9.603519 → 4.057951 s (2.3666×), is also historical;
-it was not automatically rerun for this CPU study.
+it was not rerun for this study. The fresh table above establishes clean-main
+application behavior; the difference from the historical table is not a
+controlled old/new compiler speedup comparison.
 
 ## Index experiment
 

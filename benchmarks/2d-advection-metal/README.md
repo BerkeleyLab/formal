@@ -95,9 +95,12 @@ See [`PERFORMANCE.md`](./PERFORMANCE.md#reproduction) for the paired
 shared-input recipe and the explicit native launch geometry used in the
 historical comparison.
 
-Clean-main compile/link and CPU checks have now passed with this tooling.
-GPU runtime validation and timings from that clean compiler are still
-pending; a successful Metal link is not a GPU execution result. See the
+Clean-main compile/link, CPU checks and ten guarded GPU executions have now
+passed with this tooling. The substantial 2048²/1000 Gaussian comparison
+measured median solve walls of **2.167132 s Formal / 2.188441 s native**,
+with full-field, evolution and fixed-boundary validation. These are fresh
+clean-main results, not merely a successful Metal link. See the
+[paired GPU measurements](./PERFORMANCE.md#clean-main-paired-gpu-results) and
 [controlled CPU measurements](./PERFORMANCE.md#controlled-cpu-measurements)
 for the measured, workload-specific coefficient and workspace effects.
 
@@ -112,9 +115,9 @@ The Fortran example has known compiler-version failures in
   while compiling the example's argument and raw-input helpers.
 
 Both failures occur before the solver runs. Current Linux LFortran builds and
-the other completed Flang configurations compile the portable example;
-historical real GPU comparisons verified evolved full fields and unchanged
-boundaries. Fresh clean-main GPU execution remains pending. These older
+the other completed Flang configurations compile the portable example.
+Historical and fresh clean-main GPU comparisons verify evolved full fields
+and unchanged boundaries. These older
 compiler limitations are recorded without changing the numerical method or
 disabling their CI checks.
 
