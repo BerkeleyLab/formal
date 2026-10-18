@@ -5,6 +5,7 @@ module formal_advection_workspace
     private
     public :: fa_config_t, fa_options_t, fa_fields_t, fa_parse_args
     public :: fa_init_fields, fa_advance_rk4, fa_write_csv, fa_reconstruct_scalar
+    public :: fa_init_from_arrays, fa_write_final_raw
     public :: fa_validate_cfg, fa_validate_working_set, fa_read_raw_input
     public :: fa_now_seconds
 
