@@ -68,14 +68,27 @@ uses the same guarded launch path.  It does not add native sources to FPM.
 
 ## Provenance and licensing
 
-`formal_advection.m` and `formal_advection.metal` were copied verbatim from
-the LFortran repository at commit
+The numerical algorithm, FP32 CPU oracle, Metal kernels, two-deep scheduling,
+and signed-index experiment come from the LFortran repository at commit
 `3d4c7941c5a153adb996ed62309225e871c06d9b`
 (`examples/formal_advection/formal_advection.m` and
-`formal_advection.metal`).  That commit is the source of the verified CPU
-oracle, Metal kernels, two-deep scheduling, and signed-index experiment.
-The adapted wrappers and this documentation are the Formal publication
-integration.  The upstream LFortran BSD terms are retained in
+`examples/formal_advection/formal_advection.metal`).  The provenance of each
+native source file is recorded separately:
+
+- `formal_advection.metal` is byte-for-byte identical to the LFortran shader.
+  Its original and current Git blob hashes are both
+  `0e492038ab56e7fbb70789b724e934093392c3b0`.
+- `formal_advection.m` retains that source's numerical method and CPU oracle,
+  but is not byte-for-byte identical.  The Formal copy adds checked
+  `size_t` addition/multiplication and a 512 MiB native working-set guard
+  covering the host fields, warm-up backups, and Metal buffers.  Its original
+  LFortran blob hash is `a2d79a6af54df22e4af9c4bffa85d5712942a2c8`; the
+  current Formal destination blob hash is
+  `13083cc9ab9547064b0d668552d747c1b8b203c2`.
+
+These C-side safety additions do not alter the numerical method or benchmark
+claims.  The adapted wrappers and this documentation are the Formal
+publication integration.  The upstream LFortran BSD terms are retained in
 [`LFortran-NOTICE.txt`](./LFortran-NOTICE.txt); the surrounding Formal tree
 remains covered by [`LICENSE.txt`](../../LICENSE.txt).
 
