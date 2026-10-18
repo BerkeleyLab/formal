@@ -75,6 +75,16 @@ Check that Formal reports `gpu_timing_available=T` and positive
 `tg=128,1`, and positive `gpu_busy`. These solve timings exclude compilation,
 initialization, warmup/JIT, and field I/O. Neither command writes CSV.
 
+**Timing caveat:** `solve_seconds` / native `solve_wall` are solve-region
+wall times, not total process wall time or end-to-end benchmark time.
+Formal's `final_io_seconds` measures only the analytic final-CSV path
+(including scalar reconstruction when needed). The `--dump-final-raw` write
+occurs after that interval; raw-input runs report `final_io_seconds=0`
+even when writing a final raw field. That counter must not be used as total
+final-output I/O time or added to the solve time to claim process wall time.
+The raw-output timing refactor is a follow-up, not part of this input-guard
+change; all recorded solve measurements retain their original scope.
+
 For a bounded non-square command-wiring check, use `nx=17`, `ny=13`, and
 `steps=9` above.
 That is a reduced check, not a reproduction of the historical timings.
@@ -119,6 +129,56 @@ cat benchmarks/2d-advection-metal/build/compare-selftest.log
 ```
 
 These synthetic comparator tests are not solver validation.
+
+### Host input and validator checks
+
+The Fortran workspace estimate remains **512 MiB for three scalar and
+three buffers of each face shape, all FP32**; it is not a whole-process RSS
+estimate. Halo bounds, every element/byte product, and the byte-count sum
+are checked before allocation, including the analytic constructor path.
+Timesteps must be finite and positive; no new stability or CFL bound is
+imposed.
+
+`example/validate-advection-inputs.f90` is an automatically discovered FPM
+example used only as a host validation harness. It calls the real guards
+but never allocates numerical fields, advances a timestep, or launches a
+GPU kernel. Its tests cover normal grids, both sides of the working-set
+boundary, halo/product/sum overflow, NaN/infinite/nonpositive timesteps, and
+valid finite timesteps. **Do not run huge dimensions through the solver or
+a GPU to test rejection.**
+
+Use the [CPU build recipe below](#controlled-cpu-measurements), replacing
+`--example 2D-advection-diffusion` with `--example validate-advection-inputs`
+and the copied executable with `"$cpu_build/input-guards"`. Keep the same
+managed tools and CPU flags; do not use `--gpu=metal`. Then run:
+
+```bash
+pixi run --locked --manifest-path "$LFORTRAN_ROOT/pixi.toml" -e llvm11 \
+  "$LFORTRAN_ROOT/.pixi/envs/llvm11/bin/python" example/scripts/validate_2d_advection_workspace.py \
+  --self-test --guard-executable "$cpu_build/input-guards" \
+  > "$cpu_build/input-validation.log" 2>&1
+pixi run --locked --manifest-path "$LFORTRAN_ROOT/pixi.toml" -e llvm11 \
+  "$LFORTRAN_ROOT/.pixi/envs/llvm11/bin/python" -O example/scripts/validate_2d_advection_workspace.py \
+  --self-test --guard-executable "$cpu_build/input-guards" \
+  > "$cpu_build/input-validation-optimized.log" 2>&1
+cat "$cpu_build/input-validation.log" "$cpu_build/input-validation-optimized.log"
+```
+
+Without `--guard-executable`, `--self-test` runs only the synthetic Python
+helper/driver tests. Those deliberately mock the solver launch; they are
+not evidence of CPU/GPU numerical execution. Repeat the host checks with
+normal and `--fast` LFortran builds, or GFortran normal/release builds
+(the measured release flags do not include `-ffast-math`).
+
+For real `--raw-input` validation, the initial file must have `mode raw`;
+candidate/reference files must have `mode raw-final` and matching grid,
+steps and FP32 timestep. Decimal spellings that round to the same FP32
+timestep are equivalent. Optional `--cells`, `--steps` and `--dt` assert
+expected input metadata; otherwise the raw header is authoritative.
+Nonfinite scalar/velocity fields, malformed payloads and nonfinite or
+negative tolerances fail explicitly. Boundaries must remain fixed;
+`--evolution` additionally requires meaningful evolution beyond the unchanged
+`rtol=1e-6`, `atol=1e-8`. The validator and raw comparator share these checks.
 
 ## Controlled CPU measurements
 
@@ -187,7 +247,7 @@ allocation/copy is still inside the solve.
 observed sample spread; these measurements establish neither a meaningful
 CPU benefit nor a CPU regression. The separate folded-operators/workspace
 ratios were **2.9067×** and **7.1055×**, respectively, on these cases.
-Coefficient folding is CPU-neutral within this sample spread; the workspace
+Coefficient-only differences remain unresolved within this sample spread; the workspace
 ratios compare workspace against **folded operators**, not old versus folded
 coefficients.
 Do not compare absolute compiler speeds or CPU/GPU times across their
@@ -256,6 +316,16 @@ boundary 13×11/3 cases passed against the unchanged native CPU oracle with
 both managed Fortran compilers, including meaningful evolution and exact
 boundaries. These checks were **CPU-only**; the following section records
 the separate, subsequently completed GPU executions.
+
+The subsequent host-guard follow-up passes 66 allocation-free guard checks
+in each of GFortran normal/release and clean LFortran normal/`--fast`,
+plus 84 synthetic driver cases in normal Python and `-O`. Actual small
+Gaussian and nonzero-boundary workspace fields still pass the raw oracle
+checks, and the operator/workspace CSV comparisons pass. The clean
+LFortran FPM driver passes **32/32** in normal and `--fast` modes.
+GFortran release passes **31/32**, with the same pre-existing 3D vector
+dot-product failure reproduced using unchanged baseline library/test
+sources and flags; no 3D-library or compiler workaround is included.
 
 ## Clean-main paired GPU results
 

@@ -104,6 +104,20 @@ clean-main results, not merely a successful Metal link. See the
 [controlled CPU measurements](./PERFORMANCE.md#controlled-cpu-measurements)
 for the measured, workload-specific coefficient and workspace effects.
 
+These are **solve wall times, not process wall times**. In the Formal
+example, `final_io_seconds` covers the analytic final-CSV path, including
+reconstruction when needed; it does **not** include `--dump-final-raw`.
+Raw-input runs report that counter as zero even when writing a raw final
+field. See the [timing caveat](./PERFORMANCE.md#reproduction); no end-to-end
+timing claim is made.
+
+The [host validation checks](./PERFORMANCE.md#host-input-and-validator-checks)
+exercise the Fortran working-set and finite-timestep guards without field
+allocation or GPU execution. The retained workspace validation script
+shares the strict raw parser, FP32 metadata, tolerance, and field checks
+with the raw comparator. Huge-grid rejection tests belong only in that
+allocation-free harness, never in a solver or GPU run.
+
 ## Known Fortran compiler limitations
 
 The standalone C/Metal reference is independent of the Fortran compiler.
