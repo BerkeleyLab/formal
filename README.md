@@ -69,6 +69,30 @@ where `s` is the concentration of a passive scalar quantity, `D` is a molecular 
 coefficient, and `v` is a prescribed velocity field.  This repository's 2D-advection-diffusion
 [program](./example/2D-advection-diffusion.F90), for example, demonstrates how to advance the
 above equation in time using a Runge-Kutta scheme.
+It accepts `--solver workspace|operators`, `--cells`, `--steps`, `--dt`, and
+`--order` flags for benchmarking; without arguments it retains the 51×51,
+500-step, `dt=1e-4` regression case, and when `--cells` changes without `--dt`
+the default time step is scaled by the square of the grid refinement factor.
+Use `--benchmark` for the 257×257, 30000-step preset, `--no-csv` to suppress
+CSV output on large runs, `--dump-input <path>` to write the native FADV2D1 raw
+input snapshot before warmup/timing, and `--dump-final-raw <path>` for binary
+final-field output.  The tracked comparison helper lives at
+[`example/scripts/compare_2d_fields.py`](./example/scripts/compare_2d_fields.py).
+For GPU benchmarking, compile with `-DFORMAL_ENABLE_GPU_BENCHMARK`, pass
+`--gpu-profile`, and set `LFORTRAN_GPU_PROFILE=1` to collect Metal telemetry
+through the runtime snapshot shim.
+
+Build LFortran with Pixi, then run its application benchmark entry point.
+It supplies the C-shim flags, checks the actual Metal executable, and runs
+it under the GPU guard:
+```bash
+export FORMAL_ROOT=/path/to/formal
+cd /path/to/lfortran
+pixi run -e llvm11 bash examples/formal_advection/run_formal.sh
+```
+The default is the measured 2048 x 2048, 1000-step case; append example
+arguments to select another workload. Build directories are keyed by the
+compiler binary hash to avoid stale kernels after compiler changes.
 
 ### Other example programs
 See this repository's [example](./example) subdirectory for additional demonstrations of
