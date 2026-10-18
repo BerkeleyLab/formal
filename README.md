@@ -92,12 +92,12 @@ Formal GPU example through its wrappers:
 export LFORTRAN_ROOT=/path/to/lfortran
 bash benchmarks/2d-advection-metal/run.sh
 # or:
-bash benchmarks/2d-advection-metal/run_formal.sh
+FA_ALLOW_METAL=1 bash benchmarks/2d-advection-metal/run_formal.sh
 ```
-The native wrapper defaults to a CPU smoke case; Metal is explicitly guarded
-and the measured 2048 x 2048, 1000-step case is selected by passing its
-arguments.  See the benchmark README for the exact provenance, source guard,
-and reproducibility contract.
+The native wrapper defaults to a CPU smoke case; the Formal wrapper defaults
+to the 2048 x 2048, 1000-step GPU case. Both Metal entry points require an
+Apple Silicon Mac and explicit `FA_ALLOW_METAL=1` permission. See the benchmark
+README for the exact provenance, source guard, and reproducibility contract.
 
 ### Other example programs
 See this repository's [example](./example) subdirectory for additional demonstrations of

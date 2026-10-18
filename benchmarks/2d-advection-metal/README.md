@@ -55,16 +55,21 @@ Useful native options include `--dump <path>`, `--dump-bin [path]`,
 flattened-index experiment.  The verified comparison found it slower on the
 small cache-resident case; no claim that unsigned indexing is faster is made.
 
-To run the actual Formal GPU example rather than the native oracle:
+To run the actual Formal GPU example rather than the native oracle, the same
+Apple Silicon and explicit Metal opt-in requirements apply:
 
 ```bash
-LFORTRAN_ROOT=/path/to/lfortran \
+FA_ALLOW_METAL=1 LFORTRAN_ROOT=/path/to/lfortran \
   bash benchmarks/2d-advection-metal/run_formal.sh
 ```
 
-That wrapper compiles the existing
+That wrapper rejects missing permission or an unsupported platform before
+compilation. It defaults to 2048 x 2048 cells and 1000 steps, compiles
 `example/2D-advection-diffusion.F90` with LFortran, checks Metal linkage, and
 uses the same guarded launch path.  It does not add native sources to FPM.
+See [`PERFORMANCE.md`](./PERFORMANCE.md#reproduction) for the paired
+shared-input recipe and the explicit native launch geometry used in the
+historical comparison.
 
 ## Provenance and licensing
 

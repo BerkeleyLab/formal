@@ -16,6 +16,15 @@ if [[ "${PIXI_PROJECT_ROOT:-}" != "$lfortran_root" ||
         bash "$here/run_formal.sh" "$@"
 fi
 
+if [[ "$(uname -s)" != Darwin || "$(uname -m)" != arm64 ]]; then
+    echo "the Formal Metal benchmark requires an Apple Silicon Mac" >&2
+    exit 1
+fi
+if [[ "${FA_ALLOW_METAL:-0}" != 1 ]]; then
+    echo "Metal mode is guarded; set FA_ALLOW_METAL=1 to proceed." >&2
+    exit 1
+fi
+
 compiler="${LFORTRAN_COMPILER:-${LFORTRAN_BUILD_DIR:-"$lfortran_root/build/llvm11"}/src/bin/lfortran}"
 gpu_guard="$lfortran_root/examples/nbody/gpu_run.sh"
 if [[ ! -x "$compiler" ]]; then
