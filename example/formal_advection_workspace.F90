@@ -89,30 +89,49 @@ contains
     integer(int64) function fa_checked_mul(a, b, what) result(product)
         integer(int64), intent(in) :: a, b
         character(len=*), intent(in) :: what
-        if (a /= 0_int64 .and. b > huge(0_int64) / a) then
-            call fa_die(trim(what) // " size overflow")
+        if (a < 0_int64 .or. b < 0_int64) call fa_die(trim(what) // " size must be non-negative")
+        if (a > 0_int64) then
+            if (b > huge(0_int64) / a) call fa_die(trim(what) // " size overflow")
         end if
         product = a * b
     end function fa_checked_mul
 
+    integer(int64) function fa_checked_add(a, b, what) result(total)
+        integer(int64), intent(in) :: a, b
+        character(len=*), intent(in) :: what
+        if (a < 0_int64 .or. b < 0_int64) call fa_die(trim(what) // " size must be non-negative")
+        if (a > huge(0_int64) - b) call fa_die(trim(what) // " size overflow")
+        total = a + b
+    end function fa_checked_add
+
     subroutine fa_validate_working_set(nx, ny)
         integer, intent(in) :: nx, ny
-        integer(int64) :: scalar_len, xface_len, yface_len, total_bytes
-        scalar_len = fa_checked_mul(int(nx + 2, int64), int(ny + 2, int64), &
+        integer(int64) :: nx64, ny64, scalar_len, xface_len, yface_len
+        integer(int64) :: scalar_bytes, xface_bytes, yface_bytes, total_bytes
+        if (nx < 1 .or. ny < 1) call fa_die("cells must be positive")
+        if (nx > huge(nx) - 2 .or. ny > huge(ny) - 2) then
+            call fa_die("cells including halo size overflow")
+        end if
+        nx64 = int(nx, int64)
+        ny64 = int(ny, int64)
+        scalar_len = fa_checked_mul(nx64 + 2_int64, ny64 + 2_int64, &
             "scalar field")
-        xface_len = fa_checked_mul(int(nx + 1, int64), int(ny + 2, int64), &
+        xface_len = fa_checked_mul(nx64 + 1_int64, ny64 + 2_int64, &
             "x-face field")
-        yface_len = fa_checked_mul(int(nx + 2, int64), int(ny + 1, int64), &
+        yface_len = fa_checked_mul(nx64 + 2_int64, ny64 + 1_int64, &
             "y-face field")
-        total_bytes = 3_int64 * scalar_len * 4_int64 &
-            + 3_int64 * xface_len * 4_int64 &
-            + 3_int64 * yface_len * 4_int64
+        scalar_bytes = fa_checked_mul(scalar_len, 12_int64, "scalar buffers")
+        xface_bytes = fa_checked_mul(xface_len, 12_int64, "x-face buffers")
+        yface_bytes = fa_checked_mul(yface_len, 12_int64, "y-face buffers")
+        total_bytes = fa_checked_add(scalar_bytes, xface_bytes, "working set")
+        total_bytes = fa_checked_add(total_bytes, yface_bytes, "working set")
         if (total_bytes > 512_int64 * 1024_int64 * 1024_int64) then
             call fa_die("estimated working set exceeds 512 MiB")
         end if
     end subroutine fa_validate_working_set
 
     subroutine fa_validate_cfg(cfg, dt_supplied)
+        use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
         type(fa_config_t), intent(inout) :: cfg
         logical, intent(in) :: dt_supplied
         real(real32) :: scale
@@ -122,7 +141,7 @@ contains
         if (cfg%steps < 1) then
             call fa_die("steps must be positive")
         end if
-        if (.not. (cfg%dt > 0.0_real32)) then
+        if (.not. ieee_is_finite(cfg%dt) .or. .not. (cfg%dt > 0.0_real32)) then
             call fa_die("dt must be finite and positive")
         end if
         if (.not. dt_supplied) then
@@ -231,7 +250,6 @@ contains
         ny = cfg%ny
         steps = cfg%steps
         dt = cfg%dt
-        call fa_validate_working_set(nx, ny)
         call fa_allocate_fields(fields, nx, ny)
         read(unit, iostat=ios) fields%base
         if (ios /= 0) call fa_die("cannot read raw base field")
@@ -433,6 +451,7 @@ contains
     subroutine fa_allocate_fields(fields, nx, ny)
         type(fa_fields_t), intent(inout) :: fields
         integer, intent(in) :: nx, ny
+        call fa_validate_working_set(nx, ny)
         allocate(fields%base(1:nx+2, 1:ny+2))
         allocate(fields%q(1:nx+2, 1:ny+2))
         allocate(fields%acc(1:nx+2, 1:ny+2))

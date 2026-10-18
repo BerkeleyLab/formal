@@ -398,6 +398,7 @@ contains
     if (any(numerical_arguments%cells < 2*numerical_arguments%order + 1)) error stop "cells must satisfy cells >= 2*order + 1"
     if (numerical_arguments%steps <= 0) error stop "steps must be positive"
     if (.not. allocated(numerical_arguments%input_path)) then
+      call fa_validate_working_set(numerical_arguments%cells(1), numerical_arguments%cells(2))
       if (.not. numerical_arguments%dt_supplied .and. numerical_arguments%dt <= 0E0) error stop "dt must be positive"
       if (numerical_arguments%dt <= 0E0) error stop "dt must be positive"
     end if
