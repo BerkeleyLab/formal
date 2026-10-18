@@ -1,6 +1,6 @@
 module formal_advection_workspace
     use iso_fortran_env, only: real32, real64, int64
-    use tensors_2D_m, only: scalar_2D_t
+    use tensors_2D_m, only: scalar_2D_t, scalar_2D_initializer_i
     implicit none
     private
     public :: fa_config_t, fa_options_t, fa_fields_t, fa_parse_args
@@ -504,9 +504,11 @@ contains
         integer, intent(in) :: cells(:)
         real(real32), intent(in) :: x_min(:), x_max(:)
         type(scalar_2D_t) :: scalar
+        procedure(scalar_2D_initializer_i), pointer :: initializer
 
+        initializer => fa_scalar_reconstruction_initializer
         fa_scalar_reconstruction_values = values
-        scalar = scalar_2D_t(fa_scalar_reconstruction_initializer, order=order, cells=cells, x_min=x_min, x_max=x_max)
+        scalar = scalar_2D_t(initializer, order=order, cells=cells, x_min=x_min, x_max=x_max)
         deallocate(fa_scalar_reconstruction_values)
     end function fa_reconstruct_scalar
 
