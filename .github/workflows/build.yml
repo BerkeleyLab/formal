@@ -251,7 +251,7 @@ jobs:
       run: |
         # silence Homebrew tap trust warnings:
         (set +e ; brew untap -f aws/tap hashicorp/tap ; brew trust azure/bicep ) \
-            2>&1 | perl -pe "$BREW_WARNING_FILTER" 
+            2>&1 | perl -pe "$BREW_WARNING_FILTER"
         # set some Homebrew knobs to accelerate installation
         # but only when we are not simulating the user environment brew-via-install workflow
         if [[ -z "${{ matrix.brew_via_install }}" ]] ; then
