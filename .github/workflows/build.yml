@@ -162,16 +162,20 @@ jobs:
             container: ghcr.io/lfortran/lfortran:v0.67.0
           - os: ubuntu-22.04
             compiler: lfortran
+            version: 0.68.0
+            container: ghcr.io/lfortran/lfortran:v0.68.0
+          - os: ubuntu-22.04
+            compiler: lfortran
             version: latest
             container: ghcr.io/lfortran/lfortran:latest
 
           # https://github.com/fortran-lang/homebrew-fortran
           - os: macos-15
             compiler: lfortran
-            version: 0.67.0
+            version: brew
           - os: macos-26
             compiler: lfortran
-            version: 0.67.0
+            version: brew
 
     container:
       image: ${{ matrix.container }}
