@@ -33,7 +33,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ macos-14, macos-15, macos-15-intel, macos-26, macos-26-intel, ubuntu-24.04, ubuntu-26.04-arm ]
+        os: [ macos-15, macos-15-intel, macos-26, macos-26-intel, ubuntu-24.04, ubuntu-26.04-arm ]
         compiler: [ gfortran ]
         version: [ 13, 14, 15, 16 ] # Julienne supports GFortran 13+
         extra_flags: [ -g -O3 ]
@@ -162,16 +162,20 @@ jobs:
             container: ghcr.io/lfortran/lfortran:v0.67.0
           - os: ubuntu-22.04
             compiler: lfortran
+            version: 0.68.0
+            container: ghcr.io/lfortran/lfortran:v0.68.0
+          - os: ubuntu-22.04
+            compiler: lfortran
             version: latest
             container: ghcr.io/lfortran/lfortran:latest
 
           # https://github.com/fortran-lang/homebrew-fortran
           - os: macos-15
             compiler: lfortran
-            version: 0.67.0
+            version: brew
           - os: macos-26
             compiler: lfortran
-            version: 0.67.0
+            version: brew
 
     container:
       image: ${{ matrix.container }}
@@ -251,7 +255,7 @@ jobs:
       run: |
         # silence Homebrew tap trust warnings:
         (set +e ; brew untap -f aws/tap hashicorp/tap ; brew trust azure/bicep ) \
-            2>&1 | perl -pe "$BREW_WARNING_FILTER" 
+            2>&1 | perl -pe "$BREW_WARNING_FILTER"
         # set some Homebrew knobs to accelerate installation
         # but only when we are not simulating the user environment brew-via-install workflow
         if [[ -z "${{ matrix.brew_via_install }}" ]] ; then
