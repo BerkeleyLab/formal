@@ -15,6 +15,7 @@ submodule(tensors_2D_m) scalar_2D_s
     ,operator(.isAtLeast.) &
     ,string_t
   use tensors_1D_m, only : cell_centers_extended_1D, scalar_1D_t
+  use differential_operators_1D_m, only : gradient_operator_1D_t
   use interpolator_1D_m, only : centers_to_faces_1D_t
   implicit none
 
@@ -195,10 +196,10 @@ contains
      allocate(lhs%points_(1,1,1,1)%values_(rhs%cells_(x_dir)+2, rhs%cells_(y_dir)+2))
 
      associate( &
-        x_last => size(rhs%points_(1,1,1,1)%values_,x_dir) - 1 &
-       ,y_last => size(rhs%points_(1,1,1,1)%values_,y_dir) - 1 &
+        x_last => size(rhs%points_(1,1,1,1)%values_,x_dir) + 2 &
+       ,y_last => size(rhs%points_(1,1,1,1)%values_,y_dir) + 2 &
      )
-       lhs%points_(1,1,1,1)%values_(2:x_last-1, 2:y_last-1) = rhs%points_(1,1,1,1)%values_(2:x_last-1, 2:y_last-1) ! internal points
+       lhs%points_(1,1,1,1)%values_(2:x_last-1, 2:y_last-1) = rhs%points_(1,1,1,1)%values_ ! internal points
        lhs%points_(1,1,1,1)%values_(1         ,  :        ) = 0E0 ! x_min boundary
        lhs%points_(1,1,1,1)%values_(  x_last  ,  :        ) = 0E0 ! x_max boundary
        lhs%points_(1,1,1,1)%values_( :        , 1         ) = 0E0 ! y_min boundary
@@ -209,6 +210,7 @@ contains
      lhs%x_min_ = rhs%x_min_
      lhs%x_max_ = rhs%x_max_
      lhs%order_ = rhs%order_
+     lhs%gradient_operator_1D_ = gradient_operator_1D_t(k=lhs%order_, dx=(lhs%x_max_ - lhs%x_min_)/lhs%cells_, cells=lhs%cells_)
 
      call_julienne_assert(lhs%consistent())
      call_julienne_assert(lhs%conformable(rhs))

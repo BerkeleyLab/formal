@@ -145,16 +145,7 @@ contains
     real, allocatable :: Ap(:,:)
 
     allocate(Ap, mold=A)
-
-    reverse_elements_within_rows_and_flip_sign: &
-    do concurrent(integer :: row = 1:size(Ap,1)) default(none) shared(Ap, A)
-      Ap(row,:) = -A(row,size(A,2):1:-1)
-    end do reverse_elements_within_rows_and_flip_sign
-
-    reverse_elements_within_columns: &
-    do concurrent(integer :: column = 1 : size(Ap,2)) default(none) shared(Ap)
-      Ap(:,column) = Ap(size(Ap,1):1:-1,column)
-    end do reverse_elements_within_columns
+    Ap = -A(size(A,1):1:-1,size(A,2):1:-1)
 
   end function
  
