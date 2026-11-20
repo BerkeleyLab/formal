@@ -219,7 +219,8 @@ jobs:
         retry sudo apt-get update
         #sudo apt list -a 'gfortran-*'
         retry sudo apt install -y build-essential
-        if [[ ${COMPILER_VERSION} -lt 15 ]] ; then
+        [[ ${{ matrix.compiler }} == 'gfortran' ]] # assert no container means gfortran
+        if [[ ${COMPILER_VERSION} -lt 15 ]] || type -p gfortran-${COMPILER_VERSION} ; then
           retry sudo apt install -y gfortran-${COMPILER_VERSION}
         else
           curl $CURL_OPTIONS https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh -o install-homebrew.sh
@@ -227,15 +228,16 @@ jobs:
           env CI=1 ./install-homebrew.sh
           HOMEBREW_PREFIX="/home/linuxbrew/.linuxbrew"
           retry ${HOMEBREW_PREFIX}/bin/brew install -v gcc@${COMPILER_VERSION} binutils \
-            2>&1 | perl -pe "$BREW_WARNING_FILTER" ; test ${PIPESTATUS[0]} = 0
+              2>&1 | perl -pe "$BREW_WARNING_FILTER" ; test ${PIPESTATUS[0]} = 0
           ls -al ${HOMEBREW_PREFIX}/bin
           echo "${HOMEBREW_PREFIX}/bin" >> "$GITHUB_PATH"
           : Homebrew GCC@15 needs binutils 2.44+
           HOMEBREW_BINUTILS=$(ls -d ${HOMEBREW_PREFIX}/Cellar/binutils/2.*/bin )
           ls -al ${HOMEBREW_BINUTILS}
-          echo "FFLAGS=$FFLAGS -B ${HOMEBREW_BINUTILS}" >> "$GITHUB_ENV"
-          echo "CFLAGS=$CFLAGS -B ${HOMEBREW_BINUTILS}" >> "$GITHUB_ENV"
-          echo "CXXFLAGS=$CXXFLAGS -B ${HOMEBREW_BINUTILS}" >> "$GITHUB_ENV"
+          echo "FFLAGS=${FFLAGS:+"$FFLAGS" }-B${HOMEBREW_BINUTILS}" >> "$GITHUB_ENV"
+          echo "CFLAGS=${CFLAGS:+"$CFLAGS" }-B${HOMEBREW_BINUTILS}" >> "$GITHUB_ENV"
+          echo "CXXFLAGS=${CXXFLAGS:+"$CXXFLAGS" }-B${HOMEBREW_BINUTILS}" >> "$GITHUB_ENV"
+          echo "LDFLAGS=${LDFLAGS:+"$LDFLAGS" }-B${HOMEBREW_BINUTILS}" >> "$GITHUB_ENV"
         fi
 
     - name: Install Ubuntu Container Dependencies
